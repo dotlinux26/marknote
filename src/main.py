@@ -5,19 +5,22 @@ from __future__ import annotations
 import sqlite3
 import sys
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
+    QHBoxLayout,
     QInputDialog,
     QLabel,
+    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPushButton,
     QSplitter,
     QToolBar,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -72,6 +75,10 @@ QScrollBar::handle:horizontal { background: #d1d9e0; border-radius: 2px; min-wid
 QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
 QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
 QLabel#noteTitleBar { font-size: 15px; font-weight: 600; padding: 2px 6px; }
+QLineEdit#noteTitleEdit { font-size: 15px; font-weight: 600; padding: 2px 6px; border: 1px solid #0969da; border-radius: 2px; }
+QToolButton#pencilButton { border: none; background: transparent; padding: 2px 6px; font-size: 16px; color: #59636e; }
+QToolButton#pencilButton:hover { color: #0969da; background: #eef1f4; border-radius: 2px; }
+QToolButton#pencilButton:disabled { color: #d1d9e0; }
 QLabel#sidebarHeader { font-weight: 600; color: #59636e; padding-top: 6px; }
 QLabel#noteTitle { font-weight: 600; color: #1f2328; }
 QLabel#noteSubtitle { color: #59636e; font-size: 12px; }
@@ -80,6 +87,101 @@ QLabel#mutedLabel { color: #59636e; }
 """
 
 DEBOUNCE_MS = 300
+
+
+class _TitleEdit(QLineEdit):
+    cancelled = Signal()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.cancelled.emit()
+        else:
+            super().keyPressEvent(event)
+
+
+class NoteTitleBar(QWidget):
+    """Tieu de note dang mo + nut but de doi ten truc tiep tren editor."""
+
+    renamed = Signal(int, str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._editing = False
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+
+        self.label = QLabel("No note open")
+        self.label.setObjectName("noteTitleBar")
+        self.label.setMinimumWidth(200)
+
+        self.edit = _TitleEdit()
+        self.edit.setObjectName("noteTitleEdit")
+        self.edit.hide()
+
+        self.pencil = QToolButton()
+        self.pencil.setObjectName("pencilButton")
+        self.pencil.setText("\u270e")
+        self.pencil.setToolTip("Rename note (F2)")
+        self.pencil.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.pencil.setEnabled(False)
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.edit)
+        layout.addWidget(self.pencil)
+
+        self.pencil.clicked.connect(self.begin_edit)
+        self.edit.returnPressed.connect(self._commit)
+        self.edit.editingFinished.connect(self._commit)
+        self.edit.cancelled.connect(self._cancel)
+
+    @property
+    def note_id(self):
+        return self._note_id
+
+    @note_id.setter
+    def note_id(self, value):
+        self._note_id = value
+        self.pencil.setEnabled(value is not None)
+
+    def title(self) -> str:
+        return self.label.text()
+
+    def setTitle(self, text: str):
+        self.label.setText(text)
+
+    def begin_edit(self):
+        if self._note_id is None or self._editing:
+            return
+        self._editing = True
+        self.label.hide()
+        self.pencil.hide()
+        self.edit.setText(self.label.text())
+        self.edit.show()
+        self.edit.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.edit.selectAll()
+
+    def _commit(self):
+        if not self._editing:
+            return
+        self._editing = False
+        new = self.edit.text().strip()
+        old = self.label.text()
+        if new and new != old:
+            self.renamed.emit(self._note_id, new)
+            self.label.setText(new)
+        self._end_edit()
+
+    def _cancel(self):
+        if not self._editing:
+            return
+        self._editing = False
+        self._end_edit()
+
+    def _end_edit(self):
+        self.edit.hide()
+        self.label.show()
+        self.pencil.show()
 
 
 class MainWindow(QMainWindow):
@@ -192,9 +294,7 @@ class MainWindow(QMainWindow):
         self.panel = SearchPanel(self)
 
         self.editor = EditorPane(self)
-        self.title_label = QLabel("No note open", self)
-        self.title_label.setObjectName("noteTitleBar")
-        self.title_label.setMinimumWidth(200)
+        self.title_label = NoteTitleBar(self)
         self.tag_button = QPushButton("Tags", self)
         self.tag_menu = QMenu(self)
         self.tag_button.setMenu(self.tag_menu)
@@ -246,6 +346,7 @@ class MainWindow(QMainWindow):
         self.panel.noteSelected.connect(self.openNote)
         self.editor.textChanged.connect(self._on_text_changed)
         self.editor.verticalScrollBar().valueChanged.connect(self._on_editor_scroll)
+        self.title_label.renamed.connect(self._on_rename)
 
     def _apply_theme_check(self):
         """Check theme at startup: missing file shows a warning and resets to default."""
@@ -309,7 +410,8 @@ class MainWindow(QMainWindow):
         self._loading_note = True
         self.editor.setText(self._loaded_text)
         self._loading_note = False
-        self.title_label.setText(note["title"])
+        self.title_label.note_id = note_id
+        self.title_label.setTitle(note["title"])
         self.preview.render(self._loaded_text)
         self.panel.setActiveNote(note_id)
         self._refresh_note_tags()
@@ -338,21 +440,11 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Note saved")
 
     def onRename(self):
-        """Rename the current note: edit the title stored in the database."""
-        if self._current_id is None:
-            self.statusBar().showMessage("No note open")
-            return
-        old = self.title_label.text()
-        title, ok = QInputDialog.getText(
-            self, "Rename note", "New title:", text=old
-        )
-        if not ok:
-            return
-        title = title.strip()
-        if not title or title == old:
-            return
-        self.notes.rename(self._current_id, title)
-        self.title_label.setText(title)
+        """Rename the current note right in the title bar (F2 / pencil)."""
+        self.title_label.begin_edit()
+
+    def _on_rename(self, note_id: int, title: str):
+        self.notes.rename(note_id, title)
         self._refresh_sidebar()
         self.statusBar().showMessage("Note renamed")
 
@@ -361,7 +453,7 @@ class MainWindow(QMainWindow):
         if self._current_id is None:
             self.statusBar().showMessage("No note open")
             return
-        title = self.title_label.text()
+        title = self.title_label.title()
         answer = QMessageBox.question(
             self,
             "Confirm delete",
@@ -379,7 +471,8 @@ class MainWindow(QMainWindow):
         self.editor.setText("")
         self._loading_note = False
         self.preview.render("")
-        self.title_label.setText("No note open")
+        self.title_label.note_id = None
+        self.title_label.setTitle("No note open")
         self.settings.set(KEY_LAST_OPENED, "0")
         self._refresh_sidebar()
         self.statusBar().showMessage("Note deleted")
@@ -500,7 +593,7 @@ class MainWindow(QMainWindow):
         if self._current_id is None:
             self.statusBar().showMessage("No note open")
             return
-        default_name = self.title_label.text() + ".html"
+        default_name = self.title_label.title() + ".html"
         path, _ = QFileDialog.getSaveFileName(
             self, "Export HTML", default_name, "HTML (*.html)"
         )
@@ -516,7 +609,7 @@ class MainWindow(QMainWindow):
         if self._current_id is None:
             self.statusBar().showMessage("No note open")
             return
-        default_name = self.title_label.text() + ".pdf"
+        default_name = self.title_label.title() + ".pdf"
         path, _ = QFileDialog.getSaveFileName(
             self, "Export PDF", default_name, "PDF (*.pdf)"
         )
