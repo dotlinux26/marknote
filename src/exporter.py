@@ -77,4 +77,12 @@ class Exporter:
         document = build_document(
             html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE
         )
-        HTML(string=document).write_pdf(str(path))
+        try:
+            HTML(string=document).write_pdf(str(path))
+        except OSError as exc:
+            msg = str(exc).lower()
+            if "cannot load library" in msg and any(
+                lib in msg for lib in ("libgobject", "libpango", "gobject", "pango")
+            ):
+                raise RuntimeError("weasyprint-libs") from exc
+            raise

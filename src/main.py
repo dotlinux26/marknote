@@ -645,6 +645,18 @@ class MainWindow(QMainWindow):
                     "WeasyPrint is required to export PDF.\n"
                     "pip install weasyprint",
                 )
+            elif str(exc) == "weasyprint-libs":
+                QMessageBox.warning(
+                    self,
+                    "Missing Pango libraries",
+                    "WeasyPrint could not load the Pango text-rendering "
+                    "library.\n\n"
+                    "Linux: install the pango library of your distro "
+                    "(e.g. libpango-1.0-0 via apt, pango via dnf/pacman).\n\n"
+                    "Windows: install Pango through MSYS2 "
+                    "(pacman -S mingw-w64-ucrt-x86_64-pango) or use the "
+                    "standalone WeasyPrint build.",
+                )
             else:
                 QMessageBox.warning(self, "PDF export error", "Error while creating the PDF file.")
             return

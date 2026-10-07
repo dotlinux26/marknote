@@ -16,6 +16,13 @@ Mo rong giao dien tieng Anh va tai lieu.
 - Ngat trang khi in bang HTML page-break.
 - Tai lieu: 5 file docs moi (HUONG_DAN_SU_DUNG, HUONG_DAN_CU_PHAP_MARKDOWN,
   DANH_SACH_TINH_NANG, VAN_DE_KY_THUAT, INDEX_BAO_CAO) + GFM_TEMPLATE.md.
+- Xuat Markdown (.md) ra file tuy vi tri.
+- README viet lai tieng Viet day du dau; HUONG_DAN_CAI_DAT chi tiet
+  (Linux moi distro + Windows + macOS).
+- Dong goi tinh: AppImage Linux x64 (PyInstaller, 1 file tu chua) + script
+  build trong Docker distro cu (glibc menh hơn) + script build Windows
+  (build_windows.ps1); Makefile them target appimage.
+- Xu ly loi thieu thu vien Pango khi xuat PDF (thong bao cu the theo OS).
 
 ## 1.0.0 - 07/10/2026
 
