@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QAction, QKeySequence
@@ -236,6 +237,7 @@ class MainWindow(QMainWindow):
         self.act_delete.setShortcut(QKeySequence("Ctrl+D"))
         self.act_export_html = act("Export HTML", self)
         self.act_export_pdf = act("Export PDF", self)
+        self.act_export_md = act("Export Markdown", self)
         self.act_quit = act("Quit", self)
         self.act_quit.setShortcut(QKeySequence("Ctrl+Q"))
         self.act_find = act("Find", self)
@@ -260,6 +262,7 @@ class MainWindow(QMainWindow):
         menu_file.addSeparator()
         menu_file.addAction(self.act_export_html)
         menu_file.addAction(self.act_export_pdf)
+        menu_file.addAction(self.act_export_md)
         menu_file.addSeparator()
         menu_file.addAction(self.act_quit)
 
@@ -335,6 +338,7 @@ class MainWindow(QMainWindow):
         self.act_delete.triggered.connect(self.onDelete)
         self.act_export_html.triggered.connect(self.onExportHtml)
         self.act_export_pdf.triggered.connect(self.onExportPdf)
+        self.act_export_md.triggered.connect(self.onExportMd)
         self.act_quit.triggered.connect(self.close)
         self.act_find.triggered.connect(self.onFind)
         self.act_replace.triggered.connect(self.onReplace)
@@ -587,6 +591,20 @@ class MainWindow(QMainWindow):
         self.sync_controller.setEnabled(checked)
         state = "Enabled" if checked else "Disabled"
         self.statusBar().showMessage("%s sync scroll between editor and preview" % state)
+
+    def onExportMd(self):
+        """Export the current note as a plain .md file."""
+        if self._current_id is None:
+            self.statusBar().showMessage("No note open")
+            return
+        default_name = self.title_label.title() + ".md"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export Markdown", default_name, "Markdown (*.md)"
+        )
+        if not path:
+            return
+        Path(path).write_text(self.editor.getText() or "", encoding="utf-8")
+        self.statusBar().showMessage("Exported Markdown: %s" % path)
 
     def onExportHtml(self):
         """UC13 - Export HTML with the current theme CSS, single file."""
