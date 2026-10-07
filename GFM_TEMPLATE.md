@@ -289,7 +289,8 @@ tieu de h1-h6, co the bo tieu de tuy y bang `[[TOC="...]]`:
 # Muc B
 
 Muc luc o tren co link nhan: khi xuat PDF, click vao dong trong muc luc se
-nhay toi dung muc do.
+nhay toi dung muc do; cuoi moi dong co gach cham `......` va so trang cua
+muc do (giong muc luc trong Word).
 
 ---
 

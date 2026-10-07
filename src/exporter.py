@@ -17,6 +17,21 @@ PDF_PAGE_RULE = (
     "}\n"
 )
 
+TOC_PRINT_RULE = (
+    "\n"
+    "@media print {\n"
+    "  .markdown-body .toc a {\n"
+    "    color: var(--fg-default, #1f2328);\n"
+    "    text-decoration: none;\n"
+    "  }\n"
+    "  .markdown-body .toc a::after {\n"
+    "    content: leader('. ') target-counter(attr(href), page);\n"
+    "    color: var(--fg-muted, #59636e);\n"
+    "    padding-left: 6px;\n"
+    "  }\n"
+    "}\n"
+)
+
 HTML_HEADER = (
     "<!DOCTYPE html>\n"
     '<html lang="vi">\n'
@@ -59,5 +74,7 @@ class Exporter:
             from weasyprint import HTML
         except ImportError as exc:
             raise RuntimeError("weasyprint-missing") from exc
-        document = build_document(html_body, css + PDF_PAGE_RULE)
+        document = build_document(
+            html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE
+        )
         HTML(string=document).write_pdf(str(path))
