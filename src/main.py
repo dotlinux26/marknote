@@ -35,23 +35,29 @@ QWidget { color: #1f2328; font-size: 14px; }
 QMenuBar { background: #ffffff; border-bottom: 1px solid #d8dee4; }
 QMenuBar::item { padding: 6px 10px; background: transparent; border-radius: 2px; }
 QMenuBar::item:selected { background: #eef1f4; }
-QMenu { background: #ffffff; border: 1px solid #d1d9e0; border-radius: 2px; padding: 4px; }
-QMenu::item { padding: 6px 20px; border-radius: 2px; }
+QMenu { background: #ffffff; border: 1px solid #d1d9e0; border-radius: 2px; padding: 4px; color: #1f2328; }
+QMenu::item { padding: 6px 20px; border-radius: 2px; color: #1f2328; }
 QMenu::item:selected { color: #1f2328; background: #eef1f4; }
+QMenu::item:disabled { color: #8b949e; }
 QMenu::separator { height: 1px; background: #d8dee4; margin: 4px 8px; }
 QToolBar { background: #f6f8fa; border: none; border-bottom: 1px solid #d8dee4; spacing: 4px; padding: 4px 6px; }
-QToolButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; }
+QToolButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; color: #1f2328; }
 QToolButton:hover { background: #eef1f4; }
 QToolButton:pressed { background: #d8dee4; }
 QToolButton:checked { background: #ddf4ff; border-color: #54aeff; color: #0969da; }
-QLineEdit { padding: 6px 8px; border: 1px solid #d1d9e0; border-radius: 2px; background: #ffffff; }
+QLineEdit { padding: 6px 8px; border: 1px solid #d1d9e0; border-radius: 2px; background: #ffffff; color: #1f2328; }
 QLineEdit:focus { border-color: #0969da; }
-QPlainTextEdit { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; padding: 6px; selection-background-color: #add6ff; }
-QListWidget { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; outline: 0; }
-QListWidget::item { border-radius: 2px; }
-QListWidget::item:selected { background: #ddf4ff; }
-QListWidget::item:hover { background: #f6f8fa; }
-QPushButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; }
+QPlainTextEdit { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; padding: 6px; color: #1f2328; selection-background-color: #add6ff; }
+QComboBox { padding: 5px 8px; border: 1px solid #d1d9e0; border-radius: 2px; background: #ffffff; color: #1f2328; }
+QComboBox:hover { background: #f6f8fa; }
+QComboBox::drop-down { border: none; width: 24px; }
+QComboBox QAbstractItemView { background: #ffffff; color: #1f2328; border: 1px solid #d1d9e0; selection-background-color: #ddf4ff; selection-color: #1f2328; outline: 0; }
+QListWidget { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; outline: 0; color: #1f2328; }
+QListWidget::item { border-radius: 2px; color: #1f2328; }
+QListWidget::item:selected { background: #ddf4ff; color: #1f2328; }
+QListWidget::item:hover { background: #f6f8fa; color: #1f2328; }
+QListWidget::item:selected:hover { background: #ddf4ff; color: #1f2328; }
+QPushButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; color: #1f2328; }
 QPushButton:hover { background: #eef1f4; }
 QPushButton:pressed { background: #d8dee4; }
 QStatusBar { background: #ffffff; border-top: 1px solid #d8dee4; color: #59636e; }
@@ -99,7 +105,7 @@ class MainWindow(QMainWindow):
         self._loading_note = False
         self._note_tags = []
 
-        self.setWindowTitle(APP_NAME + " - Ghi chu Markdown offline")
+        self.setWindowTitle(APP_NAME + " - Offline Markdown Notes")
         self.resize(1200, 780)
 
         self._render_timer = QTimer(self)
@@ -118,26 +124,26 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------ UI
     def _build_actions(self):
         act = QAction
-        self.act_new = act("Moi", self)
+        self.act_new = act("New", self)
         self.act_new.setShortcut(QKeySequence.StandardKey.New)
-        self.act_save = act("Luu", self)
+        self.act_save = act("Save", self)
         self.act_save.setShortcut(QKeySequence.StandardKey.Save)
-        self.act_delete = act("Xoa", self)
+        self.act_delete = act("Delete", self)
         self.act_delete.setShortcut(QKeySequence("Ctrl+D"))
-        self.act_export_html = act("Xuat HTML", self)
-        self.act_export_pdf = act("Xuat PDF", self)
-        self.act_quit = act("Thoat", self)
+        self.act_export_html = act("Export HTML", self)
+        self.act_export_pdf = act("Export PDF", self)
+        self.act_quit = act("Quit", self)
         self.act_quit.setShortcut(QKeySequence("Ctrl+Q"))
-        self.act_find = act("Tim kiem", self)
+        self.act_find = act("Find", self)
         self.act_find.setShortcut(QKeySequence.StandardKey.Find)
-        self.act_replace = act("Thay the", self)
+        self.act_replace = act("Replace", self)
         self.act_replace.setShortcut(QKeySequence("Ctrl+H"))
-        self.act_sync = act("Dong bo cuon", self)
+        self.act_sync = act("Sync Scroll", self)
         self.act_sync.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.act_sync.setCheckable(True)
         self.act_sync.setChecked(self.sync_controller.isEnabled())
-        self.act_settings = act("Giao dien...", self)
-        self.act_about = act("Gioi thieu", self)
+        self.act_settings = act("Appearance...", self)
+        self.act_about = act("About", self)
 
     def _build_ui(self):
         menubar = self.menuBar()
@@ -152,20 +158,20 @@ class MainWindow(QMainWindow):
         menu_file.addSeparator()
         menu_file.addAction(self.act_quit)
 
-        menu_edit = menubar.addMenu("&Sua")
+        menu_edit = menubar.addMenu("&Edit")
         menu_edit.addAction(self.act_find)
         menu_edit.addAction(self.act_replace)
 
-        menu_view = menubar.addMenu("&Xem")
+        menu_view = menubar.addMenu("&View")
         menu_view.addAction(self.act_sync)
 
-        menu_settings = menubar.addMenu("&Cai dat")
+        menu_settings = menubar.addMenu("&Settings")
         menu_settings.addAction(self.act_settings)
 
-        menu_help = menubar.addMenu("&Tro giup")
+        menu_help = menubar.addMenu("&Help")
         menu_help.addAction(self.act_about)
 
-        toolbar = QToolBar("Thanh cong cu", self)
+        toolbar = QToolBar("Toolbar", self)
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         toolbar.addAction(self.act_new)
@@ -183,10 +189,10 @@ class MainWindow(QMainWindow):
         self.panel = SearchPanel(self)
 
         self.editor = EditorPane(self)
-        self.title_label = QLabel("Chua mo note nao", self)
+        self.title_label = QLabel("No note open", self)
         self.title_label.setObjectName("noteTitleBar")
         self.title_label.setMinimumWidth(200)
-        self.tag_button = QPushButton("The", self)
+        self.tag_button = QPushButton("Tags", self)
         self.tag_menu = QMenu(self)
         self.tag_button.setMenu(self.tag_menu)
         header = QWidget(self)
@@ -217,7 +223,7 @@ class MainWindow(QMainWindow):
         main_splitter.setSizes([280, 900])
         self.setCentralWidget(main_splitter)
 
-        self.statusBar().showMessage("San sang")
+        self.statusBar().showMessage("Ready")
 
     def _connect_signals(self):
         self.act_new.triggered.connect(self.onNewNote)
@@ -238,26 +244,26 @@ class MainWindow(QMainWindow):
         self.editor.verticalScrollBar().valueChanged.connect(self._on_editor_scroll)
 
     def _apply_theme_check(self):
-        """Kiem tra theme o dau: file mat thi thong bao va reset ve default."""
+        """Check theme at startup: missing file shows a warning and resets to default."""
         if self.theme_manager.current() not in self.theme_manager.listThemes():
             QMessageBox.warning(
                 self,
                 "Theme file missing",
-                "File theme dang chon khong con ton tai.\n"
-                "Ung dung se ve lai theme default.",
+                "The selected theme file no longer exists.\n"
+                "The application will switch back to the default theme.",
             )
             self.theme_manager.resetToDefault()
             self.settings.set(KEY_THEME, DEFAULT_THEME)
 
     # ---------------------------------------------------------------- UC
     def _confirm_proceed(self) -> bool:
-        """Hoi luu khi note dang co thay doi chua luu."""
+        """Ask to save when the current note has unsaved changes."""
         if not self._dirty or self._current_id is None:
             return True
         answer = QMessageBox.question(
             self,
-            "Chua luu",
-            "Note hien tai co thay doi chua duoc luu.",
+            "Unsaved changes",
+            "The current note has unsaved changes.",
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
             | QMessageBox.StandardButton.Cancel,
@@ -273,14 +279,14 @@ class MainWindow(QMainWindow):
         """UC01 - Tao note moi: nhap tieu de, ghi vao database."""
         if not self._confirm_proceed():
             return
-        title, ok = QInputDialog.getText(self, "Tao note moi", "Tieu de:")
+        title, ok = QInputDialog.getText(self, "New note", "Title:")
         if not ok:
             return
-        title = title.strip() or "Chua co tieu de"
+        title = title.strip() or "Untitled"
         note_id = self.notes.insert(title, "")
         self.settings.set(KEY_LAST_OPENED, str(note_id))
         self.openNote(note_id)
-        self.statusBar().showMessage("Da tao note moi")
+        self.statusBar().showMessage("Note created")
         self.editor.setFocus()
 
     def openNote(self, note_id: int):
@@ -304,39 +310,39 @@ class MainWindow(QMainWindow):
         self.panel.setActiveNote(note_id)
         self._refresh_note_tags()
         self.settings.set(KEY_LAST_OPENED, str(note_id))
-        self.statusBar().showMessage("Da mo: %s" % note["title"])
+        self.statusBar().showMessage("Opened: %s" % note["title"])
 
     def save(self):
-        """UC03 - Luu noi dung note hien tai vao database."""
+        """UC03 - Save the content of the current note into the database."""
         if self._current_id is None:
-            self.statusBar().showMessage("Chua mo note nao")
+            self.statusBar().showMessage("No note open")
             return
         text = self.editor.getText()
         if text == self._loaded_text:
-            self.statusBar().showMessage("Khong co thay doi")
+            self.statusBar().showMessage("No changes")
             return
         try:
             self.notes.update(self._current_id, text)
         except sqlite3.OperationalError:
             self._dirty = True
-            self.statusBar().showMessage("Database is locked, thu lai")
+            self.statusBar().showMessage("Database is locked, try again")
             return
         self._loaded_text = text
         self._dirty = False
         self.preview.render(text)
         self._refresh_sidebar()
-        self.statusBar().showMessage("Da luu note")
+        self.statusBar().showMessage("Note saved")
 
     def onDelete(self):
-        """UC04 - Xoa note hien tai sau khi xac nhan."""
+        """UC04 - Delete the current note after confirmation."""
         if self._current_id is None:
-            self.statusBar().showMessage("Chua mo note nao")
+            self.statusBar().showMessage("No note open")
             return
         title = self.title_label.text()
         answer = QMessageBox.question(
             self,
-            "Xac nhan xoa",
-            "Xoa note \"%s\"?\nThao tac nay khong the hoan tac." % title,
+            "Confirm delete",
+            "Delete note \"%s\"?\nThis action cannot be undone." % title,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -350,10 +356,10 @@ class MainWindow(QMainWindow):
         self.editor.setText("")
         self._loading_note = False
         self.preview.render("")
-        self.title_label.setText("Chua mo note nao")
+        self.title_label.setText("No note open")
         self.settings.set(KEY_LAST_OPENED, "0")
         self._refresh_sidebar()
-        self.statusBar().showMessage("Da xoa note")
+        self.statusBar().showMessage("Note deleted")
 
     def _refresh_note_tags(self):
         self._note_tags = self.tags.getByNote(self._current_id or 0)
@@ -373,7 +379,7 @@ class MainWindow(QMainWindow):
                 lambda checked, tag_id=tag["id"]: self._on_tag_toggled(tag_id, checked)
             )
         self.tag_menu.addSeparator()
-        new_action = self.tag_menu.addAction("The moi...")
+        new_action = self.tag_menu.addAction("New tag...")
         new_action.triggered.connect(self._on_new_tag)
 
     def _on_tag_toggled(self, tag_id: int, checked: bool):
@@ -390,7 +396,7 @@ class MainWindow(QMainWindow):
             self.panel.selectNoteById(self._current_id)
 
     def _on_new_tag(self):
-        name, ok = QInputDialog.getText(self, "The moi", "Ten the:")
+        name, ok = QInputDialog.getText(self, "New tag", "Tag name:")
         if not ok or not name.strip():
             return
         tag_id = self.tags.create(name.strip())
@@ -441,7 +447,7 @@ class MainWindow(QMainWindow):
             self.openNote(last_id)
         else:
             self._populate_tag_menu()
-            self.statusBar().showMessage("Chua co note. Nhan Moi de tao note moi.")
+            self.statusBar().showMessage("No notes yet. Press New to create one.")
 
     def onOpenSettings(self):
         """UC11/UC12 - Mo cai dat giao dien, chon theme CSS."""
@@ -450,40 +456,40 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def _on_theme_changed(self, name: str):
-        """UC12 - Sua theme: render lai preview bang CSS moi, khong restart."""
+        """UC12 - Apply theme: re-render the preview, no restart needed."""
         self.preview.reloadCss()
-        self.statusBar().showMessage("Da doi theme sang %s" % name)
+        self.statusBar().showMessage("Theme changed to %s" % name)
 
     def _on_sync_toggled(self, checked: bool):
-        """UC07 - Bat/tat dong bo cuon va luu vao settings."""
+        """UC07 - Toggle editor/preview scroll sync and store the setting."""
         self.sync_controller.setEnabled(checked)
-        msg = "Da bat" if checked else "Da tat"
-        self.statusBar().showMessage("%s dong bo cuon editor va preview" % msg)
+        state = "Enabled" if checked else "Disabled"
+        self.statusBar().showMessage("%s sync scroll between editor and preview" % state)
 
     def onExportHtml(self):
-        """UC13 - Xuat HTML voi CSS theme dang chon, dung mot file."""
+        """UC13 - Export HTML with the current theme CSS, single file."""
         if self._current_id is None:
-            self.statusBar().showMessage("Chua mo note nao")
+            self.statusBar().showMessage("No note open")
             return
         default_name = self.title_label.text() + ".html"
         path, _ = QFileDialog.getSaveFileName(
-            self, "Xuat HTML", default_name, "HTML (*.html)"
+            self, "Export HTML", default_name, "HTML (*.html)"
         )
         if not path:
             return
         html_body = self.renderer.render(self.editor.getText())
         css = self.theme_manager.getCss(self.theme_manager.current()) or ""
         self.exporter.toHtml(html_body, css, path)
-        self.statusBar().showMessage("Da xuat HTML: %s" % path)
+        self.statusBar().showMessage("Exported HTML: %s" % path)
 
     def onExportPdf(self):
-        """UC13 - Xuat PDF kho A4, dung chung theme voi xuat HTML."""
+        """UC13 - Export PDF (A4), using the same theme as HTML export."""
         if self._current_id is None:
-            self.statusBar().showMessage("Chua mo note nao")
+            self.statusBar().showMessage("No note open")
             return
         default_name = self.title_label.text() + ".pdf"
         path, _ = QFileDialog.getSaveFileName(
-            self, "Xuat PDF", default_name, "PDF (*.pdf)"
+            self, "Export PDF", default_name, "PDF (*.pdf)"
         )
         if not path:
             return
@@ -495,23 +501,23 @@ class MainWindow(QMainWindow):
             if str(exc) == "weasyprint-missing":
                 QMessageBox.warning(
                     self,
-                    "Thieu thu vien",
-                    "Can cai WeasyPrint de xuat PDF.\n"
+                    "Missing library",
+                    "WeasyPrint is required to export PDF.\n"
                     "pip install weasyprint",
                 )
             else:
-                QMessageBox.warning(self, "Loi xuat PDF", "Loi khi tao file PDF.")
+                QMessageBox.warning(self, "PDF export error", "Error while creating the PDF file.")
             return
-        self.statusBar().showMessage("Da xuat PDF: %s" % path)
+        self.statusBar().showMessage("Exported PDF: %s" % path)
 
     def onAbout(self):
         QMessageBox.about(
             self,
-            "Gioi thieu",
+            "About",
             APP_NAME + "\n"
-            "Phan mem ghi chu Markdown offline cho Linux.\n"
-            "Chon theme CSS, xem truoc song song, tim kiem FTS5,\n"
-            "xuat HTML va PDF. Chay offline 100%.",
+            "Offline Markdown note-taking for Linux.\n"
+            "Select a CSS theme, live preview, FTS5 full-text search,\n"
+            "HTML and PDF export. Runs 100% offline.",
         )
 
     # ---------------------------------------------------------- editor
@@ -549,10 +555,40 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setApplicationName(APP_NAME)
+    app.setPalette(_light_palette())
     app.setStyleSheet(APP_STYLE)
     window = MainWindow()
     window.show()
     return app.exec()
+
+
+def _light_palette():
+    from PySide6.QtGui import QColor, QPalette
+
+    pal = QPalette()
+    fg = QColor("#1f2328")
+    bg = QColor("#f6f8fa")
+    base = QColor("#ffffff")
+    pal.setColor(QPalette.ColorRole.Window, bg)
+    pal.setColor(QPalette.ColorRole.WindowText, fg)
+    pal.setColor(QPalette.ColorRole.Base, base)
+    pal.setColor(QPalette.ColorRole.AlternateBase, bg)
+    pal.setColor(QPalette.ColorRole.Text, fg)
+    pal.setColor(QPalette.ColorRole.Button, bg)
+    pal.setColor(QPalette.ColorRole.ButtonText, fg)
+    pal.setColor(QPalette.ColorRole.Highlight, QColor("#ddf4ff"))
+    pal.setColor(QPalette.ColorRole.HighlightedText, fg)
+    pal.setColor(QPalette.ColorRole.ToolTipBase, base)
+    pal.setColor(QPalette.ColorRole.ToolTipText, fg)
+    pal.setColor(QPalette.ColorRole.PlaceholderText, QColor("#59636e"))
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, QColor("#8b949e"))
+    pal.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, QColor("#8b949e")
+    )
+    pal.setColor(
+        QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor("#8b949e")
+    )
+    return pal
 
 
 if __name__ == "__main__":

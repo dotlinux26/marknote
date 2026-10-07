@@ -45,11 +45,11 @@ class SettingsDialog(QDialog):
         self._settings = settings_dao
         self._loading = True
 
-        self.setWindowTitle("Cai dat - Giao dien")
+        self.setWindowTitle("Settings - Appearance")
         self.setMinimumWidth(440)
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
 
-        title = QLabel("Giao dien xem truoc")
+        title = QLabel("Preview theme")
         title.setObjectName("dialogTitle")
 
         self._combo = QComboBox()
@@ -63,7 +63,7 @@ class SettingsDialog(QDialog):
         form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         form.setSpacing(10)
         form.addRow("Theme CSS:", self._combo)
-        form.addRow("Thu muc theme:", self._path_label)
+        form.addRow("Theme folder:", self._path_label)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         buttons.rejected.connect(self.reject)
@@ -115,8 +115,8 @@ class SettingsDialog(QDialog):
         answer = QMessageBox.question(
             self,
             "Theme file missing",
-            f"Khong tim thay file {name}.css trong {self._theme_manager.directory}.\n"
-            "Ve lai theme default.css?",
+            f"File {name}.css was not found in {self._theme_manager.directory}.\n"
+            "Revert to default.css?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if answer == QMessageBox.StandardButton.Yes:
@@ -129,8 +129,8 @@ class SettingsDialog(QDialog):
 
         QMessageBox.warning(
             self,
-            "CSS sai cu phap",
-            f"File {name}.css khong hop le. Giu theme truoc do.",
+            "Invalid CSS",
+            f"File {name}.css is not valid CSS. Keeping the previous theme.",
         )
         self._restore_combo_selection()
 

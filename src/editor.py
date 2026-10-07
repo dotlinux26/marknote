@@ -33,7 +33,7 @@ class EditorPane(QPlainTextEdit):
         font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
         font.setPointSize(12)
         self.setFont(font)
-        self.setPlaceholderText("Chua mo note nao. Nhan Moi de tao note moi.")
+        self.setPlaceholderText("No note opened. Press New to create one.")
         self.setTabStopDistance(4 * self.fontMetrics().horizontalAdvance(" "))
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self._find_dialog = None
@@ -156,19 +156,19 @@ class FindReplaceDialog(QDialog):
         self._last_keyword = None
         self._last_case = None
 
-        self.setWindowTitle("Tim kiem va thay the")
+        self.setWindowTitle("Find and Replace")
         self.setMinimumWidth(430)
 
-        find_label = QLabel("Tim:")
+        find_label = QLabel("Find:")
         self._find_edit = QLineEdit()
-        self._find_edit.setPlaceholderText("Nhap tu can tim")
-        self._case_box = QCheckBox("Phan biet hoa thuong")
+        self._find_edit.setPlaceholderText("Enter text to search")
+        self._case_box = QCheckBox("Match case")
         self._status = QLabel("0/0")
         self._status.setObjectName("mutedLabel")
 
-        replace_label = QLabel("Thay bang:")
+        replace_label = QLabel("Replace with:")
         self._replace_edit = QLineEdit()
-        self._replace_edit.setPlaceholderText("Nhap noi dung thay the")
+        self._replace_edit.setPlaceholderText("Replacement text")
         self._replace_row = QWidget()
         replace_row = QHBoxLayout(self._replace_row)
         replace_row.setContentsMargins(0, 0, 0, 0)
@@ -176,12 +176,12 @@ class FindReplaceDialog(QDialog):
         replace_row.addWidget(self._replace_edit)
         self._replace_row.setVisible(replace_mode)
 
-        btn_next = QPushButton("Tim tiep")
-        btn_prev = QPushButton("Tim truoc")
+        btn_next = QPushButton("Find Next")
+        btn_prev = QPushButton("Find Previous")
         btn_prev.setToolTip("Shift + Enter")
-        btn_replace = QPushButton("Thay the")
-        btn_replace_all = QPushButton("Thay tat ca")
-        btn_close = QPushButton("Dong")
+        btn_replace = QPushButton("Replace")
+        btn_replace_all = QPushButton("Replace All")
+        btn_close = QPushButton("Close")
         btn_replace.setVisible(replace_mode)
         btn_replace_all.setVisible(replace_mode)
 
@@ -229,7 +229,7 @@ class FindReplaceDialog(QDialog):
         keyword = self._keyword()
         case = self._case_box.isChecked()
         if not keyword:
-            self._status.setText("Nhap tu can tim")
+            self._status.setText("Enter text to search")
             return False
         count = self._editor.find(keyword, case)
         self._status.setText("%d/%d" % (0 if not count else 1, count))
@@ -267,7 +267,7 @@ class FindReplaceDialog(QDialog):
             self.contentReplaced.emit()
             from PySide6.QtWidgets import QMessageBox
 
-            QMessageBox.information(self, "Thay the", "Da thay %d vi tri." % count)
+            QMessageBox.information(self, "Replace", "Replaced %d occurrence(s)." % count)
 
 
 class NoteListItem(QWidget):
@@ -304,15 +304,15 @@ class SearchPanel(QWidget):
         self.setMaximumWidth(360)
 
         self._search_edit = QLineEdit()
-        self._search_edit.setPlaceholderText("Tim toan kho, vi du: apache tag:linux")
+        self._search_edit.setPlaceholderText("Search all notes, e.g.: apache tag:linux")
         self._search_edit.textChanged.connect(lambda _text: self.filtersChanged.emit())
 
-        tag_header = QLabel("Loc theo tag")
+        tag_header = QLabel("Filter by tag")
         tag_header.setObjectName("sidebarHeader")
         self._tag_list = QListWidget()
         self._tag_list.itemClicked.connect(self._on_tag_clicked)
 
-        note_header = QLabel("Danh sach note")
+        note_header = QLabel("Notes")
         note_header.setObjectName("sidebarHeader")
         self._note_list = QListWidget()
         self._note_list.setSpacing(2)
@@ -344,7 +344,7 @@ class SearchPanel(QWidget):
 
     def setTags(self, names: list, current: str | None):
         self._tag_list.clear()
-        all_item = QListWidgetItem("Tat ca")
+        all_item = QListWidgetItem("All")
         self._tag_list.addItem(all_item)
         if current is None:
             self._tag_list.setCurrentItem(all_item)
@@ -356,7 +356,7 @@ class SearchPanel(QWidget):
 
     def _on_tag_clicked(self, item):
         text = item.text()
-        self._tag_name = None if text == "Tat ca" else text
+        self._tag_name = None if text == "All" else text
         self.filtersChanged.emit()
 
     def refresh_filters_from_query(self):
@@ -386,7 +386,7 @@ class SearchPanel(QWidget):
         self._note_list.blockSignals(True)
         self._note_list.clear()
         for row in rows:
-            title = row["title"] or "Khong co tieu de"
+            title = row["title"] or "Untitled"
             snippet = ""
             if searched and "snip" in row.keys():
                 snippet = _snippet_html(row["snip"]) if row["snip"] else ""
@@ -394,7 +394,7 @@ class SearchPanel(QWidget):
                 subtitle = snippet
             else:
                 updated = (row["updated_at"] or "")[:16]
-                subtitle = "Sua: " + updated if updated else "Vua tao"
+                subtitle = "Modified: " + updated if updated else "Created"
             item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, row["id"])
             widget = NoteListItem(title, subtitle)
