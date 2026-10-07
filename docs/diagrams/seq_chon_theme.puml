@@ -1,0 +1,21 @@
+@startuml
+actor User
+participant SettingsDialog
+participant ThemeManager
+participant PreviewPane
+participant DB
+
+User -> SettingsDialog : mo Setting > Appearance
+SettingsDialog -> ThemeManager : listThemes()
+ThemeManager -> ThemeManager : os.listdir(~/.marknote/themes)
+ThemeManager --> SettingsDialog : [default.css, github.css, dark.css]
+SettingsDialog -> DB : SELECT value WHERE key='theme'
+DB --> SettingsDialog : 'github'
+SettingsDialog --> User : hien thi dropdown, chon 'github'
+User -> SettingsDialog : click "dark"
+SettingsDialog -> ThemeManager : applyTheme('dark')
+ThemeManager -> ThemeManager : doc file dark.css
+ThemeManager -> DB : UPDATE settings SET value='dark' WHERE key='theme'
+ThemeManager -> PreviewPane : reloadCss(css_text)
+PreviewPane --> User : render lai bang CSS moi
+@enduml

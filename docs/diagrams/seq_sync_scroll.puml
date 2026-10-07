@@ -1,0 +1,14 @@
+@startuml
+actor User
+participant EditorPane
+participant SyncScrollController
+participant PreviewPane
+participant DB
+
+User -> EditorPane : scroll
+EditorPane -> SyncScrollController : onScroll(scrollTop, maxScroll)
+SyncScrollController -> DB : SELECT value WHERE key='sync_scroll'
+DB --> SyncScrollController : 'ON'
+SyncScrollController -> PreviewPane : setScroll(percent = scrollTop/maxScroll)
+PreviewPane --> User : preview cuon theo
+@enduml

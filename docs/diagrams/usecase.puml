@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+actor "Nguoi dung" as U
+rectangle MarkNote {
+  (Tao note) as UC1
+  (Mo/Xem note) as UC2
+  (Sua note) as UC3
+  (Xoa note) as UC4
+  (Gan/Go tag) as UC5
+  (Preview song song) as UC6
+  (Sync-scroll ON/OFF) as UC7
+  (Tim trong note) as UC8
+  (Thay the trong note) as UC9
+  (Tim toan kho + loc tag) as UC10
+  (Xem danh sach theme) as UC11
+  (Chon theme) as UC12
+  (Xuat HTML/PDF) as UC13
+}
+U --> UC1
+U --> UC2
+U --> UC3
+U --> UC4
+U --> UC5
+U --> UC6
+U --> UC7
+U --> UC8
+U --> UC9
+U --> UC10
+U --> UC11
+U --> UC12
+U --> UC13
+
+UC6  <.. UC12 : <<include>>
+UC6  <.. UC11 : <<include>>
+UC11 <.. UC12 : <<include>>
+UC13 <.. UC12 : <<include>>
+UC13 <.. UC6  : <<include>>
+UC10 <.. UC2  : <<include>>
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+actor User
+participant MainWindow
+participant ThemeManager
+participant Renderer
+participant Exporter
+participant DB
+
+User -> MainWindow : Export PDF(path)
+MainWindow -> DB : SELECT value FROM settings WHERE key='theme'
+DB --> MainWindow : 'dark'
+MainWindow -> ThemeManager : getCss('dark')
+ThemeManager --> MainWindow : css_text
+MainWindow -> DB : SELECT content_md FROM notes WHERE id=?
+DB --> MainWindow : md
+MainWindow -> Renderer : markdown_gfm(md)
+Renderer --> MainWindow : html_body
+MainWindow -> Exporter : to_pdf(html_body, css_text, path)
+Exporter -> Exporter : inline css vao html
+Exporter -> Exporter : weasyprint.write_pdf(kho A4)
+Exporter --> MainWindow : ok
+MainWindow --> User : Done + Open file
+@enduml

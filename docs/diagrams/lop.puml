@@ -1,0 +1,92 @@
+@startuml
+class DbManager {
+  +connect()
+  +execute(sql, params)
+  +query(sql, params)
+}
+class NoteDAO {
+  +insert(title, md)
+  +update(id, md)
+  +delete(id)
+  +getById(id)
+  +list(sortKey, tagName)
+  +searchFTS(query, tagName)
+}
+class TagDAO {
+  +create(name)
+  +listAll()
+  +getByNote(note_id)
+  +assign(note_id, tag_id)
+  +unassign(note_id, tag_id)
+}
+class SettingsDAO {
+  +get(key)
+  +set(key, value)
+}
+class MarkdownRenderer {
+  +render(md) : html
+}
+class ThemeManager {
+  +listThemes() : string[]
+  +getCss(name) : string
+  +applyTheme(name)
+  +ensureDefaults()
+}
+class MainWindow {
+  +openNote(id)
+  +save()
+  +exportHtml(path)
+  +exportPdf(path)
+}
+class EditorPane {
+  +setText(md)
+  +getText()
+  +find(keyword)
+  +replace(find, replace)
+}
+class PreviewPane {
+  +render(html)
+  +setScroll(percent)
+  +reloadCss(css)
+}
+class SyncScrollController {
+  +onScroll(percent)
+  +setEnabled(bool)
+  +isEnabled()
+}
+class FindReplaceDialog {
+  +findNext()
+  +replaceOne()
+  +replaceAll()
+}
+class SearchPanel {
+  +onSearch(query)
+  +onFilterTag(tag)
+}
+class SettingsDialog {
+  +showAppearance()
+  +onThemeChanged(name)
+}
+class Exporter {
+  +toHtml(html, css, path)
+  +toPdf(html, css, path)
+}
+
+MainWindow --> NoteDAO
+MainWindow --> TagDAO
+MainWindow --> SettingsDAO
+MainWindow *-- EditorPane
+MainWindow *-- PreviewPane
+MainWindow *-- FindReplaceDialog
+MainWindow *-- SearchPanel
+MainWindow *-- SettingsDialog
+MainWindow --> SyncScrollController
+MainWindow --> Exporter
+MainWindow --> ThemeManager
+PreviewPane --> MarkdownRenderer
+Exporter --> MarkdownRenderer
+ThemeManager --> DbManager
+NoteDAO --> DbManager
+TagDAO --> DbManager
+SettingsDAO --> DbManager
+@enduml

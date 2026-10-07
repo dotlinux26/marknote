@@ -1,0 +1,23 @@
+@startuml
+actor User
+participant MainWindow
+participant EditorPane
+participant PreviewPane
+participant Renderer
+participant ThemeManager
+participant NoteDAO
+participant DB
+
+User -> MainWindow : New / Save(title, md)
+MainWindow -> NoteDAO : insert(title, md)
+NoteDAO -> DB : INSERT INTO notes
+DB --> NoteDAO : last_insert_rowid
+NoteDAO --> MainWindow : note_id
+MainWindow -> EditorPane : setText(md)
+MainWindow -> PreviewPane : render(md)
+PreviewPane -> ThemeManager : getCss(currentTheme)
+ThemeManager --> PreviewPane : css_text
+PreviewPane -> Renderer : markdown_gfm(md)
+Renderer --> PreviewPane : html
+PreviewPane --> User : hien thi render + CSS
+@enduml

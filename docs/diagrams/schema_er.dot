@@ -1,0 +1,50 @@
+digraph schema {
+  rankdir=LR;
+  bgcolor="transparent";
+  fontname="Helvetica";
+  node [fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=10, color="#8b949e"];
+
+  notes [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#ddf4ff"><b>notes</b></td></tr>
+    <tr><td align="left">id INTEGER PRIMARY KEY</td></tr>
+    <tr><td align="left">title TEXT NOT NULL</td></tr>
+    <tr><td align="left">content_md TEXT</td></tr>
+    <tr><td align="left">created_at DATETIME</td></tr>
+    <tr><td align="left">updated_at DATETIME</td></tr>
+    <tr><td align="left">pinned INT</td></tr>
+    <tr><td align="left">archived INT</td></tr>
+  </table>>];
+
+  note_tag [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#e6d3ff"><b>note_tag (quan he N-N)</b></td></tr>
+    <tr><td align="left">note_id INT, FOREIGN KEY</td></tr>
+    <tr><td align="left">tag_id INT, FOREIGN KEY</td></tr>
+    <tr><td align="left">PRIMARY KEY (note_id, tag_id)</td></tr>
+  </table>>];
+
+  tags [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#d3ffd3"><b>tags</b></td></tr>
+    <tr><td align="left">id INTEGER PRIMARY KEY</td></tr>
+    <tr><td align="left">name TEXT UNIQUE</td></tr>
+    <tr><td align="left">color TEXT</td></tr>
+  </table>>];
+
+  settings [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#fff0c9"><b>settings</b></td></tr>
+    <tr><td align="left">key TEXT PRIMARY KEY</td></tr>
+    <tr><td align="left">value TEXT</td></tr>
+    <tr><td align="left">vi du: theme, sync_scroll</td></tr>
+  </table>>];
+
+  notes_fts [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#ffe0d1"><b>notes_fts (FTS5 virtual)</b></td></tr>
+    <tr><td align="left">title</td></tr>
+    <tr><td align="left">content_md</td></tr>
+    <tr><td align="left">content='notes'</td></tr>
+  </table>>, style=dashed];
+
+  notes -> note_tag [label="1 - N", fontcolor="#8250df"];
+  note_tag -> tags [label="N - 1", fontcolor="#8250df"];
+  notes -> notes_fts [label="dong bo qua trigger", style=dashed, dir=none];
+}
