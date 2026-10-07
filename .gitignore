@@ -4,7 +4,7 @@ __pycache__/
 venv/
 dist/
 build/
-marknote-1.0.tar.gz
+marknote-*.tar.gz
 .idea/
 .vscode/
 TAILIEUTHAMKHAO/
