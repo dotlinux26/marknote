@@ -23,9 +23,11 @@ chon theme CSS, tim kiem va xuat HTML/PDF.
 
 ## Cai dat
 
-Cai thu vien bang pip:
+Tao moi truong ao va cai thu vien:
 
 ```
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -46,7 +48,8 @@ make run
 Hoac:
 
 ```
-python3 src/main.py
+source .venv/bin/activate
+python src/main.py
 ```
 
 ## Cach dung

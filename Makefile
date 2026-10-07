@@ -18,7 +18,7 @@ uninstall:
 	@echo "Da go cai dat $(PACKAGE)"
 
 run:
-	python3 src/main.py
+	@if [ -x .venv/bin/python ]; then .venv/bin/python src/main.py; else python3 src/main.py; fi
 
 dist:
 	rm -f $(PACKAGE)-$(APP_VERSION).tar.gz
