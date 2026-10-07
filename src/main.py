@@ -364,6 +364,12 @@ class MainWindow(QMainWindow):
     def _refresh_note_tags(self):
         self._note_tags = self.tags.getByNote(self._current_id or 0)
         self._populate_tag_menu()
+        names = [row["name"] for row in self._note_tags]
+        label = ", ".join(names)
+        if len(label) > 42:
+            label = label[:41] + "..."
+        self.tag_button.setText(label or "Tags")
+        self.tag_button.setToolTip(", ".join(names) or "Tags")
 
     def _populate_tag_menu(self):
         self.tag_menu.clear()
