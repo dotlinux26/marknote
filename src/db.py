@@ -126,6 +126,12 @@ class NoteDAO:
             (md, note_id),
         )
 
+    def rename(self, note_id: int, title: str):
+        self.db.execute(
+            "UPDATE notes SET title=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+            (title, note_id),
+        )
+
     def delete(self, note_id: int):
         self.db.execute("DELETE FROM notes WHERE id=?", (note_id,))
 

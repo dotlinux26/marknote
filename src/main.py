@@ -128,6 +128,8 @@ class MainWindow(QMainWindow):
         self.act_new.setShortcut(QKeySequence.StandardKey.New)
         self.act_save = act("Save", self)
         self.act_save.setShortcut(QKeySequence.StandardKey.Save)
+        self.act_rename = act("Rename...", self)
+        self.act_rename.setShortcut(QKeySequence("F2"))
         self.act_delete = act("Delete", self)
         self.act_delete.setShortcut(QKeySequence("Ctrl+D"))
         self.act_export_html = act("Export HTML", self)
@@ -151,6 +153,7 @@ class MainWindow(QMainWindow):
         menu_file = menubar.addMenu("&File")
         menu_file.addAction(self.act_new)
         menu_file.addAction(self.act_save)
+        menu_file.addAction(self.act_rename)
         menu_file.addAction(self.act_delete)
         menu_file.addSeparator()
         menu_file.addAction(self.act_export_html)
@@ -228,6 +231,7 @@ class MainWindow(QMainWindow):
     def _connect_signals(self):
         self.act_new.triggered.connect(self.onNewNote)
         self.act_save.triggered.connect(self.save)
+        self.act_rename.triggered.connect(self.onRename)
         self.act_delete.triggered.connect(self.onDelete)
         self.act_export_html.triggered.connect(self.onExportHtml)
         self.act_export_pdf.triggered.connect(self.onExportPdf)
@@ -332,6 +336,25 @@ class MainWindow(QMainWindow):
         self.preview.render(text)
         self._refresh_sidebar()
         self.statusBar().showMessage("Note saved")
+
+    def onRename(self):
+        """Rename the current note: edit the title stored in the database."""
+        if self._current_id is None:
+            self.statusBar().showMessage("No note open")
+            return
+        old = self.title_label.text()
+        title, ok = QInputDialog.getText(
+            self, "Rename note", "New title:", text=old
+        )
+        if not ok:
+            return
+        title = title.strip()
+        if not title or title == old:
+            return
+        self.notes.rename(self._current_id, title)
+        self.title_label.setText(title)
+        self._refresh_sidebar()
+        self.statusBar().showMessage("Note renamed")
 
     def onDelete(self):
         """UC04 - Delete the current note after confirmation."""
