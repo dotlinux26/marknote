@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 PDF_PAGE_RULE = (
-    "\n@page { size: A4; margin: 18mm 16mm; }\n"
+    "\n"
+    "@page {\n"
+    "  size: A4;\n"
+    "  margin: 18mm 16mm 22mm 16mm;\n"
+    "  @bottom-center {\n"
+    "    content: counter(page) \" / \" counter(pages);\n"
+    "    font-size: 9pt;\n"
+    "    color: #59636e;\n"
+    "  }\n"
+    "}\n"
 )
 
 HTML_HEADER = (

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import re
+import unicodedata
+from html import escape
 from pathlib import Path
 
 from PySide6.QtCore import QUrl
@@ -56,6 +59,7 @@ class MarkdownRenderer:
         if _HAS_EXTRA_PLUGINS:
             self.md.use(tasklists_plugin)
             self.md.use(footnote_plugin)
+        self.md.core.ruler.push("anchors_toc", _anchors_toc)
 
     def render(self, md: str) -> str:
         return self.md.render(md or "")
@@ -64,6 +68,101 @@ class MarkdownRenderer:
     def _highlight(code: str, lang: str | None, attrs: str) -> str:
         name = lang.split()[0] if lang else None
         return _pygments_html(code, name)
+
+
+def _slugify(text: str, taken: set) -> str:
+    """Chuyen tieu de thanh id an toan (bo dau, giong GitHub)."""
+    part = unicodedata.normalize("NFKD", text)
+    part = "".join(ch for ch in part if not unicodedata.combining(ch))
+    part = re.sub(r"[^\w\- ]+", "", part, flags=re.UNICODE).strip().lower()
+    part = re.sub(r"[ _]+", "-", part) or "section"
+    slug = part
+    n = 2
+    while slug in taken:
+        slug = "%s-%d" % (part, n)
+        n += 1
+    taken.add(slug)
+    return slug
+
+
+def _inline_text(token) -> str:
+    parts = []
+    for child in token.children or ():
+        if child.type in ("text", "code_inline", "image"):
+            parts.append(child.content)
+        elif child.type in ("softbreak", "hardbreak"):
+            parts.append(" ")
+    return "".join(parts).strip() or token.content.strip()
+
+
+def _build_toc(items, label: str) -> str:
+    out = ['<div class="toc">', "<strong>%s</strong>" % escape(label), "<ul>"]
+    stack = [items[0][0]]
+    has_open_li = False
+    for level, anchor, text in items:
+        while len(stack) > 1 and level < stack[-1]:
+            if has_open_li:
+                out.append("</li>")
+                has_open_li = False
+            out.append("</ul>")
+            stack.pop()
+        if level == stack[-1]:
+            if has_open_li:
+                out.append("</li>")
+            has_open_li = False
+        elif level > stack[-1]:
+            out.append("<ul>")
+            stack.append(level)
+            has_open_li = False
+        out.append('<li><a href="#%s">%s</a>' % (anchor, text))
+        has_open_li = True
+    if has_open_li:
+        out.append("</li>")
+    while stack:
+        out.append("</ul>")
+        stack.pop()
+    out.append("</div>")
+    return "".join(out)
+
+
+TOC_RE = re.compile(r"\[\[TOC(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'))?\]\]")
+
+
+def _anchors_toc(state):
+    """Gan id cho heading va thay [[TOC="label"]] bang muc luc co link nhan."""
+    taken = set()
+    headings = []
+    toc_index = None
+    toc_label = "Table of Contents"
+    tokens = state.tokens
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        if tok.type == "heading_open":
+            level = int(tok.tag.strip("h"))
+            inline = tokens[i + 1] if i + 1 < len(tokens) else None
+            text = _inline_text(inline) if inline is not None else ""
+            anchor = _slugify(text, taken)
+            tok.attrSet("id", anchor)
+            headings.append((level, anchor, escape(text)))
+        elif toc_index is None:
+            match = TOC_RE.fullmatch(tok.content.strip())
+            if tok.type == "inline" and match:
+                toc_index = i
+                toc_label = (match.group(1) or match.group(2) or toc_label).strip()
+        i += 1
+    if toc_index is None:
+        return
+    start = toc_index - 1
+    if start >= 0 and tokens[start].type == "paragraph_open":
+        if headings:
+            token = tokens[start]
+            token.type = "html_block"
+            token.tag = ""
+            token.content = _build_toc(headings, toc_label)
+            del tokens[start + 1 : start + 3]
+        else:
+            del tokens[start : start + 3]
 
 
 class PreviewPane(QWebEngineView):

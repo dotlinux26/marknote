@@ -271,7 +271,29 @@ Sau khuong can la phan nay nam o *trang moi* khi xuat PDF.
 
 ---
 
-## 16. Combination (ket hop nhieu cup phap)
+## 16. Table of Contents (muc luc tu dong)
+
+Dat `[[TOC]]` o bat ky cho nao (thuong la dau file) de sinh muc luc tu cac
+tieu de h1-h6, co the bo tieu de tuy y bang `[[TOC="...]]`:
+
+[[TOC="Chi muc cua toi"]]
+
+# Muc A
+
+## Muc A.1
+
+### Muc A.1.1
+
+## Muc A.2
+
+# Muc B
+
+Muc luc o tren co link nhan: khi xuat PDF, click vao dong trong muc luc se
+nhay toi dung muc do.
+
+---
+
+## 17. Combination (ket hop nhieu cup phap)
 
 > **Ghi chu quan trong**: trong blockquote, duoc dung **bold**, `code` va table:
 
@@ -283,9 +305,9 @@ Sau khuong can la phan nay nam o *trang moi* khi xuat PDF.
 --- ket hop duoc ----
 ```
 
-- [x] Template da bao phu: heading, emphasis, link, image, blockquote, list, task, table, code, hr, footnote, line break, escape, raw HTML, page break.
+- [x] Template da bao phu: heading, emphasis, link, image, blockquote, list, task, table, code, hr, footnote, line break, escape, raw HTML, page break, TOC.
 - [ ] Ban da thu them cup phap khac?
 
 ---
 
-*Template GFM - MarkNote. Xoa cac doan ghi chu truoc khi dung that.*
+*Note: PDF xuat ra co san so trang "X / Y" o goc duoi moi trang. Xoa cac doan ghi chu truoc khi dung that.*
