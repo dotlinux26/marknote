@@ -23,6 +23,8 @@ Mo rong giao dien tieng Anh va tai lieu.
   build trong Docker distro cu (glibc menh hơn) + script build Windows
   (build_windows.ps1); Makefile them target appimage.
 - Xu ly loi thieu thu vien Pango khi xuat PDF (thong bao cu the theo OS).
+- Windows xuat PDF khong can pacman/MSYS2: tu dong dung weasyprint.exe dong
+  goi san (kem Pango) do build_windows.ps1 tai ve dong goi kem.
 
 ## 1.0.0 - 07/10/2026
 

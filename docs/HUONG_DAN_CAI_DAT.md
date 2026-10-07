@@ -125,9 +125,17 @@ python -m venv .venv
 Dữ liệu người dùng nằm tại `%USERPROFILE%\.marknote\` (tương đương
 `~/.marknote` trên Linux).
 
-### 2.3. Chức năng xuất PDF trên Windows — đọc kỹ
+### 2.3. Chức năng xuất PDF trên Windows
 
-WeasyPrint trên Windows cần Pango. Thuận tiện nhất là cài qua **MSYS2**:
+**Không cần cài bất cứ thứ gì nếu dùng bản đóng gói sẵn.** Script
+`build_windows.ps1` tự tải `weasyprint-windows.zip` (bản chính thức của
+WeasyPrint, **đã nhúng sẵn Pango**) và bỏ `weasyprint.exe` vào
+`dist\marknote\bin\weasyprint\`. Khi app không tìm thấy Pango của hệ thống,
+nó tự chuyển sang dùng bản engine đóng gói này — người dùng chạy `.exe` là
+xuất PDF được ngay.
+
+Còn **chạy từ mã nguồn** (`python src\main.py`) thì WeasyPrint cần Pango,
+cài qua **MSYS2** một lần:
 
 ```powershell
 # 1) Cài MSYS2 từ https://www.msys2.org (mặc định)
@@ -141,11 +149,10 @@ Sau đó cho MarkNote biết chỗ tìm các thư viện Pango:
 set WEASYPRINT_DLL_DIRECTORIES=C:\msys64\ucrt64\bin
 ```
 
-Nếu **không** cần xuất PDF thì bỏ qua hẳn bước này; mọi tính năng khác vẫn
-chạy đầy đủ.
+Nếu **không** cần xuất PDF thì bỏ qua; mọi tính năng khác vẫn chạy đầy đủ.
 
-> Cách khác: xuất PDF bằng **WSL** (cài Ubuntu trong WSL rồi dùng MarkNote
-> trên Linux) hoặc đổi thành **Export HTML** rồi in ra PDF từ trình duyệt.
+> Cách thay thế nữa: **Export HTML** rồi in ra PDF từ trình duyệt — không
+> cần Pango.
 
 ### 2.4. Build file chạy trực tiếp trên Windows (PyInstaller)
 
@@ -230,7 +237,7 @@ như mục 1.2/2.3) — hoặc bỏ qua nếu không dùng Export PDF.
 | Export PDF báo "Missing Pango libraries" | Cài pango theo distro (mục 1.2) hoặc MSYS2 (mục 2.3) |
 | AppImage không mở (cần FUSE) | `APPIMAGE_EXTRACT_AND_RUN=1 ./MarkNote-*.AppImage` |
 | AppImage "GLIBC_2.xx not found" | AppImage build trên máy quá mới; dùng `build_appimage_docker.sh` để build lại trong distro cũ |
-| Trên Windows PDF không nhận chữ | Thiếu font hệ thống hoặc `WEASYPRINT_DLL_DIRECTORIES` chưa trỏ đúng `ucrt64\bin` |
+| Trên Windows PDF không nhận chữ | Thiếu font hệ thống; nếu chạy từ mã nguồn đặt `WEASYPRINT_DLL_DIRECTORIES` đúng `ucrt64\bin` |
 | Menu/app chữ trắng nền trắng | Palette sáng ép cứng đã xử lý hộ; nếu vẫn gặp, gỡ theme tối của HĐH khi dùng |
 
 ---

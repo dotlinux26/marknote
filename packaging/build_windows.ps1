@@ -9,17 +9,17 @@
 #    dist\MarkNote-1.1\                   thu muc chay duoc (gan Python dem)
 #    dist\MarkNote-1.1-windows-x64.zip    goi nen de chuyen di
 #
-#  LUU Y ve chuc nang xuat PDF (khi chay cung ung dung):
-#    WeasyPrint tren Windows can thu vien Pango. Cai qua MSYS2:
-#      - cai MSYS2 (https://www.msys2.org), mo "UCRT64" shell, chay:
-#          pacman -S mingw-w64-ucrt-x86_64-pango
-#      - truoc khi chay MarkNote dat bien moi truong:
-#          set WEASYPRINT_DLL_DIRECTORIES=C:\msys64\ucrt64\bin
-#    Neu khong can xuat PDF thi khong can buoc nay.
+#  Xuat PDF KHONG can pacman/MSYS2: script tu tai "weasyprint-windows.zip"
+#  (ban chinh thuc cua WeasyPrint, da dong goi san Pango) va dat
+#  weasyprint.exe vao ben trong goi cai. Ung dung tu dong dung no khi
+#  Python weasyprint khong tim thay Pango.
 # =========================================================================
 $ErrorActionPreference = "Stop"
 $AppVersion = "1.1"
 $Python = "python"
+# Nie nhat dinh ban weasyprint-windows.zip (co san Pango, file chinh thuc)
+$WeasyVersion = "v68.1"
+$WeasyUrl = "https://github.com/Kozea/WeasyPrint/releases/download/$WeasyVersion/weasyprint-windows.zip"
 
 function Run-Checked {
     param([string]$Desc, [scriptblock]$Cmd)
@@ -68,6 +68,28 @@ Run-Checked "Tao file zip de chuyen di" {
     }
     Compress-Archive -Path "dist\marknote\*" `
         -DestinationPath "dist\MarkNote-$AppVersion-windows-x64.zip"
+}
+
+Run-Checked "Dong goi san weasyprint.exe (kem Pango) cho xuat PDF" {
+    $weasyZip = "build\weasyprint-windows.zip"
+    if (Test-Path "dist\marknote\bin\weasyprint\weasyprint.exe") {
+        Write-Host "Da co san, bo qua."
+    }
+    else {
+        if (-not (Test-Path $weasyZip)) {
+            Write-Host "Tai $WeasyUrl ..."
+            Invoke-WebRequest -Uri $WeasyUrl -OutFile $weasyZip
+        }
+        $extractDir = "build\weasyprint-windows"
+        if (Test-Path $extractDir) { Remove-Item $extractDir -Recurse -Force }
+        Expand-Archive -Path $weasyZip -DestinationPath $extractDir -Force
+        $exe = Get-ChildItem -Path $extractDir -Recurse -Filter "*.exe" |
+            Select-Object -First 1
+        if (-not $exe) { throw "Khong tim thay .exe trong goi weasyprint chinh thuc." }
+        New-Item -ItemType Directory -Force -Path "dist\marknote\bin\weasyprint" | Out-Null
+        Copy-Item $exe.FullName "dist\marknote\bin\weasyprint\weasyprint.exe" -Force
+        Write-Host "Dong goi xong: dist\marknote\bin\weasyprint\weasyprint.exe"
+    }
 }
 
 Write-Host ""

@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 PDF_PAGE_RULE = (
@@ -61,6 +65,50 @@ def build_document(html_body: str, css: str, title: str = "MarkNote") -> str:
     )
 
 
+def find_windows_weasyprint() -> Path | None:
+    """Tim ban weasyprint.exe da dong goi san (kem Pango) tren Windows.
+
+    Chay direct bang ban pre-built cua chinh noi WeasyPrint
+    (release weasyprint-windows.zip) => KHONG can cai Pango qua pacman/MSYS2.
+    """
+    if sys.platform != "win32":
+        return None
+    candidates: list[Path] = []
+    env_exe = os.environ.get("WEASYPRINT_EXE")
+    if env_exe:
+        candidates.append(Path(env_exe))
+    root = Path(sys.executable).resolve().parent
+    candidates.extend(
+        [
+            root / "bin" / "weasyprint" / "weasyprint.exe",
+            root / "weasyprint" / "weasyprint.exe",
+            root / "_internal" / "bin" / "weasyprint" / "weasyprint.exe",
+            root / "_internal" / "weasyprint" / "weasyprint.exe",
+        ]
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def render_pdf_via_cli(document: str, path: str) -> None:
+    """Xuat PDF bang weasyprint.exe (gom san Pango) qua command line."""
+    exe = find_windows_weasyprint()
+    if exe is None:
+        raise RuntimeError("weasyprint-libs")
+    with tempfile.TemporaryDirectory() as tmp:
+        html_file = Path(tmp) / "marknote-export.html"
+        html_file.write_text(document, encoding="utf-8")
+        result = subprocess.run(
+            [str(exe), str(html_file), str(path)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError("weasyprint-failed")
+
+
 class Exporter:
     """Ghi ra file HTML hoac PDF dung chung mot theme (UC13)."""
 
@@ -84,5 +132,11 @@ class Exporter:
             if "cannot load library" in msg and any(
                 lib in msg for lib in ("libgobject", "libpango", "gobject", "pango")
             ):
-                raise RuntimeError("weasyprint-libs") from exc
-            raise
+                # Windows: Python weasyprint khong tim thay Pango ->
+                # doi sang ban weasyprint.exe dong goi san (kem Pango).
+                if sys.platform == "win32" and find_windows_weasyprint():
+                    render_pdf_via_cli(document, path)
+                else:
+                    raise RuntimeError("weasyprint-libs") from exc
+            else:
+                raise

@@ -653,9 +653,16 @@ class MainWindow(QMainWindow):
                     "library.\n\n"
                     "Linux: install the pango library of your distro "
                     "(e.g. libpango-1.0-0 via apt, pango via dnf/pacman).\n\n"
-                    "Windows: install Pango through MSYS2 "
-                    "(pacman -S mingw-w64-ucrt-x86_64-pango) or use the "
-                    "standalone WeasyPrint build.",
+                    "Windows: use the packaged build which ships its own "
+                    "weasyprint.exe (already bundled in the MarkNote "
+                    "installation folder).",
+                )
+            elif str(exc) == "weasyprint-failed":
+                QMessageBox.warning(
+                    self,
+                    "PDF export error",
+                    "The bundled WeasyPrint engine could not create the PDF "
+                    "file. Please check the output location.",
                 )
             else:
                 QMessageBox.warning(self, "PDF export error", "Error while creating the PDF file.")
