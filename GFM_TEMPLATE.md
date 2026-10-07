@@ -260,7 +260,18 @@ Gap rong vi gfm-like cho phep HTML:
 
 ---
 
-## 15. Combination (ket hop nhieu cup phap)
+## 15. Page Break (ngan trang khi in/PDF)
+
+Chen dong HTML duoi day ngay truoc noi dung muon bat dau o trang moi (chi tac
+dong khi xuat PDF hoac in; xuat ra 2 trang trong vi du duoi):
+
+<div style="page-break-after: always;"></div>
+
+Sau khuong can la phan nay nam o *trang moi* khi xuat PDF.
+
+---
+
+## 16. Combination (ket hop nhieu cup phap)
 
 > **Ghi chu quan trong**: trong blockquote, duoc dung **bold**, `code` va table:
 
@@ -272,7 +283,7 @@ Gap rong vi gfm-like cho phep HTML:
 --- ket hop duoc ----
 ```
 
-- [x] Template da bao phu: heading, emphasis, link, image, blockquote, list, task, table, code, hr, footnote, line break, escape, raw HTML.
+- [x] Template da bao phu: heading, emphasis, link, image, blockquote, list, task, table, code, hr, footnote, line break, escape, raw HTML, page break.
 - [ ] Ban da thu them cup phap khac?
 
 ---
