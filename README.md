@@ -6,13 +6,17 @@ chon theme CSS, tim kiem va xuat HTML/PDF.
 ## Tinh nang
 
 - Tao, mo, sua, xoa note Markdown, luu trong `~/.marknote/notes.db`.
-- Gan/go tag cho note.
+- Doi ten note ngay tran thanh tieu de (nut but, F2).
+- Gan/go tag cho note; nut Tags hien ten tag cua note dang mo.
 - Xem truoc song song: go ben trai, render ben phai, debounce 300ms.
 - Dong bo cuon editor va preview.
 - Tim trong note (Ctrl+F), thay the (Ctrl+H).
-- Tim toan kho ket hop loc tag, vi du `apache tag:linux`.
+- Tim toan kho ket hop loc tag, vi du `apache tag:linux`, snippet to mau.
 - Chon theme CSS (default, github, dark), doi theme khong can restart.
-- Xuat HTML va PDF dung chung mot theme dang chon.
+- Xuat HTML, PDF va Markdown dung chung mot theme dang chon.
+- PDF A4: so trang "x / y", mục luc tu dong `[[TOC]]` kieu Word co so trang va
+  link nhan; ngat trang bang HTML; chong cat tranh trang.
+- Giao dien tieng Anh, palette sang ep cung chong xung dot theme toi OS.
 - Chay offline 100%, khong sync cloud.
 
 ## Yeu cau he thong
@@ -58,13 +62,17 @@ python src/main.py
 |---|---|
 | Ctrl+N | Tao note moi |
 | Ctrl+S | Luu note |
+| F2 | Doi ten note (nut but ✎) |
 | Ctrl+D | Xoa note |
 | Ctrl+F | Tim trong note |
 | Ctrl+H | Thay the trong note |
 | Ctrl+Shift+S | Dong bo cuon ON/OFF |
+| Ctrl+Q | Thoat |
 
-- Menu File > Xuat HTML / Xuat PDF de xuat file da luu.
-- Menu Cai dat > Giao dien de chon theme CSS.
+- Menu File > Export HTML / Export PDF / Export Markdown de xuat file.
+- Menu Settings > Appearance de chon theme CSS.
+- Mục luc tu dong: chua `[[TOC]]` hoac `[[TOC="Mục luc"]]` trong note.
+- Ngat trang khi in: chua `<div style="page-break-after: always;"></div>`.
 - Du lieu nguoi dung nam o `~/.marknote/` (notes.db + themes).
 
 ## Cau truc du an
@@ -78,17 +86,23 @@ marknote/
   docs/        tai lieu bao cao, so do va cu phap GFM
   TAILIEUTHAMKHAO/  bai giang tham khao mon MNM
 ```
-
-## Xoa du lieu nguoi dung
-
-Xoa toan bo du lieu nguoi dung:
-
-```
-rm -rf ~/.marknote
+marknote/
+  Makefile  LICENSE  README.md  CHANGELOG  requirements.txt
+  GFM_TEMPLATE.md     ban demo day du cu phap Markdown de thu
+  src/main.py  src/db.py  src/editor.py  src/preview.py
+  src/exporter.py  src/theme.py  src/settings.py
+  assets/themes/default.css  github.css  dark.css
+  docs/        tai lieu bao cao, so do va cu phap GFM
+  TAILIEUTHAMKHAO/  bai giang tham khao mon MNM
 ```
 
 ## Tai lieu bao cao
 
+- `docs/INDEX_BAO_CAO.md` - chi muc toan bo tai lieu, goi y phan vai bao cao.
+- `docs/HUONG_DAN_SU_DUNG.md` - huong dan su dung tung tinh nang.
+- `docs/HUONG_DAN_CU_PHAP_MARKDOWN.md` - toan bo cu phap + cu phap rieng.
+- `docs/DANH_SACH_TINH_NANG.md` - kiem ke tinh nang, doi chieu 13 UC.
+- `docs/VAN_DE_KY_THUAT.md` - kien truc, lua chon thu vien, van de ky thuat.
 - `docs/SCHEMA_CSDL.md` - co so du lieu va so do ER.
 - `docs/MO_TA_USE_CASE.md` - mo ta 13 Use-Case va Actor.
 - `docs/SODO_USE_CASE.md` - so do Use-Case.

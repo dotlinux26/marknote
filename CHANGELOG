@@ -1,5 +1,22 @@
 # Changelog MarkNote
 
+## 1.1.0 - 07/10/2026
+
+Mo rong giao dien tieng Anh va tai lieu.
+
+- Giao dien chuyen sang tieng Anh, palette sang ep cung (het loi den/den,
+  trang/trang tren OS toi); bo goc 2px, nut phang.
+- Doi ten note inline: nut but ✎ / F2 (Enter/click ngoai de luu, Esc huy).
+- Nut Tags hien ten tag cua note dang mo.
+- Export Markdown (File > Export Markdown).
+- Mục luc tu dong `[[TOC]]` / `[[TOC="Tieu de"]`, link nhan trong PDF.
+- TOC kieu Word khi xuat PDF: gach cham + so trang that (target-counter,
+  leader), chi trong @media print.
+- PDF: so trang "x / y" o chan trang.
+- Ngat trang khi in bang HTML page-break.
+- Tai lieu: 5 file docs moi (HUONG_DAN_SU_DUNG, HUONG_DAN_CU_PHAP_MARKDOWN,
+  DANH_SACH_TINH_NANG, VAN_DE_KY_THUAT, INDEX_BAO_CAO) + GFM_TEMPLATE.md.
+
 ## 1.0.0 - 07/10/2026
 
 Ban dau tien.
