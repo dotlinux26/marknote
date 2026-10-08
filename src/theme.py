@@ -2,11 +2,24 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from settings import DEFAULT_THEME, THEME_DIR, THEME_SUFFIX, KEY_THEME
 
-ASSETS_THEME_DIR = Path(__file__).resolve().parent.parent / "assets" / "themes"
+def _resolve_assets_theme_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            cand = Path(meipass) / "assets" / "themes"
+            if cand.is_dir():
+                return cand
+        cand = Path(sys.executable).resolve().parent / "assets" / "themes"
+        if cand.is_dir():
+            return cand
+    return Path(__file__).resolve().parent.parent / "assets" / "themes"
+
+ASSETS_THEME_DIR = _resolve_assets_theme_dir()
 
 
 class ThemeManager:
