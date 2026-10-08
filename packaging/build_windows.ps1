@@ -47,6 +47,8 @@ Run-Checked "Cai PyInstaller" {
 }
 
 Run-Checked "Build ung dung (PyInstaller onedir)" {
+    Get-Process -Name "marknote*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 500
     & ".\.venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onedir `
         --name marknote --windowed --paths src --add-data "assets;assets" `
         --hidden-import markdown_it.presets.gfm_like `
