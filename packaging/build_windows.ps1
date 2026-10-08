@@ -62,14 +62,6 @@ Run-Checked "Build ung dung (PyInstaller onedir)" {
         src\main.py
 }
 
-Run-Checked "Tao file zip de chuyen di" {
-    if (Test-Path "dist\MarkNote-$AppVersion-windows-x64.zip") {
-        Remove-Item "dist\MarkNote-$AppVersion-windows-x64.zip"
-    }
-    Compress-Archive -Path "dist\marknote\*" `
-        -DestinationPath "dist\MarkNote-$AppVersion-windows-x64.zip"
-}
-
 Run-Checked "Dong goi san weasyprint.exe (kem Pango) cho xuat PDF" {
     $weasyZip = "build\weasyprint-windows.zip"
     if (Test-Path "dist\marknote\bin\weasyprint\weasyprint.exe") {
@@ -90,6 +82,14 @@ Run-Checked "Dong goi san weasyprint.exe (kem Pango) cho xuat PDF" {
         Copy-Item $exe.FullName "dist\marknote\bin\weasyprint\weasyprint.exe" -Force
         Write-Host "Dong goi xong: dist\marknote\bin\weasyprint\weasyprint.exe"
     }
+}
+
+Run-Checked "Tao file zip de chuyen di" {
+    if (Test-Path "dist\MarkNote-$AppVersion-windows-x64.zip") {
+        Remove-Item "dist\MarkNote-$AppVersion-windows-x64.zip"
+    }
+    Compress-Archive -Path "dist\marknote\*" `
+        -DestinationPath "dist\MarkNote-$AppVersion-windows-x64.zip"
 }
 
 Write-Host ""
