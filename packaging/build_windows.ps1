@@ -84,6 +84,10 @@ Run-Checked "Dong goi san weasyprint.exe (kem Pango) cho xuat PDF" {
     }
 }
 
+Run-Checked "Sao chep assets thu muc theme" {
+    Copy-Item -Path "assets" -Destination "dist\marknote\assets" -Recurse -Force
+}
+
 Run-Checked "Tao file zip de chuyen di" {
     if (Test-Path "dist\MarkNote-$AppVersion-windows-x64.zip") {
         Remove-Item "dist\MarkNote-$AppVersion-windows-x64.zip"
