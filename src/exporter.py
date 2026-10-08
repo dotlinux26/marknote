@@ -86,6 +86,15 @@ def find_windows_weasyprint() -> Path | None:
             root / "_internal" / "weasyprint" / "weasyprint.exe",
         ]
     )
+    # Project root khi chay source truc tiep
+    project_root = Path(__file__).resolve().parent.parent
+    candidates.extend(
+        [
+            project_root / "dist" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
+            project_root / "build" / "weasyprint-windows" / "weasyprint.exe",
+            project_root / "build" / "weasyprint-test" / "weasyprint.exe",
+        ]
+    )
     for candidate in candidates:
         if candidate.is_file():
             return candidate
@@ -100,10 +109,15 @@ def render_pdf_via_cli(document: str, path: str) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         html_file = Path(tmp) / "marknote-export.html"
         html_file.write_text(document, encoding="utf-8")
+        run_kwargs = {
+            "capture_output": True,
+            "text": True,
+        }
+        if sys.platform == "win32":
+            run_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
         result = subprocess.run(
             [str(exe), str(html_file), str(path)],
-            capture_output=True,
-            text=True,
+            **run_kwargs,
         )
         if result.returncode != 0:
             raise RuntimeError("weasyprint-failed")
@@ -118,25 +132,26 @@ class Exporter:
         )
 
     def toPdf(self, html_body: str, css: str, path) -> None:
-        try:
-            from weasyprint import HTML
-        except ImportError as exc:
-            raise RuntimeError("weasyprint-missing") from exc
         document = build_document(
             html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE
         )
+        cli_exe = find_windows_weasyprint()
+
         try:
+            from weasyprint import HTML
             HTML(string=document).write_pdf(str(path))
-        except OSError as exc:
+            return
+        except (ImportError, OSError, Exception) as exc:
+            # Neu co ban weasyprint.exe dong goi san (kem Pango) tren Windows, uu tien fallback ngay
+            if sys.platform == "win32" and cli_exe:
+                render_pdf_via_cli(document, path)
+                return
+
             msg = str(exc).lower()
+            if isinstance(exc, ImportError) and "weasyprint" in msg:
+                raise RuntimeError("weasyprint-missing") from exc
             if "cannot load library" in msg and any(
                 lib in msg for lib in ("libgobject", "libpango", "gobject", "pango")
             ):
-                # Windows: Python weasyprint khong tim thay Pango ->
-                # doi sang ban weasyprint.exe dong goi san (kem Pango).
-                if sys.platform == "win32" and find_windows_weasyprint():
-                    render_pdf_via_cli(document, path)
-                else:
-                    raise RuntimeError("weasyprint-libs") from exc
-            else:
-                raise
+                raise RuntimeError("weasyprint-libs") from exc
+            raise
