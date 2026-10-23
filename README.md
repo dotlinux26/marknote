@@ -1,5 +1,10 @@
 # MarkNote
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![GUI: PySide6](https://img.shields.io/badge/GUI-PySide6%20%2F%20Qt%206-green.svg)](https://wiki.qt.io/Qt_for_Python)
+[![Open Source: OSI Compliant](https://img.shields.io/badge/Open%20Source-OSI%20Compliant-brightgreen.svg)](docs/LICENSE_COMPLIANCE.md)
+
 Ứng dụng ghi chú **Markdown offline** cho Linux (và cả Windows/macOS),
 viết bằng **Python + PySide6 (Qt 6)**: soạn thảo bên trái, xem trước kết quả
 bên phải song song, chọn theme CSS, tìm kiếm toàn kho (FTS5) và xuất ra
@@ -145,6 +150,9 @@ rm -rf ~/.marknote
 ## Tài liệu chi tiết
 
 - `docs/INDEX_BAO_CAO.md` — chỉ mục toàn bộ tài liệu, gợi ý phân vai báo cáo.
+- `docs/LICENSE_COMPLIANCE.md` — **báo cáo tuân thủ giấy phép & chuẩn mã nguồn mở**.
+- `THIRD_PARTY_NOTICES.md` — **bản kê khai giấy phép và bản quyền bên thứ ba**.
+- `CONTRIBUTING.md` — **hướng dẫn tham gia đóng góp mã nguồn**.
 - `docs/HUONG_DAN_CAI_DAT.md` — **cài đặt chi tiết** mọi HĐH + đóng gói.
 - `docs/HUONG_DAN_SU_DUNG.md` — hướng dẫn sử dụng từng tính năng.
 - `docs/HUONG_DAN_CU_PHAP_MARKDOWN.md` — bảng tra cú pháp + cú pháp riêng.
@@ -152,6 +160,12 @@ rm -rf ~/.marknote
 - `docs/VAN_DE_KY_THUAT.md` — kiến trúc, lựa chọn thư viện, vấn đề kỹ thuật.
 - Các tài liệu `SCHEMA_CSDL`, `MO_TA_USE_CASE`, `SODO_*`, `TONG_HOP_GFM`.
 
-## Giấy phép
+## Đóng góp & Phát triển
 
-Xem file `LICENSE` (MIT).
+Mọi đóng góp từ cộng đồng đều được chào đón! Vui lòng đọc tệp [`CONTRIBUTING.md`](CONTRIBUTING.md) để biết quy trình tạo nhánh, gửi Pull Request và chuẩn mực mã nguồn.
+
+## Giấy phép & Tuân thủ bản quyền
+
+- **Mã nguồn MarkNote**: Được phát hành theo giấy phép **[MIT License](LICENSE)** (Copyright © 2026 Nguyen Duc Canh).
+- **Thành phần bên thứ ba**: Dự án sử dụng và liên kết động tới các thư viện mã nguồn mở uy tín (PySide6/Qt 6 LGPLv3, SQLite Public Domain, WeasyPrint BSD-3, Pygments BSD-2, markdown-it-py MIT). Chi tiết điều khoản và bản quyền được công bố tại **[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)**.
+- **Báo cáo chuẩn mã nguồn mở**: Xem phân tích tuân thủ 10 tiêu chí OSI và 4 quyền tự do FSF tại **[`docs/LICENSE_COMPLIANCE.md`](docs/LICENSE_COMPLIANCE.md)**.
