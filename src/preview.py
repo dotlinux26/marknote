@@ -9,10 +9,12 @@ from pathlib import Path
 
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QColor
+from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from exporter import build_document
 from settings import (
+    APP_DIR,
     KEY_SYNC_SCROLL,
     SYNC_SCROLL_OFF,
     SYNC_SCROLL_ON,
@@ -176,12 +178,24 @@ class PreviewPane(QWebEngineView):
         self.setMinimumWidth(360)
         self.page().setBackgroundColor(QColor("#ffffff"))
 
+        # Cho phep truy cap anh va file cuc bo tu thu muc media
+        settings = self.settings()
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True
+        )
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True
+        )
+
+    def _base_url(self) -> QUrl:
+        return QUrl.fromLocalFile(str(APP_DIR.resolve()) + "/")
+
     def render(self, md: str):
         """Render lai bang noi dung markdown hien tai (UC06)."""
         self._last_md = md or ""
         css = self._theme.getCss(self._theme.current())
         doc = build_document(self._renderer.render(self._last_md), css or "")
-        self.setHtml(doc, QUrl.fromLocalFile(str(Path.home())))
+        self.setHtml(doc, self._base_url())
 
     def reloadCss(self, css: str | None = None):
         """UC12: doi theme thi render lai voi CSS moi, khong can restart."""
@@ -190,7 +204,7 @@ class PreviewPane(QWebEngineView):
         if css is None:
             css = self._theme.getCss(self._theme.current()) or ""
         doc = build_document(self._renderer.render(self._last_md), css)
-        self.setHtml(doc, QUrl.fromLocalFile(str(Path.home())))
+        self.setHtml(doc, self._base_url())
 
     def setScroll(self, percent: float):
         """UC07: cuon khung xem truoc theo phan tram tu thanh cuon editor."""

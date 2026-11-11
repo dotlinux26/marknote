@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 DESTDIR ?=
-APP_VERSION := 1.1
+APP_VERSION := 1.2.0
 PACKAGE := marknote
 PY ?= python3
 APPIMAGETOOL ?= appimagetool-x86_64.AppImage
@@ -33,6 +33,7 @@ appimage:
 		--hidden-import markdown_it.presets.gfm_like \
 		--hidden-import markdown_it.plugins.linkify \
 		--hidden-import markdown_it.plugins \
+		--hidden-import media \
 		--collect-all mdit_py_plugins --collect-all pygments \
 		--collect-all weasyprint --collect-all tinycss2 \
 		--collect-all cssselect2 --collect-all tinyhtml5 \

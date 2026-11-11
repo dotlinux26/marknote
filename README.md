@@ -22,6 +22,7 @@ HTML / PDF / Markdown — tất cả **không cần kết nối mạng**.
 - **Tìm kiếm toàn kho (SQLite FTS5)**: nhanh, hỗ trợ nhiều từ khóa và
   `tag:linux`, hiển thị snippet có tô màu từ khóa.
 - **Tìm / thay thế** trong note (`Ctrl+F`, `Ctrl+H`).
+- **Quản lý ảnh & thư viện media**: chèn ảnh tại con trỏ (`+ Image` hoặc `Ctrl+Shift+I`), kéo thả ảnh trực tiếp vào editor, paste ảnh nhanh (`Ctrl+V`) từ clipboard (ảnh chụp màn hình), mở nhanh thư mục ảnh dùng chung (`📁 Media Folder` hoặc `Ctrl+Shift+M`), tự động nhúng Base64 khi xuất HTML/PDF.
 - **Theme CSS**: `default`, `github`, `dark` – đổi theme không cần khởi động lại.
 - **Xuất bản** cùng một theme:
   - Xuất **HTML** (một file tự chứa, dùng được offline).
@@ -95,6 +96,8 @@ python src/main.py
 | `Ctrl+D` | Xóa note |
 | `Ctrl+F` | Tìm trong note |
 | `Ctrl+H` | Tìm và thay thế |
+| `Ctrl+Shift+I` | Chèn ảnh tại vị trí con trỏ |
+| `Ctrl+Shift+M` | Mở thư mục thư viện ảnh (Media Folder) |
 | `Ctrl+Shift+S` | Đồng bộ cuộn on/off |
 | `Ctrl+Q` | Thoát |
 

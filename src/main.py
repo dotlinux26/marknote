@@ -29,8 +29,16 @@ from PySide6.QtWidgets import (
 from db import DbManager, NoteDAO, SettingsDAO, TagDAO
 from editor import EditorPane, FindReplaceDialog, SearchPanel
 from exporter import Exporter
+from media import open_media_folder
 from preview import MarkdownRenderer, PreviewPane, SyncScrollController
-from settings import APP_NAME, DEFAULT_THEME, SettingsDialog, KEY_LAST_OPENED, KEY_THEME
+from settings import (
+    APP_NAME,
+    DEFAULT_THEME,
+    KEY_LAST_OPENED,
+    KEY_THEME,
+    MEDIA_DIR,
+    SettingsDialog,
+)
 from theme import ThemeManager
 
 APP_STYLE = """
@@ -244,6 +252,11 @@ class MainWindow(QMainWindow):
         self.act_find.setShortcut(QKeySequence.StandardKey.Find)
         self.act_replace = act("Replace", self)
         self.act_replace.setShortcut(QKeySequence("Ctrl+H"))
+        self.act_insert_image = act("Insert Image...", self)
+        self.act_insert_image.setShortcut(QKeySequence("Ctrl+Shift+I"))
+        self.act_insert_image.setEnabled(False)
+        self.act_open_media = act("Media Folder", self)
+        self.act_open_media.setShortcut(QKeySequence("Ctrl+Shift+M"))
         self.act_sync = act("Sync Scroll", self)
         self.act_sync.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.act_sync.setCheckable(True)
@@ -269,6 +282,9 @@ class MainWindow(QMainWindow):
         menu_edit = menubar.addMenu("&Edit")
         menu_edit.addAction(self.act_find)
         menu_edit.addAction(self.act_replace)
+        menu_edit.addSeparator()
+        menu_edit.addAction(self.act_insert_image)
+        menu_edit.addAction(self.act_open_media)
 
         menu_view = menubar.addMenu("&View")
         menu_view.addAction(self.act_sync)
@@ -286,6 +302,9 @@ class MainWindow(QMainWindow):
         toolbar.addAction(self.act_save)
         toolbar.addAction(self.act_delete)
         toolbar.addSeparator()
+        toolbar.addAction(self.act_insert_image)
+        toolbar.addAction(self.act_open_media)
+        toolbar.addSeparator()
         toolbar.addAction(self.act_find)
         toolbar.addAction(self.act_replace)
         toolbar.addSeparator()
@@ -301,14 +320,33 @@ class MainWindow(QMainWindow):
         self.tag_button = QPushButton("Tags", self)
         self.tag_menu = QMenu(self)
         self.tag_button.setMenu(self.tag_menu)
+
+        self.btn_insert_image = QPushButton("+ Image", self)
+        self.btn_insert_image.setToolTip("Insert image at cursor (Ctrl+Shift+I)")
+        self.btn_insert_image.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_insert_image.setEnabled(False)
+
+        self.btn_open_media = QPushButton("📁 Media Folder", self)
+        self.btn_open_media.setToolTip("Open shared media folder in File Explorer (Ctrl+Shift+M)")
+        self.btn_open_media.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setSpacing(6)
+        btn_row.addWidget(self.tag_button)
+        btn_row.addWidget(self.btn_insert_image)
+        btn_row.addWidget(self.btn_open_media)
+        btn_row.addStretch(1)
+
         header = QWidget(self)
         header_layout = QVBoxLayout(header)
         header_layout.setContentsMargins(0, 0, 0, 4)
         header_layout.setSpacing(4)
         header_row = QVBoxLayout()
         header_row.setContentsMargins(4, 4, 4, 0)
+        header_row.setSpacing(6)
         header_row.addWidget(self.title_label)
-        header_row.addWidget(self.tag_button, 0, Qt.AlignmentFlag.AlignLeft)
+        header_row.addLayout(btn_row)
         header_layout.addLayout(header_row)
         header_layout.addWidget(self.editor)
 
@@ -342,6 +380,10 @@ class MainWindow(QMainWindow):
         self.act_quit.triggered.connect(self.close)
         self.act_find.triggered.connect(self.onFind)
         self.act_replace.triggered.connect(self.onReplace)
+        self.act_insert_image.triggered.connect(self.onInsertImage)
+        self.act_open_media.triggered.connect(self.onOpenMediaFolder)
+        self.btn_insert_image.clicked.connect(self.onInsertImage)
+        self.btn_open_media.clicked.connect(self.onOpenMediaFolder)
         self.act_sync.toggled.connect(self._on_sync_toggled)
         self.act_settings.triggered.connect(self.onOpenSettings)
         self.act_about.triggered.connect(self.onAbout)
@@ -350,6 +392,9 @@ class MainWindow(QMainWindow):
         self.panel.noteSelected.connect(self.openNote)
         self.editor.textChanged.connect(self._on_text_changed)
         self.editor.verticalScrollBar().valueChanged.connect(self._on_editor_scroll)
+        self.editor.imageInserted.connect(self._on_image_inserted)
+        self.editor.insertImageRequested.connect(self.onInsertImage)
+        self.editor.openMediaRequested.connect(self.onOpenMediaFolder)
         self.title_label.renamed.connect(self._on_rename)
 
     def _apply_theme_check(self):
@@ -419,6 +464,8 @@ class MainWindow(QMainWindow):
         self.preview.render(self._loaded_text)
         self.panel.setActiveNote(note_id)
         self._refresh_note_tags()
+        self.btn_insert_image.setEnabled(True)
+        self.act_insert_image.setEnabled(True)
         self.settings.set(KEY_LAST_OPENED, str(note_id))
         self.statusBar().showMessage("Opened: %s" % note["title"])
 
@@ -477,6 +524,8 @@ class MainWindow(QMainWindow):
         self.preview.render("")
         self.title_label.note_id = None
         self.title_label.setTitle("No note open")
+        self.btn_insert_image.setEnabled(False)
+        self.act_insert_image.setEnabled(False)
         self.settings.set(KEY_LAST_OPENED, "0")
         self._refresh_sidebar()
         self.statusBar().showMessage("Note deleted")
@@ -551,6 +600,30 @@ class MainWindow(QMainWindow):
         self.save()
         self.preview.render(self.editor.getText())
 
+    def onInsertImage(self):
+        """Chen file anh vao vi tri con tro dang dung trong note."""
+        if self._current_id is None:
+            self.statusBar().showMessage("No note open")
+            return
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Insert Image",
+            str(MEDIA_DIR),
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.svg *.bmp);;All Files (*)",
+        )
+        if not path:
+            return
+        self.editor.insertImageFromFile(path)
+        self.editor.setFocus()
+
+    def onOpenMediaFolder(self):
+        """Mo thu muc media dung chung tren he thong (File Explorer)."""
+        open_media_folder()
+        self.statusBar().showMessage("Opened media folder: %s" % MEDIA_DIR)
+
+    def _on_image_inserted(self, filename: str):
+        self.statusBar().showMessage("Inserted image: %s" % filename)
+
     def _refresh_sidebar(self):
         self.panel.refresh_filters_from_query()
         keyword = self.panel.keyword()
@@ -572,6 +645,8 @@ class MainWindow(QMainWindow):
         if last_id and self.notes.getById(last_id) is not None:
             self.openNote(last_id)
         else:
+            self.btn_insert_image.setEnabled(False)
+            self.act_insert_image.setEnabled(False)
             self._populate_tag_menu()
             self.statusBar().showMessage("No notes yet. Press New to create one.")
 

@@ -18,7 +18,10 @@ APP_NAME = "MarkNote"
 APP_DIR = Path.home() / ".marknote"
 DB_PATH = APP_DIR / "notes.db"
 THEME_DIR = APP_DIR / "themes"
+MEDIA_DIR = APP_DIR / "media"
 THEME_SUFFIX = ".css"
+
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_THEME = "default"
 SYNC_SCROLL_ON = "ON"

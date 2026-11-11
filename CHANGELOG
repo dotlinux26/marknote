@@ -1,5 +1,17 @@
 # Changelog MarkNote
 
+## 1.2.0 - 11/11/2026
+
+Bổ sung tính năng chèn ảnh và quản lý thư viện ảnh dùng chung (Media Library).
+
+- **Nút `+ Image` (Ctrl+Shift+I)**: Chèn ảnh trực tiếp tại vị trí con trỏ hiện tại trong editor.
+- **Thư mục media dùng chung (`~/.marknote/media`)**: Tự động lưu trữ tập trung toàn bộ ảnh được paste, kéo thả hoặc chèn vào ghi chú.
+- **Nút `📁 Media Folder` (Ctrl+Shift+M)**: Mở nhanh thư mục thư viện ảnh dùng chung trong File Explorer.
+- **Hỗ trợ kéo thả (Drag & Drop)**: Kéo thả file ảnh từ Explorer/Desktop trực tiếp vào editor tại đúng vị trí thả chuột.
+- **Hỗ trợ Paste ảnh (Ctrl+V)**: Dán trực tiếp ảnh từ clipboard (ảnh chụp màn hình Snipping Tool/PrintScreen) hoặc file ảnh đã copy.
+- **Xuất HTML & PDF tự chứa ảnh (Standalone)**: Tự động nhúng tất cả ảnh media dưới dạng Base64 data URI khi xuất HTML và PDF, đảm bảo tài liệu xuất ra độc lập hoàn toàn, không phụ thuộc vào đường dẫn ảnh trên máy.
+- **Menu ngữ cảnh chuột phải**: Bổ sung thao tác nhanh "Insert Image..." và "Open Media Folder" trong menu chuột phải của trình soạn thảo.
+
 ## 1.1.0 - 07/10/2026
 
 Mo rong giao dien tieng Anh va tai lieu.

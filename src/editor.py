@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor, QFontDatabase, QTextCharFormat, QTextCursor
+from PySide6.QtCore import QMimeData, Qt, Signal
+from PySide6.QtGui import QColor, QFontDatabase, QImage, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QDialog,
     QHBoxLayout,
@@ -21,12 +23,23 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from media import (
+    copy_file_to_media,
+    is_image_url,
+    make_markdown_image_tag,
+    save_qimage_to_media,
+)
+
 COLOR_MATCH = "#fff8c5"
 COLOR_CURRENT = "#f8b886"
 
 
 class EditorPane(QPlainTextEdit):
-    """O soan thao ben trai, ho tro tim highlight nhieu vi tri."""
+    """O soan thao ben trai, ho tro tim highlight, chen anh, keo tha va paste anh."""
+
+    imageInserted = Signal(str)
+    insertImageRequested = Signal()
+    openMediaRequested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -142,6 +155,114 @@ class EditorPane(QPlainTextEdit):
                 self._find_dialog.close()
                 return
         super().keyPressEvent(event)
+
+    # ----------------------------------------------------------- media / anh
+    def insertImageFromFile(self, file_path: Path | str) -> str:
+        """Sao chep file vao thu muc media chung va chen ma Markdown tai vi tri con tro."""
+        saved_name = copy_file_to_media(file_path)
+        tag = make_markdown_image_tag(saved_name)
+        cursor = self.textCursor()
+        cursor.insertText(tag)
+        self.setTextCursor(cursor)
+        self.ensureCursorVisible()
+        self.imageInserted.emit(saved_name)
+        return saved_name
+
+    def insertImageFromQImage(self, qimage: QImage) -> str:
+        """Luu QImage thanh PNG trong thu muc media va chen ma Markdown tai vi tri con tro."""
+        saved_name = save_qimage_to_media(qimage)
+        tag = make_markdown_image_tag(saved_name)
+        cursor = self.textCursor()
+        cursor.insertText(tag)
+        self.setTextCursor(cursor)
+        self.ensureCursorVisible()
+        self.imageInserted.emit(saved_name)
+        return saved_name
+
+    def insertFromMimeData(self, source: QMimeData):
+        """Xu ly paste (Ctrl+V): ho tro paste anh tu clipboard hoac paste file anh da copy."""
+        if self.isReadOnly():
+            return
+
+        # 1. Du lieu anh truc tiep trong clipboard (chup man hinh, copy image)
+        if source.hasImage():
+            img = source.imageData()
+            if isinstance(img, QImage) and not img.isNull():
+                self.insertImageFromQImage(img)
+                return
+            clip = QApplication.clipboard()
+            if clip:
+                clip_img = clip.image()
+                if not clip_img.isNull():
+                    self.insertImageFromQImage(clip_img)
+                    return
+
+        # 2. File anh duoc copy tu Explorer / trinh quan ly file
+        if source.hasUrls():
+            image_urls = [u for u in source.urls() if is_image_url(u)]
+            if image_urls:
+                for u in image_urls:
+                    self.insertImageFromFile(u.toLocalFile())
+                return
+
+        super().insertFromMimeData(source)
+
+    def _has_acceptable_media(self, mime: QMimeData) -> bool:
+        if mime.hasImage():
+            return True
+        if mime.hasUrls():
+            return any(is_image_url(u) for u in mime.urls())
+        return False
+
+    def dragEnterEvent(self, event):
+        if self._has_acceptable_media(event.mimeData()):
+            event.acceptProposedAction()
+            return
+        super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if self._has_acceptable_media(event.mimeData()):
+            event.acceptProposedAction()
+            return
+        super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        mime = event.mimeData()
+        if self._has_acceptable_media(mime):
+            pos = event.position().toPoint() if hasattr(event, "position") else event.pos()
+            cursor = self.cursorForPosition(pos)
+            self.setTextCursor(cursor)
+
+            if mime.hasUrls():
+                image_urls = [u for u in mime.urls() if is_image_url(u)]
+                if image_urls:
+                    event.acceptProposedAction()
+                    for u in image_urls:
+                        self.insertImageFromFile(u.toLocalFile())
+                    return
+
+            if mime.hasImage():
+                img = mime.imageData()
+                if isinstance(img, QImage) and not img.isNull():
+                    event.acceptProposedAction()
+                    self.insertImageFromQImage(img)
+                    return
+                clip = QApplication.clipboard()
+                if clip and not clip.image().isNull():
+                    event.acceptProposedAction()
+                    self.insertImageFromQImage(clip.image())
+                    return
+
+        super().dropEvent(event)
+
+    def contextMenuEvent(self, event):
+        menu = self.createStandardContextMenu()
+        menu.addSeparator()
+        act_insert = menu.addAction("Insert Image...")
+        act_insert.triggered.connect(self.insertImageRequested.emit)
+        act_media = menu.addAction("Open Media Folder")
+        act_media.triggered.connect(self.openMediaRequested.emit)
+        menu.exec(event.globalPos())
 
 
 class FindReplaceDialog(QDialog):

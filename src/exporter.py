@@ -8,6 +8,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from media import embed_images_as_base64
+
 PDF_PAGE_RULE = (
     "\n"
     "@page {\n"
@@ -127,11 +129,13 @@ class Exporter:
     """Ghi ra file HTML hoac PDF dung chung mot theme (UC13)."""
 
     def toHtml(self, html_body: str, css: str, path) -> None:
+        html_body = embed_images_as_base64(html_body)
         Path(path).write_text(
             build_document(html_body, css), encoding="utf-8"
         )
 
     def toPdf(self, html_body: str, css: str, path) -> None:
+        html_body = embed_images_as_base64(html_body)
         document = build_document(
             html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE
         )
