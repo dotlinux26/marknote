@@ -785,6 +785,8 @@ class MainWindow(QMainWindow):
 
 
 def main() -> int:
+    import os
+    os.environ.setdefault("QTWEBENGINE_DISABLE_SANDBOX", "1")
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
     app.setStyle("Fusion")

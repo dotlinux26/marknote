@@ -15,7 +15,7 @@
 # =========================================================================
 set -euo pipefail
 
-APP_VERSION="${APP_VERSION:-1.1}"
+APP_VERSION="${APP_VERSION:-1.2.0}"
 IMAGE="${IMAGE:-ubuntu:20.04}"
 
 docker run --rm -v "$PWD:/src" -w /src "$IMAGE" bash -c "
@@ -37,6 +37,7 @@ python3 -m venv /opt/build --system-site-packages
     --hidden-import markdown_it.presets.gfm_like \
     --hidden-import markdown_it.plugins.linkify \
     --hidden-import markdown_it.plugins \
+    --hidden-import media \
     --collect-all mdit_py_plugins --collect-all pygments \
     --collect-all weasyprint --collect-all tinycss2 \
     --collect-all cssselect2 --collect-all tinyhtml5 \
@@ -68,8 +69,12 @@ Type=Application
 Categories=Utility;
 Terminal=false
 SH
-# icon: tao lai tu venv may hien tai (neu co) hoac bo qua
-if [ -x .venv/bin/python ]; then .venv/bin/python packaging/make_icon.py dist/marknote.png; fi
+# icon: su dung icon san co hoac tao lai tu script
+if [ -f assets/marknote.png ]; then
+    cp assets/marknote.png dist/marknote.png
+elif [ -x .venv/bin/python ]; then
+    .venv/bin/python packaging/make_icon.py dist/marknote.png
+fi
 
 if [ ! -f appimagetool-x86_64.AppImage ]; then
     curl -sL -o appimagetool-x86_64.AppImage \
