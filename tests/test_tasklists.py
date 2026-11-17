@@ -166,6 +166,55 @@ class TestMarkdownRenderer(unittest.TestCase):
         self.assertIn('id="1-executive-summary"', html)
         self.assertIn('id="2-detailed-methodology"', html)
 
+    def test_render_toc_only_headings_below_toc_and_depth_classes(self):
+        md = (
+            "# Top Document Title Before TOC\n\n"
+            "Author: pentester\n\n"
+            "[[TOC='MỤC LỤC' center no-bullet]]\n\n"
+            "## 1. Executive Summary\n\n"
+            "### 1.1 Target Assets\n\n"
+            "#### 1.1.1 Production API\n\n"
+            "## 2. Technical Findings\n"
+        )
+        html = self.renderer.render(md)
+        self.assertIn('<div class="toc no-bullet">', html)
+        self.assertIn('toc-align-center', html)
+        # Top title before TOC gets an anchor ID, but MUST NOT be in TOC list
+        self.assertIn('id="top-document-title-before-toc"', html)
+        self.assertNotIn('href="#top-document-title-before-toc"', html)
+        # Headings below TOC must be present with proper depth classes
+        self.assertIn('class="toc-item toc-depth-1"><a href="#1-executive-summary">1. Executive Summary</a>', html)
+        self.assertIn('class="toc-item toc-depth-2"><a href="#11-target-assets">1.1 Target Assets</a>', html)
+        self.assertIn('class="toc-item toc-depth-3"><a href="#111-production-api">1.1.1 Production API</a>', html)
+        self.assertIn('class="toc-item toc-depth-1"><a href="#2-technical-findings">2. Technical Findings</a>', html)
+
+    def test_donut_chart_code_fence_and_directive(self):
+        md_fence = (
+            "```donut\n"
+            "5 Issues\n"
+            "Critical: 0\n"
+            "High: 1\n"
+            "Medium: 2\n"
+            "Low: 2\n"
+            "```\n"
+        )
+        html_fence = self.renderer.render(md_fence)
+        self.assertIn('class="donut-widget"', html_fence)
+        self.assertIn('class="donut-chart"', html_fence)
+        self.assertIn('class="donut-svg-ring"', html_fence)
+        self.assertIn('<b>5</b>', html_fence)
+        self.assertIn('<span>Issues</span>', html_fence)
+        self.assertIn('Critical: <b>0</b>', html_fence)
+        self.assertIn('High: <b>1</b>', html_fence)
+        self.assertIn('Medium: <b>2</b>', html_fence)
+        self.assertIn('Low: <b>2</b>', html_fence)
+
+        md_directive = "[[donut 5 Issues | Critical: 0 | High: 1 | Medium: 2 | Low: 2]]"
+        html_dir = self.renderer.render(md_directive)
+        self.assertIn('class="donut-widget"', html_dir)
+        self.assertIn('class="donut-svg-ring"', html_dir)
+        self.assertIn('<b>5</b>', html_dir)
+
 
 class TestEditorLineNumbers(unittest.TestCase):
     def test_line_number_area_initialization_and_width(self):

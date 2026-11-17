@@ -15,7 +15,7 @@
 # =========================================================================
 set -euo pipefail
 
-APP_VERSION="${APP_VERSION:-1.2.4}"
+APP_VERSION="${APP_VERSION:-1.2.5}"
 IMAGE="${IMAGE:-ubuntu:20.04}"
 
 docker run --rm -v "$PWD:/src" -w /src "$IMAGE" bash -c "

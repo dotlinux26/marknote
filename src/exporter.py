@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from html import escape
 from pathlib import Path
 
 from media import embed_images_as_base64
@@ -31,13 +32,138 @@ CHECKED_SVG = (
 )
 
 DEFAULT_DONUT_SVG = (
-    '<svg viewBox="0 0 36 36" class="donut-svg-ring" style="width: 72px; height: 72px; position: absolute; top: 0; left: 0; transform: rotate(-90deg); border-radius: 50%;">'
+    '<svg viewBox="0 0 36 36" class="donut-svg-ring" style="width: 110px; height: 110px; position: absolute; top: 0; left: 0; transform: rotate(-90deg); border-radius: 50%;">'
     '<circle cx="18" cy="18" r="15.9155" fill="#ffffff"></circle>'
-    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#2b6cb0" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="0"></circle>'
-    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#b7791f" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="-40"></circle>'
-    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#c53030" stroke-width="4.5" stroke-dasharray="20 80" stroke-dashoffset="-80"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#3182ce" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="0"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#d69e2e" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="-40"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#dd6b20" stroke-width="4.5" stroke-dasharray="20 80" stroke-dashoffset="-80"></circle>'
     '</svg>'
 )
+
+CATEGORY_CONFIG = [
+    ("critical", "Critical", "#c53030", "dot-crit", [r"^crit(?:ical)?\b"]),
+    ("high", "High", "#dd6b20", "dot-high", [r"^high\b"]),
+    ("medium", "Medium", "#d69e2e", "dot-med", [r"^med(?:ium)?\b"]),
+    ("low", "Low", "#3182ce", "dot-low", [r"^low\b"]),
+    ("info", "Info", "#0284c7", "dot-info", [r"^info\b"]),
+]
+
+DONUT_DIRECTIVE_RE = re.compile(r"\[\[donut(?P<body>.*?)\]\]", re.IGNORECASE)
+
+
+def parse_donut_spec(text: str):
+    """Phan tich cu phap donut linh hoat tu code fence hoac directive."""
+    total = None
+    label = "Issues"
+    counts = {}
+
+    lines = [line.strip() for line in re.split(r"[\r\n|,;]+", text) if line.strip()]
+    for line in lines:
+        m_tot_lbl = re.match(r"^(\d+)\s+([a-zA-Z0-9_\-\s]+)$", line)
+        if m_tot_lbl:
+            total = int(m_tot_lbl.group(1))
+            label = m_tot_lbl.group(2).strip()
+            continue
+
+        m_tot = re.match(r"^(?:total|sum)\s*[:=]\s*(\d+)", line, re.IGNORECASE)
+        if m_tot:
+            total = int(m_tot.group(1))
+            continue
+
+        m_lbl = re.match(r"^(?:label|title)\s*[:=]\s*([a-zA-Z0-9_\-\s]+)", line, re.IGNORECASE)
+        if m_lbl:
+            label = m_lbl.group(1).strip()
+            continue
+
+        matched = False
+        for key, display_name, color, dot_class, patterns in CATEGORY_CONFIG:
+            for pat in patterns:
+                m = re.search(pat + r"\s*[:=]\s*(\d+)", line, re.IGNORECASE)
+                if m:
+                    counts[key] = int(m.group(1))
+                    matched = True
+                    break
+            if matched:
+                break
+
+    default_keys = ["critical", "high", "medium", "low"]
+    for k in default_keys:
+        if k not in counts:
+            counts[k] = 0
+
+    sum_counts = sum(counts.values())
+    if total is None:
+        total = sum_counts
+
+    return total, label, counts
+
+
+def render_donut_widget(text: str) -> str:
+    """Tao HTML Donut Chart vector SVG can giua, khong vien/nen."""
+    total, label, counts = parse_donut_spec(text)
+
+    svg_circles = []
+    svg_circles.append('<circle cx="18" cy="18" r="15.9155" fill="#ffffff"></circle>')
+
+    if total <= 0:
+        svg_circles.append(
+            '<circle cx="18" cy="18" r="15.9155" fill="transparent" '
+            'stroke="#e2e8f0" stroke-width="4.5"></circle>'
+        )
+    else:
+        current_offset = 0.0
+        draw_order = ["low", "medium", "high", "critical", "info"]
+        for key in draw_order:
+            val = counts.get(key, 0)
+            if val <= 0:
+                continue
+            pct = (val / total) * 100.0
+            color = next(c[2] for c in CATEGORY_CONFIG if c[0] == key)
+            svg_circles.append(
+                f'<circle cx="18" cy="18" r="15.9155" fill="transparent" '
+                f'stroke="{color}" stroke-width="4.5" '
+                f'stroke-dasharray="{pct:.2f} {100.0 - pct:.2f}" '
+                f'stroke-dashoffset="{-current_offset:.2f}"></circle>'
+            )
+            current_offset += pct
+
+    svg_content = (
+        '<svg viewBox="0 0 36 36" class="donut-svg-ring">\n'
+        + "\n".join("        " + c for c in svg_circles)
+        + "\n      </svg>"
+    )
+
+    legend_items = []
+    display_order = ["critical", "high", "medium", "low"]
+    for key in display_order:
+        val = counts.get(key, 0)
+        item_cfg = next(c for c in CATEGORY_CONFIG if c[0] == key)
+        display_name = item_cfg[1]
+        dot_class = item_cfg[3]
+        color = item_cfg[2]
+        legend_items.append(
+            f'<div class="legend-item">'
+            f'<span class="dot {dot_class}" style="background-color: {color};"></span> '
+            f'{display_name}: <b>{val}</b>'
+            f'</div>'
+        )
+
+    legend_html = "\n".join("        " + it for it in legend_items)
+
+    return f"""<div class="donut-widget">
+  <div class="donut-widget-inner">
+    <div class="donut-chart">
+      {svg_content}
+      <div class="donut-center">
+        <b>{total}</b>
+        <span>{escape(label)}</span>
+      </div>
+    </div>
+    <div class="donut-legend">
+{legend_html}
+    </div>
+  </div>
+</div>"""
 
 
 def replace_checkboxes_with_svg(html: str) -> str:
@@ -53,10 +179,12 @@ def replace_checkboxes_with_svg(html: str) -> str:
 
 
 def enhance_html_components(html: str) -> str:
-    """Thay the checkbox bang SVG va tu dong bo sung vector cho donut chart neu thieu."""
+    """Thay the checkbox bang SVG, ho tro donut directive va bo sung vector cho donut chart neu thieu."""
     if not html:
         return html
     html = replace_checkboxes_with_svg(html)
+    if "[[donut" in html.lower():
+        html = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), html)
     if "donut-chart" in html and "donut-svg-ring" not in html:
         html = re.sub(
             r'(<div\b[^>]*class=["\'][^"\']*donut-chart[^"\']*["\'][^>]*>)',
@@ -194,16 +322,40 @@ DOCUMENT_BASE_CSS = (
     ".markdown-body .toc .toc-title.toc-align-right {\n"
     "  text-align: right !important;\n"
     "}\n"
+    "/* Phan cap phong chu ro rang cho Table of Contents (TOC) */\n"
+    "/* Cap 1: In dam, chu thang, ro net */\n"
+    ".markdown-body .toc li.toc-depth-1 > a,\n"
     ".markdown-body .toc > ul > li > a {\n"
-    "  font-weight: 600 !important;\n"
+    "  font-weight: 700 !important;\n"
+    "  font-style: normal !important;\n"
+    "  font-size: 0.98rem !important;\n"
+    "  color: var(--fg-default, #1f2328) !important;\n"
     "}\n"
-    ".markdown-body .toc ul ul li a {\n"
+    "/* Cap 2: Dam nghieng (1.2 ...) */\n"
+    ".markdown-body .toc li.toc-depth-2 > a,\n"
+    ".markdown-body .toc > ul > li > ul > li > a {\n"
+    "  font-weight: 600 !important;\n"
     "  font-style: italic !important;\n"
-    "  font-weight: normal !important;\n"
+    "  font-size: 0.94rem !important;\n"
+    "}\n"
+    "/* Cap 3: Nghieng binh thuong (1.1.2 ...) */\n"
+    ".markdown-body .toc li.toc-depth-3 > a,\n"
+    ".markdown-body .toc > ul > li > ul > li > ul > li > a {\n"
+    "  font-weight: 400 !important;\n"
+    "  font-style: italic !important;\n"
+    "  font-size: 0.90rem !important;\n"
+    "}\n"
+    "/* Cap 4+: Binh thuong, thang */\n"
+    ".markdown-body .toc li.toc-depth-4 > a,\n"
+    ".markdown-body .toc ul ul ul ul li a {\n"
+    "  font-weight: 400 !important;\n"
+    "  font-style: normal !important;\n"
+    "  font-size: 0.88rem !important;\n"
+    "  color: var(--fg-muted, #656d76) !important;\n"
     "}\n"
     ".markdown-body .toc a::after {\n"
     "  font-style: normal !important;\n"
-    "  font-weight: normal !important;\n"
+    "  font-weight: 400 !important;\n"
     "}\n"
     "/* Tuy chon no-bullet cho TOC */\n"
     ".markdown-body .toc.no-bullet ul,\n"
@@ -223,31 +375,125 @@ DOCUMENT_BASE_CSS = (
     "  padding-left: 18px !important;\n"
     "  margin-left: 0 !important;\n"
     "}\n"
-    "/* Bo cuc Metrics Dashboard Bar va Donut Chart vector */\n"
-    ".metrics-dashboard-bar .donut-chart {\n"
+    "/* Bo cuc Donut Chart Widget can giua, khong vien/nen */\n"
+    ".donut-widget {\n"
+    "  width: 100% !important;\n"
+    "  margin: 1.8rem 0 !important;\n"
+    "  text-align: center !important;\n"
+    "  background: transparent !important;\n"
+    "  border: none !important;\n"
+    "  box-shadow: none !important;\n"
+    "  padding: 0 !important;\n"
+    "}\n"
+    ".donut-widget-inner {\n"
+    "  display: inline-flex !important;\n"
+    "  align-items: center !important;\n"
+    "  justify-content: center !important;\n"
+    "  gap: 28px !important;\n"
+    "  margin: 0 auto !important;\n"
+    "  text-align: left !important;\n"
+    "  background: transparent !important;\n"
+    "  border: none !important;\n"
+    "  box-shadow: none !important;\n"
+    "  padding: 0 !important;\n"
+    "}\n"
+    ".metrics-dashboard-bar .donut-chart,\n"
+    ".donut-widget .donut-chart,\n"
+    ".donut-chart {\n"
     "  position: relative !important;\n"
-    "  width: 72px !important;\n"
-    "  height: 72px !important;\n"
+    "  width: 110px !important;\n"
+    "  height: 110px !important;\n"
     "  display: block !important;\n"
     "  flex-shrink: 0 !important;\n"
+    "  margin: 0 !important;\n"
+    "  background: transparent !important;\n"
+    "  border: none !important;\n"
     "}\n"
-    ".metrics-dashboard-bar .donut-chart .donut-center {\n"
+    ".donut-chart .donut-svg-ring {\n"
+    "  width: 110px !important;\n"
+    "  height: 110px !important;\n"
     "  position: absolute !important;\n"
-    "  top: 14px !important;\n"
-    "  left: 14px !important;\n"
-    "  width: 44px !important;\n"
-    "  height: 44px !important;\n"
+    "  top: 0 !important;\n"
+    "  left: 0 !important;\n"
+    "  transform: rotate(-90deg) !important;\n"
+    "  border-radius: 50% !important;\n"
+    "}\n"
+    ".metrics-dashboard-bar .donut-chart .donut-center,\n"
+    ".donut-widget .donut-center,\n"
+    ".donut-center {\n"
+    "  position: absolute !important;\n"
+    "  top: 19px !important;\n"
+    "  left: 19px !important;\n"
+    "  width: 72px !important;\n"
+    "  height: 72px !important;\n"
     "  background: #ffffff !important;\n"
     "  border-radius: 50% !important;\n"
     "  display: flex !important;\n"
     "  flex-direction: column !important;\n"
     "  align-items: center !important;\n"
     "  justify-content: center !important;\n"
-    "  box-shadow: 0 0 4px rgba(0,0,0,0.08) !important;\n"
+    "  box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;\n"
     "  z-index: 2 !important;\n"
+    "}\n"
+    ".donut-center b {\n"
+    "  font-size: 1.6rem !important;\n"
+    "  font-weight: 800 !important;\n"
+    "  line-height: 1 !important;\n"
+    "  color: #1e293b !important;\n"
+    "}\n"
+    ".donut-center span {\n"
+    "  font-size: 0.72rem !important;\n"
+    "  font-weight: 700 !important;\n"
+    "  text-transform: uppercase !important;\n"
+    "  letter-spacing: 0.05em !important;\n"
+    "  color: #64748b !important;\n"
+    "  margin-top: 2px !important;\n"
+    "}\n"
+    ".donut-legend {\n"
+    "  display: flex !important;\n"
+    "  flex-direction: column !important;\n"
+    "  justify-content: center !important;\n"
+    "  gap: 6px !important;\n"
+    "  text-align: left !important;\n"
+    "}\n"
+    ".donut-legend .legend-item {\n"
+    "  display: flex !important;\n"
+    "  align-items: center !important;\n"
+    "  gap: 8px !important;\n"
+    "  font-size: 0.95rem !important;\n"
+    "  color: #334155 !important;\n"
+    "  line-height: 1.4 !important;\n"
+    "}\n"
+    ".donut-legend .legend-item b {\n"
+    "  font-weight: 700 !important;\n"
+    "  color: #0f172a !important;\n"
+    "}\n"
+    ".donut-legend .legend-item .dot {\n"
+    "  width: 10px !important;\n"
+    "  height: 10px !important;\n"
+    "  border-radius: 50% !important;\n"
+    "  display: inline-block !important;\n"
+    "  flex-shrink: 0 !important;\n"
     "}\n"
     "/* Ho tro tuong thich cho Metrics Dashboard va KPI Widgets khi in/xuat PDF */\n"
     "@media print {\n"
+    "  .donut-widget {\n"
+    "    display: block !important;\n"
+    "    text-align: center !important;\n"
+    "    margin: 1.6rem 0 !important;\n"
+    "    page-break-inside: avoid !important;\n"
+    "    break-inside: avoid !important;\n"
+    "    background: transparent !important;\n"
+    "    border: none !important;\n"
+    "  }\n"
+    "  .donut-widget-inner {\n"
+    "    display: inline-block !important;\n"
+    "    vertical-align: middle !important;\n"
+    "    text-align: left !important;\n"
+    "    margin: 0 auto !important;\n"
+    "    background: transparent !important;\n"
+    "    border: none !important;\n"
+    "  }\n"
     "  .metrics-dashboard-bar {\n"
     "    display: block !important;\n"
     "    width: 100% !important;\n"
@@ -269,34 +515,54 @@ DOCUMENT_BASE_CSS = (
     "    box-sizing: border-box !important;\n"
     "    display: block !important;\n"
     "  }\n"
-    "  .metrics-dashboard-bar .donut-chart {\n"
+    "  .metrics-dashboard-bar .donut-chart,\n"
+    "  .donut-widget .donut-chart,\n"
+    "  .donut-chart {\n"
     "    position: relative !important;\n"
-    "    width: 72px !important;\n"
-    "    height: 72px !important;\n"
+    "    width: 110px !important;\n"
+    "    height: 110px !important;\n"
     "    display: block !important;\n"
     "    float: left !important;\n"
-    "    margin-right: 12px !important;\n"
+    "    margin-right: 24px !important;\n"
+    "    background: transparent !important;\n"
+    "    border: none !important;\n"
     "  }\n"
-    "  .metrics-dashboard-bar .donut-chart .donut-center {\n"
+    "  .metrics-dashboard-bar .donut-chart .donut-center,\n"
+    "  .donut-widget .donut-center,\n"
+    "  .donut-center {\n"
     "    position: absolute !important;\n"
-    "    top: 14px !important;\n"
-    "    left: 14px !important;\n"
-    "    width: 44px !important;\n"
-    "    height: 44px !important;\n"
+    "    top: 19px !important;\n"
+    "    left: 19px !important;\n"
+    "    width: 72px !important;\n"
+    "    height: 72px !important;\n"
     "    background: #ffffff !important;\n"
     "    border-radius: 50% !important;\n"
     "    text-align: center !important;\n"
     "    z-index: 2 !important;\n"
     "  }\n"
-    "  .metrics-dashboard-bar .donut-legend {\n"
+    "  .donut-center b {\n"
+    "    font-size: 16pt !important;\n"
+    "    display: block !important;\n"
+    "    padding-top: 14px !important;\n"
+    "  }\n"
+    "  .donut-center span {\n"
+    "    font-size: 7.5pt !important;\n"
+    "    display: block !important;\n"
+    "  }\n"
+    "  .metrics-dashboard-bar .donut-legend,\n"
+    "  .donut-widget .donut-legend,\n"
+    "  .donut-legend {\n"
     "    float: left !important;\n"
     "    display: block !important;\n"
     "    width: auto !important;\n"
+    "    padding-top: 8px !important;\n"
     "  }\n"
-    "  .metrics-dashboard-bar .legend-item {\n"
+    "  .metrics-dashboard-bar .legend-item,\n"
+    "  .donut-widget .legend-item,\n"
+    "  .legend-item {\n"
     "    display: block !important;\n"
-    "    margin-bottom: 3px !important;\n"
-    "    font-size: 8pt !important;\n"
+    "    margin-bottom: 4px !important;\n"
+    "    font-size: 9.5pt !important;\n"
     "  }\n"
     "  .metrics-dashboard-bar .v-divider {\n"
     "    float: left !important;\n"
@@ -382,19 +648,41 @@ TOC_PRINT_RULE = (
     "  .markdown-body .toc .toc-title.toc-align-right {\n"
     "    text-align: right !important;\n"
     "  }\n"
+    "  /* Cap 1: In dam, chu thang */\n"
+    "  .markdown-body .toc li.toc-depth-1 > a,\n"
     "  .markdown-body .toc > ul > li > a {\n"
-    "    font-weight: 600 !important;\n"
+    "    font-weight: 700 !important;\n"
+    "    font-style: normal !important;\n"
+    "    font-size: 10.5pt !important;\n"
     "  }\n"
-    "  .markdown-body .toc ul ul li a {\n"
+    "  /* Cap 2: Dam nghieng (1.2 ...) */\n"
+    "  .markdown-body .toc li.toc-depth-2 > a,\n"
+    "  .markdown-body .toc > ul > li > ul > li > a {\n"
+    "    font-weight: 600 !important;\n"
     "    font-style: italic !important;\n"
-    "    font-weight: normal !important;\n"
+    "    font-size: 10pt !important;\n"
+    "  }\n"
+    "  /* Cap 3: Nghieng binh thuong (1.1.2 ...) */\n"
+    "  .markdown-body .toc li.toc-depth-3 > a,\n"
+    "  .markdown-body .toc > ul > li > ul > li > ul > li > a {\n"
+    "    font-weight: 400 !important;\n"
+    "    font-style: italic !important;\n"
+    "    font-size: 9.5pt !important;\n"
+    "  }\n"
+    "  /* Cap 4+: Binh thuong, thang */\n"
+    "  .markdown-body .toc li.toc-depth-4 > a,\n"
+    "  .markdown-body .toc ul ul ul ul li a {\n"
+    "    font-weight: 400 !important;\n"
+    "    font-style: normal !important;\n"
+    "    font-size: 9pt !important;\n"
+    "    color: var(--fg-muted, #59636e) !important;\n"
     "  }\n"
     "  .markdown-body .toc a::after {\n"
     "    content: leader('. ') target-counter(attr(href), page);\n"
     "    color: var(--fg-muted, #59636e);\n"
     "    padding-left: 6px;\n"
     "    font-style: normal !important;\n"
-    "    font-weight: normal !important;\n"
+    "    font-weight: 400 !important;\n"
     "  }\n"
     "  .markdown-body .toc.no-bullet ul,\n"
     "  .markdown-body .toc.no-bullet ol {\n"

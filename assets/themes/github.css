@@ -400,12 +400,34 @@ body {
   text-align: right;
 }
 .markdown-body .toc ul { margin-bottom: 0; }
+/* Phan cap ro rang cho TOC */
+.markdown-body .toc li.toc-depth-1 > a,
 .markdown-body .toc > ul > li > a {
-  font-weight: 600;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  font-size: 0.98rem;
+  color: var(--fg-default);
 }
-.markdown-body .toc ul ul li a {
-  font-style: italic;
-  font-weight: normal;
+.markdown-body .toc li.toc-depth-2 > a,
+.markdown-body .toc > ul > li > ul > li > a {
+  font-weight: 600 !important;
+  font-style: italic !important;
+  font-size: 0.94rem;
+  color: var(--accent-fg);
+}
+.markdown-body .toc li.toc-depth-3 > a,
+.markdown-body .toc > ul > li > ul > li > ul > li > a {
+  font-weight: 400 !important;
+  font-style: italic !important;
+  font-size: 0.90rem;
+  color: var(--fg-default);
+}
+.markdown-body .toc li.toc-depth-4 > a,
+.markdown-body .toc ul ul ul ul li a {
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: 0.88rem;
+  color: var(--fg-muted);
 }
 .markdown-body .toc.no-bullet ul,
 .markdown-body .toc.no-bullet ol {
@@ -423,6 +445,104 @@ body {
 .markdown-body .toc.no-bullet ul ul {
   padding-left: 18px !important;
   margin-left: 0 !important;
+}
+
+/* --- Donut Chart Widget --- */
+.markdown-body .donut-widget {
+  width: 100%;
+  margin: 1.8rem 0;
+  text-align: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.markdown-body .donut-widget-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin: 0 auto;
+  text-align: left;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.markdown-body .donut-widget .donut-chart,
+.markdown-body .donut-chart {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: block;
+  flex-shrink: 0;
+  margin: 0;
+  background: transparent !important;
+  border: none !important;
+}
+.markdown-body .donut-chart .donut-svg-ring {
+  width: 110px;
+  height: 110px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+  border-radius: 50%;
+}
+.markdown-body .donut-chart .donut-center {
+  position: absolute;
+  top: 19px;
+  left: 19px;
+  width: 72px;
+  height: 72px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  z-index: 2;
+}
+.markdown-body .donut-chart .donut-center b {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #1e293b;
+}
+.markdown-body .donut-chart .donut-center span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-top: 2px;
+}
+.markdown-body .donut-legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  text-align: left;
+}
+.markdown-body .donut-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.4;
+}
+.markdown-body .donut-legend .legend-item b {
+  font-weight: 700;
+  color: #0f172a;
+}
+.markdown-body .donut-legend .legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* --- 16. In khi xuat PDF --- */
@@ -477,5 +597,93 @@ body {
   .markdown-body .toc.no-bullet ul ul {
     padding-left: 18px !important;
     margin-left: 0 !important;
+  }
+  /* TOC depth print */
+  .markdown-body .toc li.toc-depth-1 > a,
+  .markdown-body .toc > ul > li > a {
+    font-weight: 700 !important;
+    font-style: normal !important;
+    font-size: 10.5pt !important;
+  }
+  .markdown-body .toc li.toc-depth-2 > a,
+  .markdown-body .toc > ul > li > ul > li > a {
+    font-weight: 600 !important;
+    font-style: italic !important;
+    font-size: 10pt !important;
+  }
+  .markdown-body .toc li.toc-depth-3 > a,
+  .markdown-body .toc > ul > li > ul > li > ul > li > a {
+    font-weight: 400 !important;
+    font-style: italic !important;
+    font-size: 9.5pt !important;
+  }
+  .markdown-body .toc li.toc-depth-4 > a,
+  .markdown-body .toc ul ul ul ul li a {
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-size: 9pt !important;
+    color: var(--fg-muted) !important;
+  }
+  /* Donut Widget Print */
+  .donut-widget {
+    display: block !important;
+    text-align: center !important;
+    margin: 1.6rem 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .donut-widget-inner {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .donut-widget .donut-chart,
+  .donut-chart {
+    position: relative !important;
+    width: 110px !important;
+    height: 110px !important;
+    float: left !important;
+    margin-right: 24px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .donut-widget .donut-chart .donut-center,
+  .donut-chart .donut-center {
+    position: absolute !important;
+    top: 19px !important;
+    left: 19px !important;
+    width: 72px !important;
+    height: 72px !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+    z-index: 2 !important;
+  }
+  .donut-center b {
+    font-size: 16pt !important;
+    display: block !important;
+    padding-top: 14px !important;
+  }
+  .donut-center span {
+    font-size: 7.5pt !important;
+    display: block !important;
+  }
+  .donut-widget .donut-legend,
+  .donut-legend {
+    float: left !important;
+    display: block !important;
+    width: auto !important;
+    padding-top: 8px !important;
+  }
+  .donut-widget .legend-item,
+  .donut-legend .legend-item {
+    display: block !important;
+    margin-bottom: 4px !important;
+    font-size: 9.5pt !important;
   }
 }

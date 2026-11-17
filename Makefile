@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 DESTDIR ?=
-APP_VERSION := 1.2.4
+APP_VERSION := 1.2.5
 PACKAGE := marknote
 PY ?= python3
 APPIMAGETOOL ?= appimagetool-x86_64.AppImage

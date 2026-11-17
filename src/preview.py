@@ -16,6 +16,8 @@ from exporter import (
     build_document,
     enhance_html_components,
     replace_checkboxes_with_svg,
+    render_donut_widget,
+    DONUT_DIRECTIVE_RE,
 )
 from settings import (
     APP_DIR,
@@ -119,8 +121,24 @@ class MarkdownRenderer:
             self.md.use(footnote_plugin)
         self.md.core.ruler.push("anchors_toc", _anchors_toc)
 
+        orig_fence = self.md.renderer.rules.get("fence")
+
+        def _render_fence(tokens, idx, options, env):
+            tok = tokens[idx]
+            info = tok.info.strip() if tok.info else ""
+            lang = info.split()[0].lower() if info else ""
+            if lang == "donut":
+                return render_donut_widget(tok.content) + "\n"
+            if orig_fence:
+                return orig_fence(tokens, idx, options, env)
+            return self.md.renderer.renderToken(tokens, idx, options)
+
+        self.md.renderer.rules["fence"] = _render_fence
+
     def render(self, md: str) -> str:
         clean_md = normalize_tasklists(md or "")
+        if "[[donut" in clean_md.lower():
+            clean_md = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), clean_md)
         html = self.md.render(clean_md)
         return enhance_html_components(html)
 
@@ -156,6 +174,8 @@ def _inline_text(token) -> str:
 
 
 def _build_toc(items, label: str, align: str = "left", no_bullet: bool = False) -> str:
+    if not items:
+        return ""
     toc_class = "toc no-bullet" if no_bullet else "toc"
     out = ['<div class="%s">' % toc_class]
     if label:
@@ -179,7 +199,8 @@ def _build_toc(items, label: str, align: str = "left", no_bullet: bool = False) 
             out.append("<ul>")
             stack.append(level)
             has_open_li = False
-        out.append('<li><a href="#%s">%s</a>' % (anchor, text))
+        depth = len(stack)
+        out.append('<li class="toc-item toc-depth-%d"><a href="#%s">%s</a>' % (depth, anchor, text))
         has_open_li = True
     if has_open_li:
         out.append("</li>")
@@ -256,7 +277,8 @@ TOC_DIRECTIVE_SEARCH_RE = re.compile(
 
 
 def _anchors_toc(state):
-    """Gan id cho heading (Markdown # va HTML <h1-6>) va thay [[TOC ...]] bang muc luc co link nhan."""
+    """Gan id cho heading (Markdown # va HTML <h1-6>) va thay [[TOC ...]] bang muc luc co link nhan.
+    CHI liet ke cac muc o duoi vi tri cua [[TOC ...]] trong tai lieu."""
     taken = set()
     headings = []
     toc_index = None
@@ -274,8 +296,22 @@ def _anchors_toc(state):
             text = _inline_text(inline) if inline is not None else ""
             anchor = _slugify(text, taken)
             tok.attrSet("id", anchor)
-            headings.append((level, anchor, escape(text)))
+            if toc_index is not None:
+                headings.append((level, anchor, escape(text)))
         elif tok.type in ("html_block", "html_inline"):
+            toc_pos_in_tok = -1
+            if toc_index is None and ("[[toc" in tok.content.lower()):
+                dm = TOC_DIRECTIVE_SEARCH_RE.search(tok.content)
+                if dm:
+                    is_toc, label, align, no_bullet = _parse_toc_directive(dm.group(0))
+                    if is_toc:
+                        toc_index = i
+                        toc_label = label
+                        toc_align = align
+                        toc_no_bullet = no_bullet
+                        toc_in_html = True
+                        toc_pos_in_tok = dm.start()
+
             if "<h" in tok.content.lower():
                 def _repl_h(m: re.Match) -> str:
                     lvl = int(m.group(1))
@@ -292,21 +328,19 @@ def _anchors_toc(state):
                     else:
                         anc = _slugify(pure_text, taken)
                         new_tag = f'<h{lvl} id="{anc}"{attrs}>{inner}</h{lvl}>'
-                    headings.append((lvl, anc, escape(pure_text)))
+
+                    is_after_toc = False
+                    if toc_pos_in_tok >= 0:
+                        is_after_toc = (m.start() > toc_pos_in_tok)
+                    elif toc_index is not None:
+                        is_after_toc = True
+
+                    if is_after_toc:
+                        headings.append((lvl, anc, escape(pure_text)))
                     return new_tag
 
                 tok.content = HTML_HEADING_RE.sub(_repl_h, tok.content)
 
-            if toc_index is None and ("[[toc" in tok.content.lower()):
-                dm = TOC_DIRECTIVE_SEARCH_RE.search(tok.content)
-                if dm:
-                    is_toc, label, align, no_bullet = _parse_toc_directive(dm.group(0))
-                    if is_toc:
-                        toc_index = i
-                        toc_label = label
-                        toc_align = align
-                        toc_no_bullet = no_bullet
-                        toc_in_html = True
         elif toc_index is None and tok.type == "inline":
             is_toc, label, align, no_bullet = _parse_toc_directive(tok.content)
             if is_toc:

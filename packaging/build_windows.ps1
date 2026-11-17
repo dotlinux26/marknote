@@ -15,7 +15,7 @@
 #  Python weasyprint khong tim thay Pango.
 # =========================================================================
 $ErrorActionPreference = "Stop"
-$AppVersion = if ($env:APP_VERSION) { $env:APP_VERSION } else { "1.2.4" }
+$AppVersion = if ($env:APP_VERSION) { $env:APP_VERSION } else { "1.2.5" }
 $Python = "python"
 # Nie nhat dinh ban weasyprint-windows.zip (co san Pango, file chinh thuc)
 $WeasyVersion = "v68.1"
