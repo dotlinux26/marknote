@@ -12,7 +12,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
-from exporter import build_document
+from exporter import build_document, replace_checkboxes_with_svg
 from settings import (
     APP_DIR,
     KEY_SYNC_SCROLL,
@@ -32,6 +32,58 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import TextLexer, get_lexer_by_name
 from pygments.util import ClassNotFound
+
+
+TASKLIST_RE = re.compile(
+    r"^(?P<indent>[ \t]*)(?:[-*+]\s*)?\[(?P<mark>[ xX])\][ \t]*(?P<rest>.*)$"
+)
+
+
+def normalize_tasklists(md: str) -> str:
+    """Chuan hoa cac dong danh sach cong viec ([ ], [x], -[ ], v.v.) thanh - [ ] chuan GFM,
+    dong thoi bo qua cac block code ``` hoac ~~~."""
+    if not md or "[" not in md:
+        return md
+
+    lines = md.splitlines(keepends=True)
+    out: list[str] = []
+    in_code_block = False
+    fence_char = ""
+    fence_len = 0
+
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            char = stripped[0]
+            count = len(stripped) - len(stripped.lstrip(char))
+            if not in_code_block:
+                in_code_block = True
+                fence_char = char
+                fence_len = count
+                out.append(line)
+                continue
+            elif in_code_block and char == fence_char and count >= fence_len:
+                in_code_block = False
+                fence_char = ""
+                fence_len = 0
+                out.append(line)
+                continue
+
+        if in_code_block:
+            out.append(line)
+            continue
+
+        m = TASKLIST_RE.match(line.rstrip("\r\n"))
+        if m:
+            indent = m.group("indent")
+            mark = m.group("mark").lower()
+            rest = m.group("rest")
+            ending = "\r\n" if line.endswith("\r\n") else ("\n" if line.endswith("\n") else "")
+            out.append(f"{indent}- [{mark}] {rest}{ending}")
+        else:
+            out.append(line)
+
+    return "".join(out)
 
 
 def _pygments_html(code: str, lang: str | None) -> str:
@@ -64,7 +116,9 @@ class MarkdownRenderer:
         self.md.core.ruler.push("anchors_toc", _anchors_toc)
 
     def render(self, md: str) -> str:
-        return self.md.render(md or "")
+        clean_md = normalize_tasklists(md or "")
+        html = self.md.render(clean_md)
+        return replace_checkboxes_with_svg(html)
 
     @staticmethod
     def _highlight(code: str, lang: str | None, attrs: str) -> str:

@@ -3,12 +3,80 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 from media import embed_images_as_base64
+
+CHECKBOX_TAG_RE = re.compile(
+    r'<input\b[^>]*class=["\'][^"\']*task-list-item-checkbox[^"\']*["\'][^>]*>'
+)
+
+UNCHECKED_SVG = (
+    '<svg class="task-svg task-unchecked" width="15" height="15" viewBox="0 0 16 16" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg">'
+    '<rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="#8c959f" stroke-width="1.8" fill="#ffffff"/>'
+    '</svg>'
+)
+
+CHECKED_SVG = (
+    '<svg class="task-svg task-checked" width="15" height="15" viewBox="0 0 16 16" fill="none" '
+    'xmlns="http://www.w3.org/2000/svg">'
+    '<rect x="1" y="1" width="14" height="14" rx="3" fill="#0969da" stroke="#0969da" stroke-width="1"/>'
+    '<path d="M4.5 8L7 10.5L11.5 5.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+    '</svg>'
+)
+
+
+def replace_checkboxes_with_svg(html: str) -> str:
+    """Thay the checkbox mac dinh bang vector SVG sac net va can le chuan."""
+    if not html or "task-list-item-checkbox" not in html:
+        return html
+
+    def _repl(m: re.Match) -> str:
+        tag = m.group(0)
+        return CHECKED_SVG if "checked" in tag else UNCHECKED_SVG
+
+    return CHECKBOX_TAG_RE.sub(_repl, html)
+
+
+TASKLIST_BASE_CSS = (
+    "\n/* MarkNote Tasklist Styles */\n"
+    ".markdown-body ul.contains-task-list,\n"
+    ".markdown-body ol.contains-task-list {\n"
+    "  list-style: none !important;\n"
+    "  list-style-type: none !important;\n"
+    "  padding-left: 0 !important;\n"
+    "  margin-left: 0 !important;\n"
+    "}\n"
+    ".markdown-body li.task-list-item > ul.contains-task-list,\n"
+    ".markdown-body li.task-list-item > ol.contains-task-list {\n"
+    "  padding-left: 24px !important;\n"
+    "  margin-left: 0 !important;\n"
+    "}\n"
+    ".markdown-body li.task-list-item {\n"
+    "  list-style: none !important;\n"
+    "  list-style-type: none !important;\n"
+    "  padding-left: 24px !important;\n"
+    "  text-indent: -24px !important;\n"
+    "  margin-top: 5px;\n"
+    "  margin-bottom: 5px;\n"
+    "  line-height: 1.6;\n"
+    "}\n"
+    ".markdown-body li.task-list-item > input.task-list-item-checkbox {\n"
+    "  margin: 0 6px 0 0;\n"
+    "  vertical-align: middle;\n"
+    "}\n"
+    ".markdown-body .task-svg {\n"
+    "  vertical-align: -2px;\n"
+    "  margin-right: 6px;\n"
+    "  display: inline-block;\n"
+    "  flex-shrink: 0;\n"
+    "}\n"
+)
 
 PDF_PAGE_RULE = (
     "\n"
@@ -60,9 +128,10 @@ HTML_FOOTER = (
 
 def build_document(html_body: str, css: str, title: str = "MarkNote") -> str:
     """Ghep HTML da render voi CSS inline thanh mot trang doc lap."""
+    full_css = (css or "") + "\n" + TASKLIST_BASE_CSS
     return (
         HTML_HEADER % title
-        + css
+        + full_css
         + HTML_FOOTER.replace("\n</main>\n", "\n" + html_body + "\n</main>\n")
     )
 
@@ -129,12 +198,14 @@ class Exporter:
     """Ghi ra file HTML hoac PDF dung chung mot theme (UC13)."""
 
     def toHtml(self, html_body: str, css: str, path) -> None:
+        html_body = replace_checkboxes_with_svg(html_body)
         html_body = embed_images_as_base64(html_body)
         Path(path).write_text(
             build_document(html_body, css), encoding="utf-8"
         )
 
     def toPdf(self, html_body: str, css: str, path) -> None:
+        html_body = replace_checkboxes_with_svg(html_body)
         html_body = embed_images_as_base64(html_body)
         document = build_document(
             html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE

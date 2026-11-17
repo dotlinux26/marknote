@@ -6,8 +6,8 @@
 #    powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
 #
 #  Ket qua:
-#    dist\MarkNote-1.2.0\                 thu muc chay duoc (gan Python dem)
-#    dist\MarkNote-1.2.0-windows-x64.zip  goi nen de chuyen di
+#    dist\MarkNote-1.2.1\                 thu muc chay duoc (gan Python dem)
+#    dist\MarkNote-1.2.1-windows-x64.zip  goi nen de chuyen di
 #
 #  Xuat PDF KHONG can pacman/MSYS2: script tu tai "weasyprint-windows.zip"
 #  (ban chinh thuc cua WeasyPrint, da dong goi san Pango) va dat
@@ -15,7 +15,7 @@
 #  Python weasyprint khong tim thay Pango.
 # =========================================================================
 $ErrorActionPreference = "Stop"
-$AppVersion = "1.2.0"
+$AppVersion = "1.2.1"
 $Python = "python"
 # Nie nhat dinh ban weasyprint-windows.zip (co san Pango, file chinh thuc)
 $WeasyVersion = "v68.1"

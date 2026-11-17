@@ -33,11 +33,17 @@ class ThemeManager:
     def ensureDefaults(self):
         """Copy theme mac dinh tu assets sang thu muc nguoi dung neu can."""
         self.directory.mkdir(parents=True, exist_ok=True)
-        if not list(self.directory.glob("*" + THEME_SUFFIX)):
-            for css in sorted(ASSETS_THEME_DIR.glob("*" + THEME_SUFFIX)):
-                target = self.directory / css.name
-                if not target.exists():
-                    target.write_text(css.read_text(encoding="utf-8"), encoding="utf-8")
+        for css in sorted(ASSETS_THEME_DIR.glob("*" + THEME_SUFFIX)):
+            target = self.directory / css.name
+            if not target.exists():
+                target.write_text(css.read_text(encoding="utf-8"), encoding="utf-8")
+            elif target.name in ("default.css", "dark.css", "github.css"):
+                try:
+                    content = target.read_text(encoding="utf-8")
+                    if "ul.task-list-item" in content and "contains-task-list" not in content:
+                        target.write_text(css.read_text(encoding="utf-8"), encoding="utf-8")
+                except Exception:
+                    pass
 
     def listThemes(self) -> list:
         """UC11: quet thu muc, loc .css, tra ten khong kem phan mo rong."""

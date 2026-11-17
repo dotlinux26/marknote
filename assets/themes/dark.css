@@ -208,18 +208,38 @@ body {
 .markdown-body li > p { margin-top: 16px; }
 
 /* Task list GFM: - [ ] va - [x] */
-.markdown-body ul.task-list-item {
-  list-style: none;
-  padding-left: 0;
+.markdown-body ul.contains-task-list,
+.markdown-body ol.contains-task-list {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
 }
-.markdown-body ul.task-list-item input[type="checkbox"] {
-  margin: 0 .2em .25em -1.6em;
+.markdown-body li.task-list-item > ul.contains-task-list,
+.markdown-body li.task-list-item > ol.contains-task-list {
+  padding-left: 24px !important;
+  margin-left: 0 !important;
+}
+.markdown-body li.task-list-item {
+  list-style: none !important;
+  list-style-type: none !important;
+  padding-left: 24px !important;
+  text-indent: -24px !important;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  line-height: 1.6;
+}
+.markdown-body li.task-list-item > input.task-list-item-checkbox {
+  margin: 0 6px 0 0;
   vertical-align: middle;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent-emphasis);
+  accent-color: var(--accent-emphasis, #0969da);
 }
-.markdown-body ul.task-list-item li { margin-top: 4px; }
+.markdown-body .task-svg {
+  vertical-align: -2px;
+  margin-right: 6px;
+  display: inline-block;
+  flex-shrink: 0;
+}
 
 /* --- 10. Bang --- */
 .markdown-body table {
