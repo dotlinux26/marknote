@@ -22,6 +22,10 @@ Bạn có thể kết hợp đổi tên tiêu đề, căn lề và loại bỏ d
 | Tham số | Ý nghĩa | Ví dụ |
 |:---|:---|:---|
 | `"Tên tùy chỉnh"` | Đặt lại tiêu đề mục lục | `[[TOC="NỘI DUNG CHÍNH"]]` |
+| `title-color="mau"` | Màu sắc tiêu đề mục lục (mặc định in đậm màu xanh `#0969da`) | `[[TOC title-color="#0284c7"]]` |
+| `c1="mau"`, `c2="mau"` | Đặt màu tùy ý theo từng cấp bậc (mặc định đen `#1f2328`) | `[[TOC c1="#000" c2="#0969da"]]` |
+| `color="mau"` | Đặt màu chung cho toàn bộ các mục listing | `[[TOC color="#111827"]]` |
+| `max-depth=N` | Giới hạn độ sâu tối đa của mục lục (1 - 6) | `[[TOC max-depth=3]]` |
 | `center` | Căn giữa tiêu đề mục lục | `[[TOC center]]` |
 | `right` | Căn phải tiêu đề mục lục | `[[TOC right]]` |
 | `left` | Căn trái tiêu đề (mặc định) | `[[TOC left]]` |
@@ -30,10 +34,11 @@ Bạn có thể kết hợp đổi tên tiêu đề, căn lề và loại bỏ d
 ### Quy tắc hoạt động thông minh của MarkNote
 1. **Chỉ quét các mục bên dưới `[[TOC]]`:** Các tiêu đề xuất hiện trước `[[TOC]]` (như tiêu đề bìa, thông tin tác giả, metadata) sẽ **không** bị đưa vào mục lục.
 2. **Nhận diện cả Markdown `#` lẫn thẻ HTML `<h1>` - `<h6>`:** Dù bạn viết `# Heading` hay `<h2>Tiêu đề</h2>` trong HTML, mục lục đều tự động nhận diện và gán liên kết.
-3. **Phân cấp phông chữ chuyên nghiệp:**
-   - **Cấp 1 (Mục chính to nhất):** In đậm, chữ thẳng (`font-weight: 700`).
-   - **Cấp 2 (Mục con cấp 2, ví dụ 1.2):** Đậm nghiêng (`font-weight: 600; font-style: italic`).
-   - **Cấp 3 (Mục con cấp 3, ví dụ 1.1.2):** Nghiêng bình thường (`font-weight: 400; font-style: italic`).
+3. **Phân cấp phông chữ chuẩn báo cáo nghiệp vụ:**
+   - **Tiêu đề Bảng mục lục:** In đậm (`font-weight: 800`), màu xanh nổi bật (`#0969da`) hoặc theo `title-color`.
+   - **Cấp 1 (Mục chính to nhất):** In đậm, chữ thẳng (`font-weight: 700`), màu đen chuẩn.
+   - **Cấp 2 (Mục con cấp 2, ví dụ 1.2):** Đậm nghiêng (`font-weight: 600; font-style: italic`), màu đen chuẩn.
+   - **Cấp 3 (Mục con cấp 3, ví dụ 1.1.2):** Nghiêng bình thường (`font-weight: 400; font-style: italic`), màu đen chuẩn.
    - **Cấp 4+ (Mục con sâu hơn):** Chữ thường, thẳng.
 4. **Xuất PDF:** Khi in ra PDF, mục lục tự động sinh đường chấm dẫn (`leader dots`) kèm số trang chính xác bên phải.
 

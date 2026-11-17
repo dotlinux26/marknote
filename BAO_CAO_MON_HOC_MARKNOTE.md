@@ -109,6 +109,7 @@ Giao diện người dùng được phát triển dựa trên **PySide6 (Qt for 
 | **Động cơ phân tích Markdown** | markdown-it-py (Chuẩn CommonMark/GFM) + Pygments |
 | **Cơ sở dữ liệu nhúng** | SQLite 3 tích hợp mô-đun Full-Text Search 5 (FTS5) |
 | **Động cơ xuất bản PDF** | WeasyPrint Document Engine (W3C Paged Media Level 3) |
+| **Công cụ thiết kế sơ đồ (UML/ERD)** | PlantUML v1.2024+ (Diagrams-as-Code) + Graphviz Dot Engine |
 | **Hệ điều hành hỗ trợ** | Linux (Ubuntu, Debian, Fedora, Arch - AppImage) và Windows 10/11 x64 |
 | **Giấy phép phát hành** | MIT License (Được tổ chức OSI công nhận) |
 | **Trạng thái dự án** | Đang hoạt động, phiên bản phát hành ổn định `v1.2.5` |
@@ -202,6 +203,11 @@ Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân lo�
 ## 2.7. Thực hiện bài toán
 
 ### 2.7.1. Phân tích yêu cầu hệ thống
+
+> 💡 **Quy chuẩn công cụ mô hình hóa thiết kế (Diagrams-as-Code Stack):**
+> Toàn bộ 9 sơ đồ kỹ thuật trong đồ án (Use Case, ERD, Kiến trúc phân tầng, Sơ đồ lớp và 5 Sơ đồ tuần tự nghiệp vụ) được thiết kế theo chuẩn **Diagrams-as-Code** bằng công cụ mã nguồn mở **PlantUML (v1.2024+)** kết hợp thư viện đồ họa **Graphviz (Dot Layout Engine)**.
+> - **Tệp mã nguồn mở:** Các sơ đồ được khai báo dạng văn bản thuần túy trong thư mục `docs/diagrams/*.puml`, cho phép quản lý lịch sử phiên bản (`git diff`) chặt chẽ cùng mã nguồn.
+> - **Định dạng kết xuất:** Hệ thống tự động biên dịch mã `.puml` ra định dạng vector **SVG** (độ phân giải vô hạn phục vụ in ấn PDF chất lượng cao) và định dạng ảnh **PNG 300 DPI** sắc nét phục vụ nhúng tài liệu trực quan.
 
 #### A. Yêu cầu chức năng (Ma trận 13 Use Cases chuẩn nghiệp vụ)
 Hệ thống phục vụ một tác nhân chính (**User** - Người dùng cá nhân) với toàn quyền quản trị cục bộ. Dưới đây là bảng ma trận đặc tả nghiệp vụ chuẩn cho 13 Use Cases của hệ thống:

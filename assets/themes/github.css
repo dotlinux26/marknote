@@ -384,11 +384,11 @@ body {
 .markdown-body .toc > strong:first-child {
   display: block;
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 800;
   margin-top: 2px;
   margin-bottom: 12px;
   letter-spacing: -0.01em;
-  color: var(--fg-default);
+  color: var(--accent-fg, #0969da);
 }
 .markdown-body .toc .toc-title.toc-align-left {
   text-align: left;
@@ -413,7 +413,7 @@ body {
   font-weight: 600 !important;
   font-style: italic !important;
   font-size: 0.94rem;
-  color: var(--accent-fg);
+  color: var(--fg-default);
 }
 .markdown-body .toc li.toc-depth-3 > a,
 .markdown-body .toc > ul > li > ul > li > ul > li > a {
@@ -562,10 +562,10 @@ body {
   .markdown-body .toc > strong:first-child {
     display: block !important;
     font-size: 13.5pt !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     margin-top: 2pt !important;
     margin-bottom: 9pt !important;
-    color: var(--fg-default);
+    color: var(--accent-fg, #0969da) !important;
   }
   .markdown-body .toc .toc-title.toc-align-left {
     text-align: left !important;
@@ -604,18 +604,21 @@ body {
     font-weight: 700 !important;
     font-style: normal !important;
     font-size: 10.5pt !important;
+    color: var(--fg-default, #1f2328) !important;
   }
   .markdown-body .toc li.toc-depth-2 > a,
   .markdown-body .toc > ul > li > ul > li > a {
     font-weight: 600 !important;
     font-style: italic !important;
     font-size: 10pt !important;
+    color: var(--fg-default, #1f2328) !important;
   }
   .markdown-body .toc li.toc-depth-3 > a,
   .markdown-body .toc > ul > li > ul > li > ul > li > a {
     font-weight: 400 !important;
     font-style: italic !important;
     font-size: 9.5pt !important;
+    color: var(--fg-default, #1f2328) !important;
   }
   .markdown-body .toc li.toc-depth-4 > a,
   .markdown-body .toc ul ul ul ul li a {

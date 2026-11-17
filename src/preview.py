@@ -173,18 +173,82 @@ def _inline_text(token) -> str:
     return "".join(parts).strip() or token.content.strip()
 
 
-def _build_toc(items, label: str, align: str = "left", no_bullet: bool = False) -> str:
-    if not items:
+class TocConfig:
+    """Cau hinh tuy bien Table of Contents (TOC)."""
+
+    def __init__(
+        self,
+        is_toc: bool = False,
+        label: str = "Table of Contents",
+        align: str = "left",
+        no_bullet: bool = False,
+        title_color: str = "#0969da",
+        item_color: str = "",
+        depth_colors: dict[int, str] | None = None,
+        max_depth: int = 6,
+    ):
+        self.is_toc = is_toc
+        self.label = label
+        self.align = align
+        self.no_bullet = no_bullet
+        self.title_color = title_color
+        self.item_color = item_color
+        self.depth_colors = depth_colors or {}
+        self.max_depth = max_depth
+
+    def __iter__(self):
+        return iter((self.is_toc, self.label, self.align, self.no_bullet))
+
+    def __getitem__(self, idx):
+        return (self.is_toc, self.label, self.align, self.no_bullet)[idx]
+
+    def __repr__(self):
+        return (
+            f"TocConfig(is_toc={self.is_toc}, label={self.label!r}, align={self.align!r}, "
+            f"no_bullet={self.no_bullet}, title_color={self.title_color!r}, "
+            f"depth_colors={self.depth_colors!r}, max_depth={self.max_depth})"
+        )
+
+
+def _build_toc(
+    items,
+    label: str | TocConfig = "Table of Contents",
+    align: str = "left",
+    no_bullet: bool = False,
+    title_color: str = "#0969da",
+    item_color: str = "",
+    depth_colors: dict[int, str] | None = None,
+    max_depth: int = 6,
+) -> str:
+    if isinstance(label, TocConfig):
+        cfg = label
+        label = cfg.label
+        align = cfg.align
+        no_bullet = cfg.no_bullet
+        title_color = cfg.title_color
+        item_color = cfg.item_color
+        depth_colors = cfg.depth_colors
+        max_depth = cfg.max_depth
+
+    depth_colors = depth_colors or {}
+    filtered_items = [it for it in items if it[0] <= max_depth] if max_depth < 6 else items
+    if not filtered_items:
         return ""
+
     toc_class = "toc no-bullet" if no_bullet else "toc"
     out = ['<div class="%s">' % toc_class]
     if label:
         align_class = "toc-title toc-align-%s" % (align or "left")
-        out.append('<div class="%s"><strong>%s</strong></div>' % (align_class, escape(label)))
+        title_style = (
+            f' style="color: {escape(title_color)} !important; font-weight: 800 !important;"'
+            if title_color
+            else ' style="font-weight: 800 !important;"'
+        )
+        out.append('<div class="%s"%s><strong>%s</strong></div>' % (align_class, title_style, escape(label)))
     out.append("<ul>")
-    stack = [items[0][0]]
+    stack = [filtered_items[0][0]]
     has_open_li = False
-    for level, anchor, text in items:
+    for level, anchor, text in filtered_items:
         while len(stack) > 1 and level < stack[-1]:
             if has_open_li:
                 out.append("</li>")
@@ -200,7 +264,9 @@ def _build_toc(items, label: str, align: str = "left", no_bullet: bool = False) 
             stack.append(level)
             has_open_li = False
         depth = len(stack)
-        out.append('<li class="toc-item toc-depth-%d"><a href="#%s">%s</a>' % (depth, anchor, text))
+        link_color = depth_colors.get(depth) or item_color
+        style_attr = f' style="color: {escape(link_color)} !important;"' if link_color else ""
+        out.append('<li class="toc-item toc-depth-%d"><a href="#%s"%s>%s</a>' % (depth, anchor, style_attr, text))
         has_open_li = True
     if has_open_li:
         out.append("</li>")
@@ -218,35 +284,89 @@ TOC_DIRECTIVE_RE = re.compile(
 TOC_TITLE_QUOTE_RE = re.compile(r"""(?:=|\:)?\s*(?:\"([^\"]*)\"|'([^']*)')""")
 TOC_ALIGN_RE = re.compile(r"\b(?:align\s*[=:]\s*)?(left|center|centre|right)\b", re.IGNORECASE)
 TOC_NO_BULLET_RE = re.compile(r"\bno-?bullets?\b", re.IGNORECASE)
+TOC_KV_RE = re.compile(
+    r"""(?P<key>[\w-]+)\s*[=:]\s*(?:\"(?P<val1>[^\"]*)\"|'(?P<val2>[^']*)'|(?P<val3>[^\s\),]+))"""
+)
 
 
-def _parse_toc_directive(raw: str) -> tuple[bool, str, str, bool]:
+def _parse_toc_directive(raw: str) -> TocConfig:
     """Phan tich cu phap [[TOC ...]] linh hoat:
-    - Custom tieu de: [[TOC="Muc luc"]], [[TOC='Tieu de']]
+    - Custom tieu de: [[TOC="Muc luc"]], [[TOC='Tieu de']], [[TOC title="Table of Contents"]]
     - Can le: center / align=center / right / left
     - No-bullet: no-bullet / nobullet
-    - Ket hop: [[TOC="Danh muc" center no-bullet]] hoac [[TOC="Danh muc"]](center, no-bullet)
+    - Mau tieu de: title-color="#0969da" / title_color="blue" (mac dinh xanh dam)
+    - Mau tung cap: c1="#000" c2="#333" c3="navy"
+    - Mau chung cho cac item: color="black" / item-color="#1f2328"
+    - Do sau toi da: depth=3 / max-depth=3
+    - Ket hop: [[TOC="Danh muc" center no-bullet title-color="#0284c7" c2="blue"]]
     """
     m = TOC_DIRECTIVE_RE.match(raw.strip())
     if not m:
-        return (False, "Table of Contents", "left", False)
+        return TocConfig(False, "Table of Contents", "left", False)
 
     body = m.group("body") or ""
     tail = m.group("tail") or ""
     combined = f"{body} {tail}"
 
-    # 1. Trich xuat tieu de neu co dau nhay
-    tm = TOC_TITLE_QUOTE_RE.search(body)
+    # 1. Trich xuat tieu de neu co dau nhay truc tiep sau TOC
+    label = "Table of Contents"
+    tm = TOC_TITLE_QUOTE_RE.match(body.strip())
     if tm:
         label = tm.group(1) if tm.group(1) is not None else tm.group(2)
-        span = tm.span()
-        body_without_title = body[:span[0]] + body[span[1]:]
-        search_str = f"{body_without_title} {tail}"
+        body_rest = body.strip()[tm.end():]
+        search_str = f"{body_rest} {tail}"
     else:
-        label = "Table of Contents"
-        search_str = combined
+        # Tim kiem tieu de trong body
+        tm_search = TOC_TITLE_QUOTE_RE.search(body)
+        if tm_search and not any(k in body[:tm_search.start()].lower() for k in ("color", "align", "depth", "title")):
+            label = tm_search.group(1) if tm_search.group(1) is not None else tm_search.group(2)
+            span = tm_search.span()
+            search_str = f"{body[:span[0]]} {body[span[1]:]} {tail}"
+        else:
+            search_str = combined
 
-    # 2. Can le trai / giua / phai
+    # 2. Trich xuat cac cap thuoc tinh key-value
+    depth_colors: dict[int, str] = {}
+    title_color = "#0969da"  # Mac dinh tieu de in dam mau xanh chuan
+    item_color = ""
+    max_depth = 6
+
+    for km in TOC_KV_RE.finditer(search_str):
+        k = km.group("key").lower()
+        v = (
+            km.group("val1")
+            if km.group("val1") is not None
+            else (km.group("val2") if km.group("val2") is not None else km.group("val3"))
+        )
+        if not v:
+            continue
+        v = v.strip()
+
+        if k in ("title", "label") and label == "Table of Contents":
+            label = v
+        elif k in ("title-color", "title_color", "titlecolor"):
+            title_color = v
+        elif k in ("color", "item-color", "item_color"):
+            item_color = v
+        elif k in ("max-depth", "maxdepth", "depth"):
+            try:
+                max_depth = int(v)
+            except ValueError:
+                pass
+        elif k in ("c1", "color1", "level1-color", "level1_color"):
+            depth_colors[1] = v
+        elif k in ("c2", "color2", "level2-color", "level2_color"):
+            depth_colors[2] = v
+        elif k in ("c3", "color3", "level3-color", "level3_color"):
+            depth_colors[3] = v
+        elif k in ("c4", "color4", "level4-color", "level4_color"):
+            depth_colors[4] = v
+        elif k in ("c5", "color5", "level5-color", "level5_color"):
+            depth_colors[5] = v
+        elif k in ("c6", "color6", "level6-color", "level6_color"):
+            depth_colors[6] = v
+
+    # 3. Can le trai / giua / phai
     align = "left"
     am = TOC_ALIGN_RE.search(search_str)
     if am:
@@ -258,10 +378,19 @@ def _parse_toc_directive(raw: str) -> tuple[bool, str, str, bool]:
         elif val == "left":
             align = "left"
 
-    # 3. No-bullet
+    # 4. No-bullet
     no_bullet = bool(TOC_NO_BULLET_RE.search(search_str))
 
-    return (True, label.strip(), align, no_bullet)
+    return TocConfig(
+        is_toc=True,
+        label=label.strip(),
+        align=align,
+        no_bullet=no_bullet,
+        title_color=title_color,
+        item_color=item_color,
+        depth_colors=depth_colors,
+        max_depth=max_depth,
+    )
 
 
 TOC_RE = TOC_DIRECTIVE_RE
@@ -282,9 +411,7 @@ def _anchors_toc(state):
     taken = set()
     headings = []
     toc_index = None
-    toc_label = "Table of Contents"
-    toc_align = "left"
-    toc_no_bullet = False
+    toc_cfg: TocConfig | None = None
     toc_in_html = False
     tokens = state.tokens
     i = 0
@@ -303,12 +430,10 @@ def _anchors_toc(state):
             if toc_index is None and ("[[toc" in tok.content.lower()):
                 dm = TOC_DIRECTIVE_SEARCH_RE.search(tok.content)
                 if dm:
-                    is_toc, label, align, no_bullet = _parse_toc_directive(dm.group(0))
-                    if is_toc:
+                    cfg = _parse_toc_directive(dm.group(0))
+                    if cfg.is_toc:
                         toc_index = i
-                        toc_label = label
-                        toc_align = align
-                        toc_no_bullet = no_bullet
+                        toc_cfg = cfg
                         toc_in_html = True
                         toc_pos_in_tok = dm.start()
 
@@ -342,19 +467,17 @@ def _anchors_toc(state):
                 tok.content = HTML_HEADING_RE.sub(_repl_h, tok.content)
 
         elif toc_index is None and tok.type == "inline":
-            is_toc, label, align, no_bullet = _parse_toc_directive(tok.content)
-            if is_toc:
+            cfg = _parse_toc_directive(tok.content)
+            if cfg.is_toc:
                 toc_index = i
-                toc_label = label
-                toc_align = align
-                toc_no_bullet = no_bullet
+                toc_cfg = cfg
                 toc_in_html = False
         i += 1
 
-    if toc_index is None:
+    if toc_index is None or toc_cfg is None:
         return
 
-    toc_html = _build_toc(headings, toc_label, align=toc_align, no_bullet=toc_no_bullet) if headings else ""
+    toc_html = _build_toc(headings, toc_cfg) if headings else ""
 
     if toc_in_html:
         tokens[toc_index].content = TOC_DIRECTIVE_SEARCH_RE.sub(lambda _: toc_html, tokens[toc_index].content, count=1)
