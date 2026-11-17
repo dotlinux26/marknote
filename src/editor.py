@@ -5,8 +5,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from PySide6.QtCore import QMimeData, Qt, Signal
-from PySide6.QtGui import QColor, QFontDatabase, QImage, QTextCharFormat, QTextCursor
+from PySide6.QtCore import QMimeData, QPoint, QRect, QSize, Qt, Signal
+from PySide6.QtGui import (
+    QColor,
+    QFontDatabase,
+    QImage,
+    QPainter,
+    QTextCharFormat,
+    QTextCursor,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -34,6 +41,36 @@ COLOR_MATCH = "#fff8c5"
 COLOR_CURRENT = "#f8b886"
 
 
+class LineNumberArea(QWidget):
+    """Cot so dong danh cho EditorPane theo tieu chuan Qt Code Editor."""
+
+    def __init__(self, editor: EditorPane):
+        super().__init__(editor)
+        self.editor = editor
+
+    def sizeHint(self) -> QSize:
+        return QSize(self.editor.lineNumberAreaWidth(), 0)
+
+    def paintEvent(self, event):
+        self.editor.lineNumberAreaPaintEvent(event)
+
+    def mousePressEvent(self, event):
+        pos = event.position().toPoint()
+        block = self.editor.firstVisibleBlock()
+        top = int(self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top())
+        bottom = top + int(self.editor.blockBoundingRect(block).height())
+        while block.isValid():
+            if top <= pos.y() <= bottom:
+                cursor = self.editor.textCursor()
+                cursor.setPosition(block.position())
+                self.editor.setTextCursor(cursor)
+                self.editor.setFocus()
+                break
+            block = block.next()
+            top = bottom
+            bottom = top + int(self.editor.blockBoundingRect(block).height())
+
+
 class EditorPane(QPlainTextEdit):
     """O soan thao ben trai, ho tro tim highlight, chen anh, keo tha va paste anh."""
 
@@ -53,6 +90,104 @@ class EditorPane(QPlainTextEdit):
         self._matches = []
         self._index = -1
         self._case_sensitive = False
+
+        self.lineNumberArea = LineNumberArea(self)
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        self.cursorPositionChanged.connect(self.lineNumberArea.update)
+        self.updateLineNumberAreaWidth(0)
+
+    def lineNumberAreaWidth(self) -> int:
+        digits = 1
+        m = max(1, self.blockCount())
+        while m >= 10:
+            m //= 10
+            digits += 1
+        space = 14 + self.fontMetrics().horizontalAdvance("9") * digits + 8
+        return space
+
+    def updateLineNumberAreaWidth(self, _=0):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+
+    def updateLineNumberArea(self, rect: QRect, dy: int):
+        if dy:
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+        if rect.contains(self.viewport().rect()):
+            self.updateLineNumberAreaWidth(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.lineNumberArea.setGeometry(
+            cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()
+        )
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QPainter(self.lineNumberArea)
+        is_dark = self.palette().base().color().lightness() < 128
+        if is_dark:
+            bg_color = QColor("#1e1e1e")
+            border_color = QColor("#30363d")
+            text_color = QColor("#6e7681")
+            current_text_color = QColor("#e6edf3")
+        else:
+            bg_color = QColor("#f6f8fa")
+            border_color = QColor("#d8dee4")
+            text_color = QColor("#8c959f")
+            current_text_color = QColor("#1f2328")
+
+        painter.fillRect(event.rect(), bg_color)
+        painter.setPen(border_color)
+        painter.drawLine(
+            event.rect().width() - 1,
+            event.rect().top(),
+            event.rect().width() - 1,
+            event.rect().bottom(),
+        )
+
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+        bottom = top + int(self.blockBoundingRect(block).height())
+
+        current_line = self.textCursor().blockNumber()
+        painter.setFont(self.font())
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = str(block_number + 1)
+                if block_number == current_line:
+                    painter.setPen(current_text_color)
+                    font = painter.font()
+                    font.setBold(True)
+                    painter.setFont(font)
+                    painter.drawText(
+                        0,
+                        top,
+                        self.lineNumberArea.width() - 8,
+                        self.fontMetrics().height(),
+                        Qt.AlignmentFlag.AlignRight,
+                        number,
+                    )
+                    font.setBold(False)
+                    painter.setFont(font)
+                else:
+                    painter.setPen(text_color)
+                    painter.drawText(
+                        0,
+                        top,
+                        self.lineNumberArea.width() - 8,
+                        self.fontMetrics().height(),
+                        Qt.AlignmentFlag.AlignRight,
+                        number,
+                    )
+
+            block = block.next()
+            top = bottom
+            bottom = top + int(self.blockBoundingRect(block).height())
+            block_number += 1
 
     def setText(self, md: str):
         self.setPlainText(md or "")

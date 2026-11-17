@@ -151,8 +151,9 @@ def _inline_text(token) -> str:
     return "".join(parts).strip() or token.content.strip()
 
 
-def _build_toc(items, label: str) -> str:
-    out = ['<div class="toc">', "<strong>%s</strong>" % escape(label), "<ul>"]
+def _build_toc(items, label: str, no_bullet: bool = False) -> str:
+    toc_class = "toc no-bullet" if no_bullet else "toc"
+    out = ['<div class="%s">' % toc_class, "<strong>%s</strong>" % escape(label), "<ul>"]
     stack = [items[0][0]]
     has_open_li = False
     for level, anchor, text in items:
@@ -181,7 +182,10 @@ def _build_toc(items, label: str) -> str:
     return "".join(out)
 
 
-TOC_RE = re.compile(r"\[\[TOC(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'))?\]\]")
+TOC_RE = re.compile(
+    r"^\[\[TOC(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'))?(?:[\s,(]+(no-?bullets?)\)?)?\s*\]\](?:\s*\(\s*(no-?bullets?)\s*\))?$",
+    re.IGNORECASE,
+)
 
 
 def _anchors_toc(state):
@@ -190,6 +194,7 @@ def _anchors_toc(state):
     headings = []
     toc_index = None
     toc_label = "Table of Contents"
+    toc_no_bullet = False
     tokens = state.tokens
     i = 0
     while i < len(tokens):
@@ -206,6 +211,7 @@ def _anchors_toc(state):
             if tok.type == "inline" and match:
                 toc_index = i
                 toc_label = (match.group(1) or match.group(2) or toc_label).strip()
+                toc_no_bullet = bool(match.group(3) or match.group(4))
         i += 1
     if toc_index is None:
         return
@@ -215,7 +221,7 @@ def _anchors_toc(state):
             token = tokens[start]
             token.type = "html_block"
             token.tag = ""
-            token.content = _build_toc(headings, toc_label)
+            token.content = _build_toc(headings, toc_label, no_bullet=toc_no_bullet)
             del tokens[start + 1 : start + 3]
         else:
             del tokens[start : start + 3]

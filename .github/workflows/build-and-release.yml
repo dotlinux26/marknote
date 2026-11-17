@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release Tag (e.g. v1.2.2)'
+        description: 'Release Tag (e.g. v1.2.3)'
         required: false
-        default: 'v1.2.2'
+        default: 'v1.2.3'
 
 permissions:
   contents: write
@@ -79,7 +79,8 @@ jobs:
         run: |
           $rawTag = "${{ github.event.inputs.release_tag || github.ref_name }}"
           $version = $rawTag.TrimStart('v')
-          if (-not $version) { $version = "1.2.2" }
+          if (-not $version) { $version = "1.2.3" }
+          $env:APP_VERSION = $version
           Write-Host "Building Windows package for version: $version"
           powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
 

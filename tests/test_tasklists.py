@@ -11,6 +11,10 @@ if str(SRC_DIR) not in sys.path:
 
 from exporter import Exporter, build_document, replace_checkboxes_with_svg
 from preview import MarkdownRenderer, normalize_tasklists
+from editor import EditorPane
+from PySide6.QtWidgets import QApplication
+
+_app = QApplication.instance() or QApplication([])
 
 
 class TestTasklistNormalization(unittest.TestCase):
@@ -99,6 +103,36 @@ class TestMarkdownRenderer(unittest.TestCase):
         self.assertIn("Item 2", html)
         self.assertIn("Item 3", html)
 
+    def test_render_toc_standard_and_no_bullet(self):
+        md_std = "[[TOC]]\n\n# Heading 1\n## Heading 2\n"
+        html_std = self.renderer.render(md_std)
+        self.assertIn('<div class="toc">', html_std)
+        self.assertNotIn('<div class="toc no-bullet">', html_std)
+
+        for syntax in [
+            "[[TOC]](no-bullet)",
+            "[[TOC no-bullet]]",
+            "[[TOC(no-bullet)]]",
+            '[[TOC="Custom" no-bullet]]',
+            '[[TOC="Custom"]](no-bullet)',
+        ]:
+            md_nb = f"{syntax}\n\n# Heading 1\n## Heading 2\n"
+            html_nb = self.renderer.render(md_nb)
+            self.assertIn('<div class="toc no-bullet">', html_nb, f"Failed for {syntax}")
+
+
+class TestEditorLineNumbers(unittest.TestCase):
+    def test_line_number_area_initialization_and_width(self):
+        editor = EditorPane()
+        self.assertIsNotNone(editor.lineNumberArea)
+        w1 = editor.lineNumberAreaWidth()
+        self.assertGreater(w1, 10)
+
+        # Set 150 lines
+        editor.setPlainText("\n".join(f"Line {i}" for i in range(150)))
+        w2 = editor.lineNumberAreaWidth()
+        self.assertGreater(w2, w1)
+
 
 class TestExporter(unittest.TestCase):
     def setUp(self):
@@ -116,8 +150,11 @@ class TestExporter(unittest.TestCase):
             self.assertIn("task-svg", content)
             self.assertIn("contains-task-list", content)
             self.assertIn("table-layout: auto", content)
+            self.assertIn("overflow-wrap: anywhere", content)
             self.assertIn("white-space: pre-wrap", content)
             self.assertIn("box-decoration-break: clone", content)
+            self.assertIn("toc.no-bullet", content)
+            self.assertIn("metrics-dashboard-bar", content)
             self.assertIn("To Do", content)
             self.assertIn("Done", content)
         finally:
