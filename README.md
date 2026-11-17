@@ -1,174 +1,185 @@
-# MarkNote
+# MarkNote - Phần Mềm Nguồn Mở Soạn Thảo Ghi Chú Cá Nhân
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release: v1.2.5](https://img.shields.io/badge/Release-v1.2.5-brightgreen.svg)](https://github.com/dotlinux26/marknote/releases)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![GUI: PySide6](https://img.shields.io/badge/GUI-PySide6%20%2F%20Qt%206-green.svg)](https://wiki.qt.io/Qt_for_Python)
 [![Open Source: OSI Compliant](https://img.shields.io/badge/Open%20Source-OSI%20Compliant-brightgreen.svg)](docs/LICENSE_COMPLIANCE.md)
+[![CI/CD: GitHub Actions](https://img.shields.io/badge/CI%2FCD-Passing-success.svg)](https://github.com/dotlinux26/marknote/actions)
 
-Ứng dụng ghi chú **Markdown offline** cho Linux (và cả Windows/macOS),
-viết bằng **Python + PySide6 (Qt 6)**: soạn thảo bên trái, xem trước kết quả
-bên phải song song, chọn theme CSS, tìm kiếm toàn kho (FTS5) và xuất ra
-HTML / PDF / Markdown — tất cả **không cần kết nối mạng**.
+**MarkNote** là một dự án **phát triển phần mềm nguồn mở soạn thảo và quản lý ghi chú cá nhân** chất lượng cao, hoạt động hoàn toàn offline, đa nền tảng (Linux, Windows, macOS). Ứng dụng được xây dựng trên nền tảng **Python + PySide6 (Qt 6)** kết hợp engine kết xuất tài liệu hiện đại, mang đến trải nghiệm viết ghi chú, soạn thảo báo cáo kỹ thuật và xuất bản ấn phẩm PDF/HTML chuẩn mực công nghiệp.
 
-## Tính năng chính
+---
 
-- **Soạn thảo Markdown (GFM)**: heading, bảng, task list, footnote, code
-  block tô màu (Pygments), table, raw HTML…
-- **Xem trước song song**: gõ bên trái, render bên phải sau 0,3 giây; đồng bộ
-  cuộn editor với preview (`Ctrl+Shift+S`).
-- **Quản lý note**: tạo / lưu / xóa, **đổi tên inline** ngay trên thanh tiêu đề
-  (nút bút ✎ hoặc phím `F2`).
-- **Tag**: gán/gỡ tag, tạo tag mới, lọc danh sách theo tag.
-- **Tìm kiếm toàn kho (SQLite FTS5)**: nhanh, hỗ trợ nhiều từ khóa và
-  `tag:linux`, hiển thị snippet có tô màu từ khóa.
-- **Tìm / thay thế** trong note (`Ctrl+F`, `Ctrl+H`).
-- **Quản lý ảnh & thư viện media**: chèn ảnh tại con trỏ (`+ Image` hoặc `Ctrl+Shift+I`), kéo thả ảnh trực tiếp vào editor, paste ảnh nhanh (`Ctrl+V`) từ clipboard (ảnh chụp màn hình), mở nhanh thư mục ảnh dùng chung (`📁 Media Folder` hoặc `Ctrl+Shift+M`), tự động nhúng Base64 khi xuất HTML/PDF.
-- **Theme CSS**: `default`, `github`, `dark` – đổi theme không cần khởi động lại.
-- **Xuất bản** cùng một theme:
-  - Xuất **HTML** (một file tự chứa, dùng được offline).
-  - Xuất **PDF** (A4): mục lục tự động `[[TOC]]` kiểu Word có **số trang thật**,
-    link nhảy, số trang "x / y" ở chân trang, ngắt trang, chống cắt trang.
-  - Xuất **Markdown** (`.md`).
-- Giao diện tiếng Anh, palette sáng ổn định (chống xung đột theme tối của HĐH).
+## 🌟 Mục Tiêu & Triết Lý Phát Triển
 
-## Yêu cầu hệ thống
+1. **Phần Mềm Nguồn Mở Tự Do (Open Source & Free):**
+   - Phát hành theo giấy phép **MIT License**, đảm bảo 10 tiêu chí của Open Source Initiative (OSI) và 4 quyền tự do cốt lõi của Free Software Foundation (FSF).
+   - Mã nguồn minh bạch, sạch sẽ, khuyến khích cộng đồng cùng học tập, sử dụng và đóng góp phát triển.
+2. **Ưu Tiên Quyền Riêng Tư (Privacy-First & 100% Offline):**
+   - Toàn bộ ghi chú, cấu hình và tệp đa phương tiện được lưu trữ cục bộ trên máy tính của bạn (cơ sở dữ liệu SQLite cục bộ).
+   - Không telemetry, không thu thập dữ liệu, không bắt buộc tạo tài khoản và không phụ thuộc bất kỳ máy chủ đám mây nào.
+3. **Soạn Thảo Trực Quan & Xuất Bản Chuyên Nghiệp:**
+   - Hỗ trợ đầy đủ cú pháp GitHub Flavored Markdown (GFM), Toán học KaTeX, Khối mã nguồn Pygments, Bảng dữ liệu tự động xuống dòng và Biểu đồ vector SVG.
+   - Khả năng xuất bản **PDF A4 chuẩn in ấn** với số trang thực, mục lục động tự động sinh số trang (leader dots), ngắt trang thông minh và chống tràn lề.
 
-| Hệ điều hành | Hỗ trợ | Ghi chú |
-|--------------|:------:|---------|
-| Linux (x86_64) | ✅ | bản chính, cần Python 3.10+ và thư viện pango cho chức năng PDF |
-| Windows (x86_64) | ✅ | cài như mã nguồn; chức năng PDF cần thêm Pango (xem hướng dẫn) |
-| macOS | 🟡 | code nền tảng nên chạy được, chưa phát hành chính thức |
+---
 
-- Python **3.10 trở lên**.
-- `pip` + `venv` (hoặc công cụ đóng gói như trong `docs/HUONG_DAN_CAI_DAT.md`).
-- **pango ≥ 1.44** (để xuất PDF bằng WeasyPrint): luôn có sẵn trên hầu hết
-  máy Linux desktop; máy tối giản cài thêm vài gói (xem bảng bên dưới).
+## 🚀 Các Tính Năng Nổi Bật
 
-## Cài đặt nhanh (Linux)
+### 1. Soạn Thảo & Xem Trước Trực Quan
+- **Cửa sổ song song (Split Pane):** Soạn thảo bên trái, xem trước kết quả bên phải theo thời gian thực (độ trễ 0.3s mượt mà).
+- **Đánh số dòng code (Line Numbers):** Cột đếm số dòng văn bản chuẩn IDE chuyên nghiệp ở mép trái editor.
+- **Cuộn đồng bộ thông minh (Sync Scroll):** Cuộn editor thì preview tự động cuộn theo tương ứng và ngược lại (bật/tắt bằng phím `Ctrl+Shift+S`).
+- **Tô màu mã nguồn (Syntax Highlighting):** Tích hợp bộ thư viện Pygments nhận diện hơn 100+ ngôn ngữ lập trình (Python, Bash, C/C++, Rust, Go, JavaScript, v.v.).
 
-Cách đơn giản nhất là chạy trong venv:
+### 2. Quản Trị Ghi Chú & Tìm Kiếm Toàn Kho
+- **Quản lý ghi chú cá nhân:** Tạo mới, lưu, xóa, gắn nhãn (Tag), đổi tên ghi chú trực tiếp inline (`F2` hoặc nút ✎).
+- **Tìm kiếm toàn văn siêu tốc (SQLite FTS5):** Tìm kiếm tức thì trong toàn bộ kho ghi chú theo từ khóa, hỗ trợ lọc nâng cao theo nhãn (ví dụ `tag:linux`, `tag:security`).
+- **Tìm & Thay thế nội bộ:** Phím tắt tìm kiếm (`Ctrl+F`) và thay thế hàng loạt (`Ctrl+H`) ngay trong tệp đang mở.
+
+### 3. Thư Viện Ảnh & Tệp Đa Phương Tiện
+- **Chèn ảnh linh hoạt:** Kéo thả ảnh trực tiếp vào editor, dán ảnh chụp màn hình nhanh (`Ctrl+V`) từ clipboard hoặc bấm nút `+ Image` (`Ctrl+Shift+I`).
+- **Thư mục Media dùng chung:** Truy cập nhanh kho tài nguyên media cá nhân bằng phím `Ctrl+Shift+M`.
+- **Tự động nhúng Base64:** Khi xuất file HTML hoặc PDF, hình ảnh được tự động mã hóa Base64 thành một tệp duy nhất, dễ dàng chia sẻ mà không lo đứt liên kết ảnh.
+
+### 4. Hệ Thống Xuất Bản Đỉnh Cao (PDF / HTML / Markdown)
+- **Mục lục thông minh (Smart TOC):**
+  - Cú pháp linh hoạt: `[[TOC]]`, `[[TOC="MỤC LỤC BÁO CÁO" center no-bullet]]`.
+  - **Thuật toán lọc chuẩn xác:** Chỉ quét và liệt kê các mục nằm **bên dưới** vị trí TOC (loại trừ tiêu đề bìa và metadata ở đầu file).
+  - Nhận diện cả Markdown (`#`) lẫn HTML raw (`<h1>` - `<h6>`).
+  - Phân cấp kiểu chữ chuẩn: Cấp 1 in đậm chữ thẳng, Cấp 2 đậm nghiêng, Cấp 3 nghiêng bình thường.
+  - Khi in PDF: Tự động tính toán số trang thực tế và vẽ đường chấm dẫn (`leader dots`).
+- **Biểu đồ tròn Donut Chart (Vector SVG Widget):**
+  - Cú pháp Markdown siêu gọn:
+    ````markdown
+    ```donut
+    5 Issues
+    Critical: 0
+    High: 1
+    Medium: 2
+    Low: 2
+    ```
+    ````
+  - Tự động cộng dồn tổng số, tự động căn giữa toàn trang, không viền hộp xám, nét vẽ SVG sắc nét 100%.
+- **Bảng dữ liệu GFM tự động Fit & Wrap:**
+  - Tự động căng đều 100% chiều rộng trang.
+  - Tự động ngắt chữ xuống dòng khi nội dung dài, không bao giờ bị cắt cụt chữ.
+  - Tự động lặp lại tiêu đề (`thead`) ở đầu trang in tiếp theo khi bảng dài nhiều trang.
+- **Tasklist / Checklist:** Tự động chuẩn hóa `[ ]`, `[x]`, `- [ ]` thành checkbox vector SVG sắc nét, không bị lệch lề.
+- **Ngắt trang chủ động:** Dễ dàng ngắt trang in PDF bằng thẻ `<div class="page-break"></div>`.
+
+> 📖 **Xem hướng dẫn cú pháp chi tiết tại:** [**`MARKNOTE_SYNTAX_GUIDE.md`**](MARKNOTE_SYNTAX_GUIDE.md)
+
+---
+
+## 💻 Yêu Cầu Hệ Thống & Cài Đặt
+
+| Hệ điều hành | Hỗ trợ | Phương thức phân phối |
+|:---|:---:|:---|
+| **Linux (Mọi distro)** | ✅ | AppImage (x86_64), gói .deb, .rpm, tarball |
+| **Windows (10/11 x64)**| ✅ | Bản Portable độc lập đóng gói sẵn (`marknote.exe`) |
+| **macOS** | 🟡 | Chạy qua Python hoặc đóng gói PyInstaller macOS |
+
+### 1. Tải bản dựng sẵn (Khuyên dùng)
+Bạn có thể tải các bản phát hành mới nhất từ trang [**Releases**](https://github.com/dotlinux26/marknote/releases):
+- **Linux:** Tải file `MarkNote-x.x.x-x86_64.AppImage`, cấp quyền thực thi (`chmod +x`) và chạy ngay.
+- **Windows:** Tải file `MarkNote-x.x.x-windows-x64.zip`, giải nén và mở `marknote.exe`.
+
+### 2. Chạy từ mã nguồn (Dành cho nhà phát triển)
+Yêu cầu: **Python 3.10 trở lên**.
 
 ```bash
-python3 -m venv .venv --system-site-packages
+# 1. Clone repository
+git clone https://github.com/dotlinux26/marknote.git
+cd marknote
+
+# 2. Khởi tạo môi trường ảo
+python -m venv .venv
+
+# Kích hoạt trên Linux/macOS:
 source .venv/bin/activate
+# Kích hoạt trên Windows (PowerShell):
+# .\.venv\Scripts\Activate.ps1
+
+# 3. Cài đặt các gói phụ thuộc
 pip install -r requirements.txt
-```
 
-Còn thiếu thư viện pango cho xuất PDF? Cài theo distro:
-
-| Distro | Lệnh |
-|--------|------|
-| Ubuntu/Debian | `sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0` |
-| Fedora/RHEL | `sudo dnf install pango` |
-| Arch/Manjaro | `sudo pacman -S pango` |
-| Alpine | `sudo apk add so:libpango-1.0.so.0 so:libgobject-2.0.so.0` |
-
-Cài vào hệ thống (tạo lệnh `marknote`):
-
-```bash
-sudo make install
-```
-
-## Chạy ứng dụng
-
-```bash
-make run
-```
-
-hoặc:
-
-```bash
-source .venv/bin/activate
+# 4. Chạy ứng dụng
 python src/main.py
 ```
 
-> **Cài đặt chi tiết từng bước cho Linux, Windows, macOS và cách đóng gói**
-> (AppImage, file chạy trên Windows) xem tại
-> **[`docs/HUONG_DAN_CAI_DAT.md`](docs/HUONG_DAN_CAI_DAT.md)**.
-
-## Cách dùng nhanh
-
-| Phím | Chức năng |
-|------|-----------|
-| `Ctrl+N` | Tạo note mới |
-| `Ctrl+S` | Lưu note |
-| `F2` | Đổi tên note (Enter để lưu, Esc để hủy) |
-| `Ctrl+D` | Xóa note |
-| `Ctrl+F` | Tìm trong note |
-| `Ctrl+H` | Tìm và thay thế |
-| `Ctrl+Shift+I` | Chèn ảnh tại vị trí con trỏ |
-| `Ctrl+Shift+M` | Mở thư mục thư viện ảnh (Media Folder) |
-| `Ctrl+Shift+S` | Đồng bộ cuộn on/off |
-| `Ctrl+Q` | Thoát |
-
-- Mục lục tự động: viết `[[TOC]]` (hoặc `[[TOC="Mục lục của tôi"]]`) vào
-  đầu note.
-- Ngắt trang khi xuất PDF:
-  `<div style="page-break-after: always;"></div>`.
-- Dữ liệu người dùng nằm tại `~/.marknote/` (`notes.db` + thư mục `themes`).
-
-## Cấu trúc dự án
-
+*Lưu ý cho Linux tối giản:* Để sử dụng tính năng xuất PDF qua WeasyPrint, hãy cài thêm thư viện pango:
+```bash
+# Ubuntu / Debian:
+sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+# Fedora / RHEL:
+sudo dnf install pango
+# Arch Linux:
+sudo pacman -S pango
 ```
+
+---
+
+## ⌨️ Bảng Phím Tắt Tiện Dụng
+
+| Phím tắt | Chức năng |
+|:---|:---|
+| `Ctrl + N` | Tạo ghi chú mới |
+| `Ctrl + S` | Lưu ghi chú hiện tại |
+| `F2` | Đổi tên tiêu đề ghi chú nhanh |
+| `Ctrl + D` | Xóa ghi chú |
+| `Ctrl + F` | Tìm kiếm văn bản trong ghi chú |
+| `Ctrl + H` | Tìm kiếm và thay thế văn bản |
+| `Ctrl + Shift + I` | Chèn tệp hình ảnh tại vị trí con trỏ |
+| `Ctrl + Shift + M` | Mở thư mục thư viện đa phương tiện (Media Folder) |
+| `Ctrl + Shift + S` | Bật / tắt chế độ cuộn đồng bộ (Sync Scroll) |
+| `Ctrl + E` | Xuất ghi chú ra tệp HTML độc lập |
+| `Ctrl + P` | Xuất ghi chú ra tài liệu PDF chuẩn in ấn A4 |
+| `F11` | Bật / tắt chế độ toàn màn hình |
+| `Ctrl + Q` | Thoát ứng dụng |
+
+---
+
+## 📁 Cấu Trúc Mã Nguồn
+
+```text
 marknote/
-  Makefile  LICENSE  README.md  CHANGELOG  requirements.txt
-  GFM_TEMPLATE.md        bản demo đầy đủ cú pháp để thử nhanh
-  src/main.py            cửa sổ chính, điều phối mọi tính năng
-  src/db.py              SQLite + FTS5 (NoteDAO, TagDAO, SettingsDAO)
-  src/editor.py          ô soạn thảo + bảng điều hướng + tìm/thay thế
-  src/preview.py         renderer Markdown, pane WebEngine, cú pháp [[TOC]]
-  src/exporter.py        xuất HTML/PDF (đánh số trang, mục lục kiểu Word)
-  src/theme.py           quản lý file CSS theme
-  src/settings.py        hằng số, đường dẫn, hộp thoại Appearance
-  assets/themes/         default.css, github.css, dark.css
-  docs/                  tài liệu chi tiết, sơ đồ, báo cáo
-  dist/                  sản phẩm đóng gói (AppImage, bản Windows) – tạo ra khi build
+├── assets/
+│   ├── icons/                 # Bộ biểu tượng ứng dụng và vector SVG
+│   └── themes/                # Theme giao diện CSS (default, dark, github)
+├── docs/                      # Tài liệu kỹ thuật, báo cáo phân tích và sơ đồ kiến trúc
+├── packaging/                 # Kịch bản đóng gói tự động (AppImage, Docker, Windows)
+├── src/
+│   ├── main.py                # Điểm khởi chạy chính & điều phối cửa sổ ứng dụng
+│   ├── editor.py              # Khung soạn thảo, đánh số dòng và thanh công cụ
+│   ├── preview.py             # Bộ render GFM Markdown, WebEngine và xử lý TOC
+│   ├── exporter.py            # Engine xuất HTML và PDF (WeasyPrint, Donut Widget)
+│   ├── db.py                  # Cơ sở dữ liệu SQLite FTS5 (Notes, Tags, Settings)
+│   ├── media.py               # Quản lý hình ảnh và nhúng Base64
+│   ├── theme.py               # Quản lý và nạp động CSS themes
+│   └── settings.py            # Cấu hình hệ thống và phím tắt
+├── tests/                     # Bộ kiểm thử đơn vị tự động (Unit Tests)
+├── Makefile                   # Kịch bản tự động hóa xây dựng và kiểm thử
+├── MARKNOTE_SYNTAX_GUIDE.md   # Cẩm nang tra cứu cú pháp Markdown và Widget
+├── CONTRIBUTING.md            # Hướng dẫn quy trình đóng góp mã nguồn mở
+├── THIRD_PARTY_NOTICES.md     # Kê khai bản quyền và giấy phép bên thứ ba
+├── LICENSE                    # Giấy phép nguồn mở MIT License
+└── README.md                  # Giới thiệu tổng quan dự án
 ```
 
-## Đóng gói & phân phối
+---
 
-- **Linux đa distro**: build **AppImage** bằng PyInstaller (x86_64) — một file
-  chạy được trên Ubuntu/Debian/Fedora/Arch/Manjaro… Xem hướng dẫn trong
-  `docs/HUONG_DAN_CAI_DAT.md`.
-- **Windows**: build trên máy Windows bằng `build_windows.ps1` (PyInstaller)
-  hoặc chạy trực tiếp từ mã nguồn bằng venv. **Không** cross-compile Linux→
-  Windows được.
-- **macOS**: dựng bằng PyInstaller trên máy macOS nếu cần.
+## 🤝 Đóng Góp Phát Triển (Contributing)
 
-## Sao lưu dữ liệu
+Dự án phát triển phần mềm nguồn mở MarkNote luôn chào đón mọi sự đóng góp từ cộng đồng lập trình viên, từ việc báo lỗi (Issue), đề xuất ý tưởng cải tiến cho đến các đóng góp mã nguồn (Pull Request).
 
-Toàn bộ dữ liệu nằm trong một thư mục `~/.marknote`:
+Vui lòng tham khảo tệp [**`CONTRIBUTING.md`**](CONTRIBUTING.md) để nắm rõ quy chuẩn mã nguồn, quy trình kiểm thử và cách thức gửi PR.
 
-```bash
-cp -r ~/.marknote ~/backup-marknote        # sao lưu
-sqlite3 ~/.marknote/notes.db ".tables"     # xem trực tiếp bằng sqlite3
-```
+---
 
-Xóa toàn bộ dữ liệu người dùng:
+## 📜 Giấy Phép & Bản Quyền (License)
 
-```bash
-rm -rf ~/.marknote
-```
-
-## Tài liệu chi tiết
-
-- `docs/INDEX_BAO_CAO.md` — chỉ mục toàn bộ tài liệu, gợi ý phân vai báo cáo.
-- `docs/LICENSE_COMPLIANCE.md` — **báo cáo tuân thủ giấy phép & chuẩn mã nguồn mở**.
-- `THIRD_PARTY_NOTICES.md` — **bản kê khai giấy phép và bản quyền bên thứ ba**.
-- `CONTRIBUTING.md` — **hướng dẫn tham gia đóng góp mã nguồn**.
-- `docs/HUONG_DAN_CAI_DAT.md` — **cài đặt chi tiết** mọi HĐH + đóng gói.
-- `docs/HUONG_DAN_SU_DUNG.md` — hướng dẫn sử dụng từng tính năng.
-- `docs/HUONG_DAN_CU_PHAP_MARKDOWN.md` — bảng tra cú pháp + cú pháp riêng.
-- `docs/DANH_SACH_TINH_NANG.md` — kiểm kê tính năng đối chiếu 13 UC.
-- `docs/VAN_DE_KY_THUAT.md` — kiến trúc, lựa chọn thư viện, vấn đề kỹ thuật.
-- Các tài liệu `SCHEMA_CSDL`, `MO_TA_USE_CASE`, `SODO_*`, `TONG_HOP_GFM`.
-
-## Đóng góp & Phát triển
-
-Mọi đóng góp từ cộng đồng đều được chào đón! Vui lòng đọc tệp [`CONTRIBUTING.md`](CONTRIBUTING.md) để biết quy trình tạo nhánh, gửi Pull Request và chuẩn mực mã nguồn.
-
-## Giấy phép & Tuân thủ bản quyền
-
-- **Mã nguồn MarkNote**: Được phát hành theo giấy phép **[MIT License](LICENSE)** (Copyright © 2026 Nguyen Duc Canh).
-- **Thành phần bên thứ ba**: Dự án sử dụng và liên kết động tới các thư viện mã nguồn mở uy tín (PySide6/Qt 6 LGPLv3, SQLite Public Domain, WeasyPrint BSD-3, Pygments BSD-2, markdown-it-py MIT). Chi tiết điều khoản và bản quyền được công bố tại **[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)**.
-- **Báo cáo chuẩn mã nguồn mở**: Xem phân tích tuân thủ 10 tiêu chí OSI và 4 quyền tự do FSF tại **[`docs/LICENSE_COMPLIANCE.md`](docs/LICENSE_COMPLIANCE.md)**.
+- Dự án MarkNote được phát hành theo giấy phép nguồn mở **[MIT License](LICENSE)**.
+- Bản quyền thuộc về © 2026 **Nguyen Duc Canh**.
+- Thông tin tuân thủ giấy phép nguồn mở và kê khai các thành phần bên thứ ba (PySide6, WeasyPrint, Pygments, markdown-it-py) được ghi nhận đầy đủ tại [**`THIRD_PARTY_NOTICES.md`**](THIRD_PARTY_NOTICES.md) và [**`docs/LICENSE_COMPLIANCE.md`**](docs/LICENSE_COMPLIANCE.md).
