@@ -46,6 +46,7 @@ class ThemeManager:
                         or "pre-wrap" not in content
                         or "toc.no-bullet" not in content
                         or "overflow-wrap: anywhere" not in content
+                        or "toc-title" not in content
                     ):
                         target.write_text(css.read_text(encoding="utf-8"), encoding="utf-8")
                 except Exception:

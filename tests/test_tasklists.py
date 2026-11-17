@@ -120,6 +120,26 @@ class TestMarkdownRenderer(unittest.TestCase):
             html_nb = self.renderer.render(md_nb)
             self.assertIn('<div class="toc no-bullet">', html_nb, f"Failed for {syntax}")
 
+    def test_render_toc_alignment_and_custom_title(self):
+        cases = [
+            ("[[TOC center]]", "Table of Contents", "toc-align-center", False),
+            ("[[TOC right]]", "Table of Contents", "toc-align-right", False),
+            ("[[TOC left]]", "Table of Contents", "toc-align-left", False),
+            ('[[TOC="MỤC LỤC CHÍNH" center]]', "MỤC LỤC CHÍNH", "toc-align-center", False),
+            ('[[TOC="MỤC LỤC" align=right]]', "MỤC LỤC", "toc-align-right", False),
+            ('[[TOC="BÁO CÁO" center no-bullet]]', "BÁO CÁO", "toc-align-center", True),
+            ('[[TOC="BÁO CÁO"]](right, no-bullet)', "BÁO CÁO", "toc-align-right", True),
+            ('[[TOC(center, no-bullet)]]', "Table of Contents", "toc-align-center", True),
+        ]
+        for md_str, expected_label, expected_align_class, is_no_bullet in cases:
+            html = self.renderer.render(f"{md_str}\n\n# Heading 1\n## Heading 2\n")
+            self.assertIn(expected_label, html)
+            self.assertIn(expected_align_class, html)
+            if is_no_bullet:
+                self.assertIn('<div class="toc no-bullet">', html)
+            else:
+                self.assertNotIn('<div class="toc no-bullet">', html)
+
 
 class TestEditorLineNumbers(unittest.TestCase):
     def test_line_number_area_initialization_and_width(self):
@@ -154,6 +174,7 @@ class TestExporter(unittest.TestCase):
             self.assertIn("white-space: pre-wrap", content)
             self.assertIn("box-decoration-break: clone", content)
             self.assertIn("toc.no-bullet", content)
+            self.assertIn("toc-title", content)
             self.assertIn("metrics-dashboard-bar", content)
             self.assertIn("To Do", content)
             self.assertIn("Done", content)

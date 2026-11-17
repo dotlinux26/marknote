@@ -151,9 +151,13 @@ def _inline_text(token) -> str:
     return "".join(parts).strip() or token.content.strip()
 
 
-def _build_toc(items, label: str, no_bullet: bool = False) -> str:
+def _build_toc(items, label: str, align: str = "left", no_bullet: bool = False) -> str:
     toc_class = "toc no-bullet" if no_bullet else "toc"
-    out = ['<div class="%s">' % toc_class, "<strong>%s</strong>" % escape(label), "<ul>"]
+    out = ['<div class="%s">' % toc_class]
+    if label:
+        align_class = "toc-title toc-align-%s" % (align or "left")
+        out.append('<div class="%s"><strong>%s</strong></div>' % (align_class, escape(label)))
+    out.append("<ul>")
     stack = [items[0][0]]
     has_open_li = False
     for level, anchor, text in items:
@@ -182,18 +186,69 @@ def _build_toc(items, label: str, no_bullet: bool = False) -> str:
     return "".join(out)
 
 
-TOC_RE = re.compile(
-    r"^\[\[TOC(?:\s*=\s*(?:\"([^\"]*)\"|'([^']*)'))?(?:[\s,(]+(no-?bullets?)\)?)?\s*\]\](?:\s*\(\s*(no-?bullets?)\s*\))?$",
+TOC_DIRECTIVE_RE = re.compile(
+    r"^\[\[TOC(?P<body>.*?)\]\](?:\((?P<tail>.*?)\))?$",
     re.IGNORECASE,
 )
+TOC_TITLE_QUOTE_RE = re.compile(r"""(?:=|\:)?\s*(?:\"([^\"]*)\"|'([^']*)')""")
+TOC_ALIGN_RE = re.compile(r"\b(?:align\s*[=:]\s*)?(left|center|centre|right)\b", re.IGNORECASE)
+TOC_NO_BULLET_RE = re.compile(r"\bno-?bullets?\b", re.IGNORECASE)
+
+
+def _parse_toc_directive(raw: str) -> tuple[bool, str, str, bool]:
+    """Phan tich cu phap [[TOC ...]] linh hoat:
+    - Custom tieu de: [[TOC="Muc luc"]], [[TOC='Tieu de']]
+    - Can le: center / align=center / right / left
+    - No-bullet: no-bullet / nobullet
+    - Ket hop: [[TOC="Danh muc" center no-bullet]] hoac [[TOC="Danh muc"]](center, no-bullet)
+    """
+    m = TOC_DIRECTIVE_RE.match(raw.strip())
+    if not m:
+        return (False, "Table of Contents", "left", False)
+
+    body = m.group("body") or ""
+    tail = m.group("tail") or ""
+    combined = f"{body} {tail}"
+
+    # 1. Trich xuat tieu de neu co dau nhay
+    tm = TOC_TITLE_QUOTE_RE.search(body)
+    if tm:
+        label = tm.group(1) if tm.group(1) is not None else tm.group(2)
+        span = tm.span()
+        body_without_title = body[:span[0]] + body[span[1]:]
+        search_str = f"{body_without_title} {tail}"
+    else:
+        label = "Table of Contents"
+        search_str = combined
+
+    # 2. Can le trai / giua / phai
+    align = "left"
+    am = TOC_ALIGN_RE.search(search_str)
+    if am:
+        val = am.group(1).lower()
+        if val in ("center", "centre"):
+            align = "center"
+        elif val == "right":
+            align = "right"
+        elif val == "left":
+            align = "left"
+
+    # 3. No-bullet
+    no_bullet = bool(TOC_NO_BULLET_RE.search(search_str))
+
+    return (True, label.strip(), align, no_bullet)
+
+
+TOC_RE = TOC_DIRECTIVE_RE
 
 
 def _anchors_toc(state):
-    """Gan id cho heading va thay [[TOC="label"]] bang muc luc co link nhan."""
+    """Gan id cho heading va thay [[TOC ...]] bang muc luc co link nhan."""
     taken = set()
     headings = []
     toc_index = None
     toc_label = "Table of Contents"
+    toc_align = "left"
     toc_no_bullet = False
     tokens = state.tokens
     i = 0
@@ -206,12 +261,13 @@ def _anchors_toc(state):
             anchor = _slugify(text, taken)
             tok.attrSet("id", anchor)
             headings.append((level, anchor, escape(text)))
-        elif toc_index is None:
-            match = TOC_RE.fullmatch(tok.content.strip())
-            if tok.type == "inline" and match:
+        elif toc_index is None and tok.type == "inline":
+            is_toc, label, align, no_bullet = _parse_toc_directive(tok.content)
+            if is_toc:
                 toc_index = i
-                toc_label = (match.group(1) or match.group(2) or toc_label).strip()
-                toc_no_bullet = bool(match.group(3) or match.group(4))
+                toc_label = label
+                toc_align = align
+                toc_no_bullet = no_bullet
         i += 1
     if toc_index is None:
         return
@@ -221,7 +277,7 @@ def _anchors_toc(state):
             token = tokens[start]
             token.type = "html_block"
             token.tag = ""
-            token.content = _build_toc(headings, toc_label, no_bullet=toc_no_bullet)
+            token.content = _build_toc(headings, toc_label, align=toc_align, no_bullet=toc_no_bullet)
             del tokens[start + 1 : start + 3]
         else:
             del tokens[start : start + 3]
