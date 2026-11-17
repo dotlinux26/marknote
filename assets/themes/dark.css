@@ -39,7 +39,10 @@
 /* --- 2. Reset co ban + body --- */
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--canvas);
+}
 
 body {
   margin: 0;
@@ -549,7 +552,20 @@ body {
 }
 
 /* --- 16. In khi xuat PDF --- */
+@page {
+  background-color: #0d1117;
+  @bottom-center {
+    color: #8b949e !important;
+  }
+}
+
 @media print {
+  html, body {
+    background: #0d1117 !important;
+    background-color: #0d1117 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   body { padding: 0; font-size: 11pt; }
   .markdown-body { max-width: none; }
   .markdown-body pre,

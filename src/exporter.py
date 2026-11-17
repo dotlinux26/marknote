@@ -311,7 +311,7 @@ DOCUMENT_BASE_CSS = (
     "  margin-top: 2px !important;\n"
     "  margin-bottom: 12px !important;\n"
     "  letter-spacing: -0.01em;\n"
-    "  color: #0969da !important;\n"
+    "  color: var(--accent-fg, #0969da) !important;\n"
     "}\n"
     ".markdown-body .toc .toc-title.toc-align-left {\n"
     "  text-align: left !important;\n"
@@ -608,18 +608,54 @@ DOCUMENT_BASE_CSS = (
 )
 TASKLIST_BASE_CSS = DOCUMENT_BASE_CSS
 
-PDF_PAGE_RULE = (
-    "\n"
-    "@page {\n"
-    "  size: A4;\n"
-    "  margin: 18mm 16mm 22mm 16mm;\n"
-    "  @bottom-center {\n"
-    "    content: counter(page) \" / \" counter(pages);\n"
-    "    font-size: 9pt;\n"
-    "    color: #59636e;\n"
-    "  }\n"
-    "}\n"
-)
+def _extract_theme_page_colors(css: str) -> tuple[str | None, str]:
+    """Trich xuat mau nen (--canvas) va mau chu mo (--fg-muted) tu CSS cua theme."""
+    bg_color = None
+    muted_color = "#59636e"
+    if css:
+        m_bg = re.search(r"--canvas\s*:\s*([^;\n}]+);", css)
+        if m_bg:
+            val = m_bg.group(1).strip()
+            if val and not val.lower().startswith("var("):
+                bg_color = val
+        if not bg_color:
+            m_body = re.search(
+                r"body\s*\{[^}]*background(?:-color)?\s*:\s*([^;\n}]+);",
+                css,
+                re.IGNORECASE | re.DOTALL,
+            )
+            if m_body:
+                val = m_body.group(1).strip()
+                if val and not val.lower().startswith("var("):
+                    bg_color = val
+        m_muted = re.search(r"--fg-muted\s*:\s*([^;\n}]+);", css)
+        if m_muted:
+            val = m_muted.group(1).strip()
+            if val and not val.lower().startswith("var("):
+                muted_color = val
+    return bg_color, muted_color
+
+
+def build_pdf_page_rule(css: str) -> str:
+    """Tao quy tac @page A4 dong bo mau nen khap kho giay (khong bi vien trang o Dark Mode)."""
+    bg_color, muted_color = _extract_theme_page_colors(css)
+    bg_line = f"  background-color: {bg_color};\n" if bg_color else ""
+    return (
+        "\n"
+        "@page {\n"
+        "  size: A4;\n"
+        "  margin: 18mm 16mm 22mm 16mm;\n"
+        f"{bg_line}"
+        "  @bottom-center {\n"
+        "    content: counter(page) \" / \" counter(pages);\n"
+        "    font-size: 9pt;\n"
+        f"    color: {muted_color};\n"
+        "  }\n"
+        "}\n"
+    )
+
+
+PDF_PAGE_RULE = build_pdf_page_rule("")
 
 TOC_PRINT_RULE = (
     "\n"
@@ -639,7 +675,7 @@ TOC_PRINT_RULE = (
     "    font-weight: 800 !important;\n"
     "    margin-top: 2pt !important;\n"
     "    margin-bottom: 9pt !important;\n"
-    "    color: #0969da !important;\n"
+    "    color: var(--accent-fg, #0969da) !important;\n"
     "  }\n"
     "  .markdown-body .toc .toc-title.toc-align-left {\n"
     "    text-align: left !important;\n"
@@ -812,7 +848,7 @@ class Exporter:
         html_body = replace_checkboxes_with_svg(html_body)
         html_body = embed_images_as_base64(html_body)
         document = build_document(
-            html_body, css + PDF_PAGE_RULE + TOC_PRINT_RULE
+            html_body, css + build_pdf_page_rule(css) + TOC_PRINT_RULE
         )
         cli_exe = find_windows_weasyprint()
 
