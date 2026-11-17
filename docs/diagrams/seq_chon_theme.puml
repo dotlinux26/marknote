@@ -1,6 +1,9 @@
 @startuml
 skinparam defaultFontName "Segoe UI"
 skinparam shadowing true
+skinparam responseMessageBelowArrow true
+skinparam ParticipantPadding 20
+skinparam BoxPadding 15
 
 autonumber
 actor "Người dùng" as User

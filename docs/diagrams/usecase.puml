@@ -1,17 +1,20 @@
 @startuml
 skinparam defaultFontName "Segoe UI"
-skinparam handwritten false
 skinparam packageStyle rectangle
 skinparam shadowing true
+skinparam ranksep 35
+skinparam nodesep 30
 
 skinparam actor {
   BackgroundColor #EFF6FF
   BorderColor #2563EB
+  FontSize 13
 }
 skinparam usecase {
   BackgroundColor #F8FAFC
   BorderColor #0284C7
   ArrowColor #2563EB
+  FontSize 12
 }
 
 left to right direction
@@ -19,7 +22,7 @@ left to right direction
 actor "Người dùng\n(Cá nhân / User)" as User
 
 rectangle "Hệ thống Soạn thảo & Quản lý Ghi chú Mã nguồn mở MarkNote" {
-  package "Quản lý Ghi chú & Soạn thảo" {
+  package "1. Quản lý Ghi chú & Soạn thảo" {
     usecase "UC01: Tạo ghi chú mới" as UC01
     usecase "UC02: Mở / Xem ghi chú" as UC02
     usecase "UC03: Sửa ghi chú (Ctrl+S)" as UC03
@@ -29,13 +32,13 @@ rectangle "Hệ thống Soạn thảo & Quản lý Ghi chú Mã nguồn mở Mar
     usecase "UC09: Thay thế văn bản (Ctrl+H)" as UC09
   }
 
-  package "Trình diễn & Tra cứu FTS5" {
+  package "2. Trình diễn & Tra cứu FTS5" {
     usecase "UC06: Live Preview song song\n(Debounce timer 300ms)" as UC06
     usecase "UC07: Bật / Tắt Cuộn đồng bộ\n(Sync Scroll Engine)" as UC07
     usecase "UC10: Tìm toàn kho FTS5\n(& Lọc nhãn tag:)" as UC10
   }
 
-  package "Giao diện & Xuất bản In ấn" {
+  package "3. Giao diện & Xuất bản In ấn" {
     usecase "UC11: Xem danh sách theme" as UC11
     usecase "UC12: Chuyển đổi theme" as UC12
     usecase "UC13: Xuất PDF / HTML in ấn\n(WeasyPrint A4 W3C CSS)" as UC13

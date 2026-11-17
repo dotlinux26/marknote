@@ -2,6 +2,8 @@
 skinparam defaultFontName "Segoe UI"
 skinparam classAttributeIconSize 0
 skinparam shadowing true
+skinparam ranksep 60
+skinparam nodesep 50
 
 class DbManager {
   - _db_path : Path

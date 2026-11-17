@@ -1,8 +1,16 @@
 @startuml
 skinparam defaultFontName "Segoe UI"
-skinparam monochrome false
+skinparam ranksep 85
+skinparam nodesep 80
 skinparam shadowing true
-skinparam linetype ortho
+skinparam roundcorner 8
+
+skinparam entity {
+  BackgroundColor #FFFFFF
+  BorderColor #2563EB
+  ArrowColor #4F46E5
+  FontSize 12
+}
 
 entity "notes\n(Bảng Ghi chú)" as notes {
   * **id** : INTEGER <<PK>>
@@ -22,7 +30,7 @@ entity "tags\n(Bảng Nhãn phân loại)" as tags {
   color : TEXT (HEX #rrggbb)
 }
 
-entity "note_tag\n(Quan hệ nhiều - nhiều N:N)" as note_tag {
+entity "note_tag\n(Bảng liên kết quan hệ N:N)" as note_tag {
   * **note_id** : INTEGER <<FK>>
   * **tag_id** : INTEGER <<FK>>
   --
@@ -44,9 +52,15 @@ entity "notes_fts\n(Bảng ảo SQLite FTS5)" as notes_fts <<Virtual Table>> {
   tokenize = 'porter unicode61'
 }
 
-notes ||--o{ note_tag : "1 .. N"
-tags ||--o{ note_tag : "1 .. N"
+notes ||--right--o{ note_tag : "  1 .. N  "
+tags ||--left--o{ note_tag : "  1 .. N  "
 
-notes .. notes_fts : "Đồng bộ tự động qua\n3 Database Triggers\n(AFTER INSERT, UPDATE, DELETE)"
+notes ..down..> notes_fts : "\nĐồng bộ tự động qua\n3 Database Triggers\n(INSERT, UPDATE, DELETE)\n"
+
+note right of settings
+  Lưu cấu hình cục bộ:
+  theme = 'default' | 'dark'
+  sync_scroll = 'ON' | 'OFF'
+end note
 
 @enduml

@@ -1,27 +1,30 @@
 @startuml
 skinparam defaultFontName "Segoe UI"
 skinparam packageStyle rectangle
+skinparam shadowing true
+skinparam ranksep 50
+skinparam nodesep 50
 
-package "Tầng Giao diện (Presentation Layer)" {
+package "Tầng Giao diện Người dùng (Presentation Layer / View)" {
   class MainWindow
   class EditorPane
   class PreviewPane
   class SearchPanel
 }
 
-package "Tầng Nghiệp vụ (Business Logic Layer)" {
+package "Tầng Xử lý Nghiệp vụ & Động cơ (Business Logic & Engine)" {
   class MarkdownRenderer
   class SyncScrollController
   class ThemeManager
   class Exporter
 }
 
-package "Tầng Dữ liệu (Data Access Layer)" {
+package "Tầng Truy cập Dữ liệu (Data Access Layer / DAO)" {
   class DbManager
   class NoteDAO
   class TagDAO
   class SettingsDAO
-  class SQLite_FTS5 <<Database>>
+  class SQLite_FTS5 <<Database Engine>>
 }
 
 MainWindow --> EditorPane
