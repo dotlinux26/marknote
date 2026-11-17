@@ -120,9 +120,7 @@ MarkNote được phát hành chính thức theo giấy phép **MIT License** �
 - **Nghĩa vụ pháp lý:** Người sử dụng và phân phối lại chỉ cần giữ nguyên thông báo bản quyền gốc (Copyright Notice) và điều khoản miễn trừ trách nhiệm pháp lý của nhóm tác giả.
 - **Tính tương thích:** Giấy phép MIT mang tính chất dễ dãi (permissive), cho phép tích hợp thuận lợi với các thư viện mang giấy phép khác như BSD và LGPLv3 mà không gây xung đột pháp lý.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.1: Giấy phép MIT License công bố trên GitHub]**
-> - **Chức năng thể hiện:** Minh chứng dự án được phát hành công khai theo giấy phép chuẩn OSI (MIT License).
-> - **Hướng dẫn lấy ảnh:** Mở trình duyệt tại `https://github.com/dotlinux26/marknote/blob/main/LICENSE`, chụp màn hình văn bản giấy phép có huy hiệu MIT của GitHub.
+*Hình 2.1: Giấy phép phát hành mã nguồn mở MIT License trên kho lưu trữ GitHub*
 
 ## 2.3. Tính phổ biến của công cụ
 - **Khả năng vận hành đa nền tảng:** Ứng dụng hoạt động xuất sắc trên **Linux** thông qua định dạng AppImage độc lập, đồng thời hỗ trợ mượt mà trên **Windows 10/11** và **macOS**.
@@ -136,9 +134,7 @@ Toàn bộ mã nguồn, tài liệu thiết kế và các gói phát hành đư�
 - **Địa chỉ kho lưu trữ:** `https://github.com/dotlinux26/marknote`
 - **Quản lý tương tác:** Áp dụng hệ thống GitHub Issues để quản lý danh sách lỗi/yêu cầu tính năng và GitHub Discussions để trao đổi kỹ thuật cộng đồng.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.2: Giao diện kho lưu trữ GitHub dự án MarkNote]**
-> - **Chức năng thể hiện:** Tính minh bạch và cấu trúc quản lý mã nguồn mở trực tuyến.
-> - **Hướng dẫn lấy ảnh:** Truy cập `https://github.com/dotlinux26/marknote`, chụp toàn màn hình trang chủ kho lưu trữ (thấy rõ danh sách tệp, tag `v1.2.5` và workflow CI/CD).
+*Hình 2.2: Giao diện quản lý mã nguồn dự án MarkNote trên GitHub*
 
 ### 2.4.2. Tham gia cộng đồng và quy trình đóng góp mã nguồn
 Quy trình tiếp nhận đóng góp được quy định rõ trong tệp `CONTRIBUTING.md`:
@@ -147,9 +143,7 @@ Quy trình tiếp nhận đóng góp được quy định rõ trong tệp `CONTR
 3. **Quy trình Pull Request & Tự động hóa CI:** Gửi PR vào nhánh `main`. Quy trình GitHub Actions tự động kiểm tra cú pháp và chạy toàn bộ unit tests trên cả Linux và Windows.
 4. **Kiểm duyệt mã (Code Review):** Trưởng nhóm dự án kiểm duyệt và phản hồi trong vòng 48 giờ.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.3: Hướng dẫn đóng góp CONTRIBUTING.md và Hệ thống Issues]**
-> - **Chức năng thể hiện:** Quy chuẩn đóng góp mã nguồn và kênh tiếp nhận phản hồi người dùng.
-> - **Hướng dẫn lấy ảnh:** Chụp giao diện tệp `CONTRIBUTING.md` hoặc tab `Issues` tại `https://github.com/dotlinux26/marknote/issues`.
+*Hình 2.3: Quy chuẩn đóng góp mã nguồn (CONTRIBUTING.md) và hệ thống tiếp nhận sự cố (Issues)*
 
 <div class="page-break"></div>
 
@@ -194,9 +188,7 @@ Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân lo�
 | **WeasyPrint** | ≥ 60.0 | **BSD-3-Clause** | Động cơ xuất tài liệu PDF in ấn A4 | Bảo lưu điều khoản miễn trừ trách nhiệm pháp lý. |
 | **SQLite3** | Nhúng | **Public Domain** | Cơ sở dữ liệu và chỉ mục FTS5 | Tự do sử dụng hoàn toàn không điều kiện. |
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.4: Bảng kiểm kê bên thứ ba THIRD_PARTY_NOTICES.md trên GitHub]**
-> - **Chức năng thể hiện:** Tính minh bạch pháp lý và trách nhiệm tuân thủ bản quyền của các thư viện phụ thuộc.
-> - **Hướng dẫn lấy ảnh:** Truy cập `https://github.com/dotlinux26/marknote/blob/main/THIRD_PARTY_NOTICES.md`, chụp màn hình bảng kê khai.
+*Hình 2.4: Bảng kiểm kê bản quyền bên thứ ba (THIRD_PARTY_NOTICES.md)*
 
 <div class="page-break"></div>
 
@@ -204,10 +196,7 @@ Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân lo�
 
 ### 2.7.1. Phân tích yêu cầu hệ thống
 
-> 💡 **Quy chuẩn công cụ mô hình hóa thiết kế (Diagrams-as-Code Stack):**
-> Toàn bộ 9 sơ đồ kỹ thuật trong đồ án (Use Case, ERD, Kiến trúc phân tầng, Sơ đồ lớp và 5 Sơ đồ tuần tự nghiệp vụ) được thiết kế theo chuẩn **Diagrams-as-Code** bằng công cụ mã nguồn mở **PlantUML (v1.2024+)** kết hợp thư viện đồ họa **Graphviz (Dot Layout Engine)**.
-> - **Tệp mã nguồn mở:** Các sơ đồ được khai báo dạng văn bản thuần túy trong thư mục `docs/diagrams/*.puml`, cho phép quản lý lịch sử phiên bản (`git diff`) chặt chẽ cùng mã nguồn.
-> - **Định dạng kết xuất:** Hệ thống tự động biên dịch mã `.puml` ra định dạng vector **SVG** (độ phân giải vô hạn phục vụ in ấn PDF chất lượng cao) và định dạng ảnh **PNG 300 DPI** sắc nét phục vụ nhúng tài liệu trực quan.
+Các sơ đồ thiết kế trong hệ thống (Use Case, ERD, Kiến trúc phân lớp, Sơ đồ lớp và Tuần tự) được mô hình hóa bằng công cụ mã nguồn mở PlantUML kết hợp Graphviz Dot Engine, kết xuất sang định dạng vector SVG và ảnh PNG độ phân giải cao phục vụ tài liệu hóa.
 
 #### A. Yêu cầu chức năng (Ma trận 13 Use Cases chuẩn nghiệp vụ)
 Hệ thống phục vụ một tác nhân chính (**User** - Người dùng cá nhân) với toàn quyền quản trị cục bộ. Dưới đây là bảng ma trận đặc tả nghiệp vụ chuẩn cho 13 Use Cases của hệ thống:
@@ -228,11 +217,8 @@ Hệ thống phục vụ một tác nhân chính (**User** - Người dùng cá 
 | **UC12** | Chuyển đổi theme | User | Đang mở ứng dụng. | 1. Chọn theme mới từ dropdown.<br>2. Đọc tệp CSS tương ứng và cập nhật cấu hình.<br>3. Khung Preview nạp CSS mới không cần restart. | Toàn bộ giao diện đổi màu sắc ngay tức thì. | Cao |
 | **UC13** | Xuất PDF / HTML in ấn | User | Đang mở ghi chú cần xuất bản. | 1. Nhấn `Ctrl+P` hoặc chọn Export PDF.<br>2. Động cơ WeasyPrint kết xuất văn bản A4.<br>3. Tự động sinh số trang và mục lục chuẩn in. | Tệp tài liệu PDF/HTML in ấn chuyên nghiệp được lưu xuống máy. | Bắt buộc |
 
-![Hình 2.5: Sơ đồ Use Case tổng quát hệ thống MarkNote](media/usecase.png)
-
-> 📸 **[HÌNH 2.5: Sơ đồ Use Case tổng quát hệ thống MarkNote]**
-> - **Chức năng thể hiện:** Trực quan hóa 13 trường hợp sử dụng theo chuẩn PlantUML với nhãn tiếng Việt chuẩn.
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/usecase.puml` (kết xuất ra `usecase.png` và `usecase.svg`).
+![Sơ đồ Use Case tổng quát hệ thống MarkNote](media/usecase.png)
+*Hình 2.5: Sơ đồ Use Case tổng quát hệ thống MarkNote*
 
 #### B. Yêu cầu phi chức năng
 - **Tốc độ phản hồi:** Thời gian trễ render Live Preview được tối ưu hóa ở mức 300ms (debounce timer), đảm bảo không gây giật lag luồng đồ họa.
@@ -248,11 +234,8 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 - **Bảng `note_tag`:** Bảng kết hợp thiết lập quan hệ nhiều - nhiều giữa ghi chú và nhãn (`note_id`, `tag_id`, khóa chính kép, cơ chế `ON DELETE CASCADE`).
 - **Bảng ảo `notes_fts`:** Bảng ảo sử dụng mô-đun **FTS5** đánh chỉ mục toàn văn trên cột `title` và `content_md`. Ba Trigger cơ sở dữ liệu (`after insert`, `after update`, `after delete`) đảm bảo chỉ mục luôn được đồng bộ tự động trong thời gian thực.
 
-![Hình 2.6: Sơ đồ thực thể liên kết ERD của cơ sở dữ liệu MarkNote](media/schema_er.png)
-
-> 📸 **[HÌNH 2.6: Sơ đồ thực thể liên kết ERD của cơ sở dữ liệu MarkNote]**
-> - **Chức năng thể hiện:** Cấu trúc dữ liệu và quan hệ giữa các bảng cơ sở dữ liệu và bảng ảo FTS5 theo chuẩn PlantUML.
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/schema_er.puml` (kết xuất ra `schema_er.png` và `schema_er.svg`).
+![Sơ đồ thực thể liên kết ERD của cơ sở dữ liệu MarkNote](media/schema_er.png)
+*Hình 2.6: Sơ đồ thực thể liên kết (ERD) cơ sở dữ liệu MarkNote*
 
 #### D. Thiết kế Kiến trúc phân lớp hệ thống và Sơ đồ lớp (Class Diagram)
 Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tách trách nhiệm rõ ràng:
@@ -260,19 +243,11 @@ Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tá
 2. **Tầng Xử lý Nghiệp vụ & Động cơ (Business Logic & Engine Layer / Controller):** `MarkdownRenderer`, `SyncScrollController`, `ThemeManager`, `Exporter`.
 3. **Tầng Truy cập Dữ liệu (Data Access Layer / DAO & Model):** `NoteDAO`, `TagDAO`, `SettingsDAO`, `DbManager`, CSDL `SQLite FTS5`.
 
-![Hình 2.6b: Sơ đồ Kiến trúc phân lớp 3 tầng hệ thống MarkNote](media/kientruc.png)
+![Sơ đồ Kiến trúc phân lớp 3 tầng hệ thống MarkNote](media/kientruc.png)
+*Hình 2.6b: Sơ đồ kiến trúc phân lớp hệ thống MarkNote*
 
-> 📸 **[HÌNH 2.6b: Sơ đồ Kiến trúc phân lớp 3 tầng hệ thống MarkNote]**
-> - **Chức năng thể hiện:** Phân chia trách nhiệm giữa các tầng View, Controller/Engine và DAO.
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/kientruc.puml` (kết xuất ra `kientruc.png` và `kientruc.svg`).
-
-![Hình 2.6c: Sơ đồ lớp chi tiết (Class Diagram) hệ thống MarkNote](media/lop.png)
-
-> 📸 **[HÌNH 2.6c: Sơ đồ lớp chi tiết (Class Diagram) hệ thống MarkNote]**
-> - **Chức năng thể hiện:** Cấu trúc hướng đối tượng và quan hệ tương tác giữa các lớp chính trong mã nguồn `src/`.
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/lop.puml` (kết xuất ra `lop.png` và `lop.svg`).
-
----
+![Sơ đồ lớp chi tiết hệ thống MarkNote](media/lop.png)
+*Hình 2.6c: Sơ đồ lớp chi tiết (Class Diagram) hệ thống MarkNote*
 
 <div class="page-break"></div>
 
@@ -287,18 +262,13 @@ Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tá
   - Phát triển tính năng Smart TOC tự động sinh mục lục phân cấp font chữ rõ ràng bên dưới thẻ chỉ định.
 - **Sơ đồ tuần tự xử lý (Sequence Diagram):**
 
-![Hình 2.7a: Sơ đồ tuần tự chức năng Cuộn đồng bộ Sync Scroll](media/seq_sync_scroll.png)
-
-> 📸 **[HÌNH 2.7a: Sơ đồ tuần tự chức năng Cuộn đồng bộ Sync Scroll]**
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_sync_scroll.puml`.
+![Sơ đồ tuần tự chức năng cuộn đồng bộ Sync Scroll](media/seq_sync_scroll.png)
+*Hình 2.7a: Sơ đồ tuần tự chức năng cuộn đồng bộ Sync Scroll*
 
 - **Màn hình giao diện minh chứng:**
 
-![Hình 2.7: Màn hình Soạn thảo song song và Cuộn đồng bộ Sync Scroll](media/screen_01_main_editor_preview.png)
-
-> 📸 **[HÌNH 2.7: Màn hình Soạn thảo song song và Cuộn đồng bộ Sync Scroll]**
-> - **Chức năng thể hiện:** Giao diện soạn thảo GFM bên trái có đánh số dòng, khung xem trước HTML bên phải, nút kích hoạt Sync Scroll và biểu đồ tròn Donut SVG.
-> - **Đường dẫn ảnh chụp thực tế:** `docs/screenshots/screen_01_main_editor_preview.png`.
+![Giao diện soạn thảo song song và cuộn đồng bộ Sync Scroll](media/screen_01_main_editor_preview.png)
+*Hình 2.7: Giao diện soạn thảo song song và cuộn đồng bộ Sync Scroll*
 
 <div class="page-break"></div>
 
@@ -311,41 +281,31 @@ Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tá
   - Trả về danh sách trích đoạn ngắn (`snippet`) có bôi vàng từ khóa giúp người dùng định vị nội dung cần tìm trong vài mili-giây.
 - **Sơ đồ tuần tự xử lý (Sequence Diagram):**
 
-![Hình 2.8a: Sơ đồ tuần tự chức năng Tra cứu FTS5 và Lọc Tag](media/seq_tim_kiem_fts5.png)
-
-> 📸 **[HÌNH 2.8a: Sơ đồ tuần tự chức năng Tra cứu FTS5 và Lọc Tag]**
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_tim_kiem_fts5.puml`.
+![Sơ đồ tuần tự chức năng tra cứu FTS5 và lọc thẻ phân loại](media/seq_tim_kiem_fts5.png)
+*Hình 2.8a: Sơ đồ tuần tự chức năng tra cứu FTS5 và lọc thẻ phân loại*
 
 - **Màn hình giao diện minh chứng:**
 
-![Hình 2.8: Màn hình Tìm kiếm toàn văn bản SQLite FTS5 kết hợp lọc Tag](media/screen_02_fts5_search_tags.png)
-
-> 📸 **[HÌNH 2.8: Màn hình Tìm kiếm toàn văn bản SQLite FTS5 kết hợp lọc Tag]**
-> - **Chức năng thể hiện:** Kết quả tra cứu toàn văn tốc độ cao với SQLite FTS5 kết hợp lọc theo nhãn `tag:`.
-> - **Đường dẫn ảnh chụp thực tế:** `docs/screenshots/screen_02_fts5_search_tags.png`.
+![Giao diện tìm kiếm toàn văn SQLite FTS5 kết hợp lọc thẻ phân loại](media/screen_02_fts5_search_tags.png)
+*Hình 2.8: Giao diện tìm kiếm toàn văn bản SQLite FTS5 kết hợp lọc thẻ phân loại*
 
 <div class="page-break"></div>
 
 #### 2.7.2.3. Sinh viên: Nguyễn Quang Khải - Module Quản lý Media, Thư viện ảnh và Hệ thống Đa chủ đề
-- **Màn hình thực hiện chức năng:** Thư mục quản lý Media nội bộ (`📁 Media Folder`), hộp thoại chèn ảnh tự động (`Ctrl+Shift+M`) và menu chuyển đổi giao diện Dark Mode.
+- **Màn hình thực hiện chức năng:** Thư mục quản lý Media nội bộ (`~/.marknote/media/`), hộp thoại chèn ảnh tự động (`Ctrl+Shift+M`) và menu chuyển đổi giao diện Dark Mode.
 - **Nhiệm vụ và kết quả cần đạt được:**
   - Thiết kế cơ chế lưu trữ tài nguyên hình ảnh an toàn theo kiến trúc cục bộ, tự động sao chép các tệp ảnh được người dùng chèn vào thư mục con `media/` của kho ghi chú, đảm bảo ghi chú không bị mất liên kết ảnh khi di chuyển dữ liệu.
   - Xây dựng hệ thống chuyển đổi chủ đề giao diện (`theme.py`), hỗ trợ các bộ giao diện chuẩn mực: `default.css` (giao diện sáng chuẩn), `dark.css` (giao diện tối chống mỏi mắt) và `github.css` (phong cách GitHub).
   - Áp dụng cơ chế nạp nóng CSS giúp khung Preview đổi phong cách giao diện tức thì mà không cần tắt ứng dụng.
 - **Sơ đồ tuần tự xử lý (Sequence Diagram):**
 
-![Hình 2.9a: Sơ đồ tuần tự chức năng Chuyển đổi Theme và nạp nóng CSS](media/seq_chon_theme.png)
-
-> 📸 **[HÌNH 2.9a: Sơ đồ tuần tự chức năng Chuyển đổi Theme và nạp nóng CSS]**
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_chon_theme.puml`.
+![Sơ đồ tuần tự chức năng chuyển đổi giao diện](media/seq_chon_theme.png)
+*Hình 2.9a: Sơ đồ tuần tự chức năng chuyển đổi giao diện (Theme)*
 
 - **Màn hình giao diện minh chứng:**
 
-![Hình 2.9: Màn hình Quản lý Media, Chèn ảnh và Chuyển đổi Dark Theme](media/screen_03_dark_theme.png)
-
-> 📸 **[HÌNH 2.9: Màn hình Quản lý Media, Chèn ảnh và Chuyển đổi Dark Theme]**
-> - **Chức năng thể hiện:** Thao tác chèn ảnh cục bộ vào ghi chú và giao diện tông màu tối Dark Theme bảo vệ mắt.
-> - **Đường dẫn ảnh chụp thực tế:** `docs/screenshots/screen_03_dark_theme.png`.
+![Giao diện quản lý Media, chèn ảnh và chế độ Dark Theme](media/screen_03_dark_theme.png)
+*Hình 2.9: Giao diện quản lý Media, chèn ảnh và chuyển đổi Dark Theme*
 
 <div class="page-break"></div>
 
@@ -358,22 +318,15 @@ Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tá
   - Xây dựng quy trình CI/CD hoàn chỉnh trên GitHub Actions (`.github/workflows/build-and-release.yml`), tự động kích hoạt kiểm thử đơn vị và phát hành gói phần mềm mỗi khi tạo tag phiên bản mới.
 - **Sơ đồ tuần tự xử lý (Sequence Diagram):**
 
-![Hình 2.10a: Sơ đồ tuần tự chức năng Xuất bản tài liệu PDF in ấn A4](media/seq_xuat_pdf.png)
-
-> 📸 **[HÌNH 2.10a: Sơ đồ tuần tự chức năng Xuất bản tài liệu PDF in ấn A4]**
-> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_xuat_pdf.puml`.
+![Sơ đồ tuần tự chức năng xuất bản tài liệu PDF in ấn A4](media/seq_xuat_pdf.png)
+*Hình 2.10a: Sơ đồ tuần tự chức năng xuất bản tài liệu PDF in ấn A4*
 
 - **Màn hình giao diện minh chứng:**
 
-![Hình 2.10: Tệp tài liệu PDF được xuất ra mở trên trình đọc tài liệu](media/screen_pdf_page_02_toc.png)
+![Bản in tài liệu PDF chất lượng cao xuất bản từ hệ thống](media/screen_pdf_page_02_toc.png)
+*Hình 2.10: Bản in tài liệu PDF chất lượng cao xuất bản từ hệ thống*
 
-> 📸 **[HÌNH 2.10: Tệp tài liệu PDF được xuất ra mở trên trình đọc tài liệu]**
-> - **Chức năng thể hiện:** Bản in tài liệu PDF A4 chất lượng cao với bảng mục lục tự động kèm số trang thật, chân trang đối xứng và bảng biểu tự co giãn.
-> - **Đường dẫn ảnh trích xuất từ PDF:** `docs/screenshots/screen_pdf_page_02_toc.png`.
-
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.11: Pipeline tự động hóa CI/CD trên GitHub Actions và Trang GitHub Releases]**
-> - **Chức năng thể hiện:** Quy trình build và kiểm thử tự động thành công (tích xanh) trên đám mây và danh sách tệp phân phối tại trang Releases.
-> - **Hướng dẫn lấy ảnh:** Truy cập `https://github.com/dotlinux26/marknote/actions` và `https://github.com/dotlinux26/marknote/releases`, chụp màn hình workflow chạy thành công và danh sách tệp tải về (`.AppImage`, `.zip`).
+*Hình 2.11: Quy trình tích hợp liên tục CI/CD trên GitHub Actions và danh mục bản phát hành*
 
 ---
 
