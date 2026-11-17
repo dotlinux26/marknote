@@ -45,7 +45,7 @@
 | 1 | **PMNM / OSS** | Open Source Software | Phần mềm mã nguồn mở |
 | 2 | **OSI** | Open Source Initiative | Tổ chức Sáng kiến Mã nguồn mở |
 | 3 | **FSF** | Free Software Foundation | Quỹ Phần mềm Tự do |
-| 4 | **GFM** | GitHub Flavored Markdown | Quy chuẩn định dạng Markdown mở rộng của GitHub |
+| 4 | **GFM** | GitHub Flavored Markdown | Định dạng Markdown mở rộng của GitHub |
 | 5 | **CSDL / DB** | Database / Relational Database | Cơ sở dữ liệu quan hệ |
 | 6 | **FTS5** | Full-Text Search 5 | Mô-đun tìm kiếm toàn văn bản trong SQLite |
 | 7 | **GUI** | Graphical User Interface | Giao diện đồ họa người dùng |
@@ -54,8 +54,9 @@
 | 10 | **SVG** | Scalable Vector Graphics | Định dạng đồ họa vector hai chiều |
 | 11 | **CI/CD** | Continuous Integration / Continuous Deployment | Tích hợp liên tục và Triển khai liên tục |
 | 12 | **API** | Application Programming Interface | Giao diện lập trình ứng dụng |
-| 13 | **MVC / DAO** | Model-View-Controller / Data Access Object | Mô hình kiến trúc phân lớp phần mềm |
-| 14 | **CLO** | Course Learning Outcomes | Chuẩn đầu ra của học phần đào tạo |
+| 13 | **MVC / DAO** | Model-View-Controller / Data Access Object | Kiến trúc phân lớp phần mềm |
+| 14 | **UML** | Unified Modeling Language | Ngôn ngữ mô hình hóa thống nhất |
+| 15 | **CLO** | Course Learning Outcomes | Chuẩn đầu ra của học phần đào tạo |
 
 ---
 
@@ -65,26 +66,22 @@
 
 # Phần 1: MỞ ĐẦU
 
-### 1. Tóm lược ý tưởng và lý do nghiên cứu đề tài
-Trong kỷ nguyên số và phát triển phần mềm hiện đại, việc ghi chép kỹ thuật, quản lý tri thức cá nhân (Personal Knowledge Management - PKM) và soạn thảo tài liệu khoa học đóng vai trò then chốt đối với kỹ sư CNTT và sinh viên. Tuy nhiên, các giải pháp phổ biến hiện nay (như Notion, Obsidian, Evernote, Google Docs) đều tồn tại những nhược điểm lớn:
-- **Nguy cơ quyền riêng tư và thất thoát dữ liệu:** Phần lớn đòi hỏi kết nối máy chủ đám mây, dữ liệu người dùng bị lưu trữ tập trung và tiềm ẩn nguy cơ bị khai thác thông tin.
-- **Phụ thuộc kết nối mạng:** Hoạt động kém hiệu quả hoặc mất tính năng khi làm việc tại môi trường cô lập mạng (offline/air-gapped labs).
-- **Khả năng xuất bản hạn chế:** Khó kết xuất tài liệu in ấn PDF chuẩn A4 có mục lục động đánh đúng số trang thực tế và bảng biểu tự co giãn.
+### 1.1. Ý tưởng nghiên cứu đề tài
+Trong thời đại chuyển đổi số và phát triển phần mềm, nhu cầu ghi chép tài liệu kỹ thuật, quản lý tri thức cá nhân (Personal Knowledge Management - PKM) và biên soạn báo cáo khoa học là vô cùng cấp thiết đối với kỹ sư công nghệ thông tin và sinh viên. Các giải pháp ghi chép hiện nay phần lớn phụ thuộc vào điện toán đám mây (Cloud-based), tiềm ẩn nguy cơ rò rỉ dữ liệu nghiên cứu và mất tính sẵn sàng khi làm việc trong các mạng nội bộ cách ly (Air-gapped Labs). Từ bối cảnh đó, ý tưởng xây dựng **MarkNote** — một ứng dụng desktop mã nguồn mở biên soạn ghi chú cá nhân hoạt động độc lập 100% ngoại tuyến, bảo mật cao và hỗ trợ xuất bản tài liệu in ấn PDF chuẩn A4 — được hình thành nhằm mang lại một công cụ làm việc thực sự tự chủ, mạnh mẽ và tiện lợi.
 
-Xuất phát từ các yêu cầu thực tiễn đó, nhóm sinh viên lựa chọn đề tài **"Phát triển ứng dụng soạn thảo và quản lý ghi chú cá nhân mã nguồn mở MarkNote"** nhằm tạo ra một giải pháp desktop mã nguồn mở hoàn chỉnh, hoạt động ngoại tuyến 100%, độc lập nền tảng và hỗ trợ xuất bản tài liệu kỹ thuật đạt chuẩn mực công nghiệp.
+### 1.2. Nội dung kiến thức học tập và kỹ năng cần đạt được
+Để triển khai thành công đề tài, sinh viên vận dụng và hoàn thiện các khối kiến thức:
+- **Kiến thức chuyên môn:** Lập trình hướng đối tượng (OOP) nâng cao với Python; xây dựng giao diện người dùng đồ họa hiện đại với PySide6/Qt 6; thiết kế và tối ưu hóa cơ sở dữ liệu quan hệ nhúng SQLite và kỹ thuật đánh chỉ mục toàn văn FTS5; phân tích thiết kế hệ thống theo chuẩn UML (Use Case, Sequence, Class Diagram).
+- **Kỹ năng nghề nghiệp:** Kỹ năng phân tích đặc tả yêu cầu phần mềm; kỹ năng kiểm thử tự động (Unit Testing); kỹ năng làm việc nhóm kỹ thuật, quản trị mã nguồn với Git và thiết lập quy trình tự động hóa CI/CD.
 
-### 2. Xác định nội dung học tập và kiến thức, kỹ năng nền tảng
-Để thực hiện đề tài, nhóm vận dụng các kiến thức cốt lõi đã tích lũy trong chương trình đào tạo:
-- Kỹ thuật lập trình ngôn ngữ **Python** và lập trình hướng đối tượng (OOP).
-- Phân tích và thiết kế hệ thống thông tin theo chuẩn UML (Use Case, Class, Sequence Diagram).
-- Quản trị và truy vấn cơ sở dữ liệu quan hệ với **SQLite**.
+### 1.3. Yêu cầu sản phẩm nghiên cứu
+- **Tiết kiệm thời gian, công sức:** Tốc độ phản hồi tức thì với cơ chế Live Preview song song (debounce 300ms) và cuộn đồng bộ Sync Scroll chống lệch trang.
+- **Lưu trữ dữ liệu an toàn, bảo mật tuyệt đối:** Hoạt động ngoại tuyến 100%, không gửi dữ liệu ra Internet, toàn bộ ghi chú và tài nguyên ảnh lưu trữ cục bộ trong máy người dùng.
+- **Dễ dàng quản lý và tra cứu:** Tích hợp bộ tìm kiếm toàn văn SQLite FTS5 cho phép tra cứu siêu tốc kèm trích dẫn từ khóa (`snippet`) và lọc theo thẻ nhãn `tag:`.
+- **Xuất bản in ấn chuyên nghiệp:** Kết xuất trực tiếp tài liệu HTML và PDF A4 đạt chuẩn quốc tế W3C Paged Media, tự động sinh số trang in và mục lục động.
 
-### 3. Kiến thức then chốt lĩnh hội từ học phần Phần mềm mã nguồn mở
-Quá trình nghiên cứu đề tài giúp người học làm chủ các chuẩn mực then chốt của học phần:
-- **Phương pháp thẩm định và lựa chọn PMNM (Bài 5):** Nắm vững quy trình 4 bước thẩm định công nghệ và đánh giá định lượng dự án theo thang điểm Points of FAIL (PoF).
-- **Phân loại phần mềm nguồn mở (Bài 7 & Bài 8):** Định vị phần mềm thuộc nhóm Ứng dụng Desktop chạy trên Linux, khai thác CSDL nhúng SQLite FTS5 và công cụ biên soạn tài liệu học tập ngoại tuyến.
-- **Khía cạnh pháp lý & Giấy phép (Licensing):** Thực hành cấp phép bản quyền phần mềm theo giấy phép chuẩn OSI (**MIT License**) và kiểm kê nghĩa vụ pháp lý các thư viện phụ thuộc bên thứ ba (**THIRD_PARTY_NOTICES**).
-- **Quy trình phát triển cộng đồng (Bài 9):** Làm chủ quy trình quản lý phiên bản với Git, quản lý luồng đóng góp (Issues, Pull Requests, Code Review) và tự động hóa CI/CD qua GitHub Actions.
+### 1.4. Lý do chọn đề tài
+Sự phát triển mạnh mẽ của phong trào phần mềm mã nguồn mở mang lại quyền tự chủ công nghệ to lớn cho cộng đồng. Tuy nhiên, các công cụ ghi chú nguồn đóng (như Notion, Evernote, Obsidian) đều đòi hỏi chi phí bản quyền hoặc tiềm ẩn rủi ro về quyền riêng tư. Nghiên cứu phát triển MarkNote không chỉ giúp sinh viên giải quyết một bài toán thực tiễn có tính ứng dụng cao mà còn là cơ hội thực hành toàn diện quy trình phát triển PMNM chuẩn mực: từ lựa chọn giấy phép, kiểm kê bản quyền bên thứ ba đến xây dựng cộng đồng đóng góp minh bạch trên GitHub.
 
 <div class="page-break"></div>
 
@@ -93,62 +90,64 @@ Quá trình nghiên cứu đề tài giúp người học làm chủ các chuẩ
 ## 2.1. Cộng đồng phát triển PMNM và hệ sinh thái công cụ
 
 ### 2.1.1. Hệ sinh thái ngôn ngữ Python và cộng đồng Python Software Foundation (PSF)
-Dự án lựa chọn ngôn ngữ lập trình Python làm nền tảng phát triển cốt lõi. Cộng đồng Python toàn cầu được bảo trợ bởi Python Software Foundation (PSF), sở hữu kho tàng thư viện mở PyPI phong phú, tài liệu hướng dẫn chuẩn mực và hệ thống tiêu chuẩn cú pháp PEP 8 giúp đảm bảo chất lượng mã nguồn đồng nhất giữa các thành viên.
+Dự án sử dụng ngôn ngữ lập trình Python (phiên bản ≥ 3.10). Python được quản trị bởi tổ chức phi lợi nhuận PSF, sở hữu hệ sinh thái thư viện PyPI đồ sộ, tài liệu chuẩn mực và quy chuẩn cú pháp PEP 8 giúp đảm bảo chất lượng mã nguồn đồng nhất giữa các thành viên.
 
 ### 2.1.2. Bộ công cụ giao diện đồ họa PySide6 / The Qt Project
-Giao diện người dùng được xây dựng trên nền tảng **PySide6 (Qt for Python)** — dự án nguồn mở chính thức do The Qt Company và cộng đồng The Qt Project duy trì. Qt cung cấp hệ thống điều khiển widget đa nền tảng mạnh mẽ, cơ chế Signal & Slot linh hoạt và khả năng tích hợp Chromium nhúng (`QWebEngineView`) để render văn bản siêu tốc.
+Giao diện người dùng được phát triển dựa trên **PySide6 (Qt for Python)** — dự án nguồn mở chính thức do The Qt Company và cộng đồng The Qt Project duy trì. Qt cung cấp hệ thống widget mạnh mẽ, cơ chế Signal & Slot điều phối luồng mượt mà và nhân Chromium nhúng (`QWebEngineView`) để render văn bản HTML/CSS tốc độ cao.
 
 ### 2.1.3. Động cơ kết xuất tài liệu in ấn WeasyPrint và cộng đồng CourtBouillon
-Để giải quyết bài toán xuất bản PDF A4 chuẩn in ấn độc lập với máy in và trình duyệt, dự án tích hợp động cơ **WeasyPrint** do tổ chức CourtBouillon phát triển. Đây là công nghệ nguồn mở tiên tiến hiện thực hóa toàn diện chuẩn W3C Paged Media Module, cho phép kiểm soát số trang, lề trang, tiêu đề đầu/chân trang và tự động ngắt trang hoàn hảo.
+Để giải quyết triệt để bài toán xuất bản PDF A4 chuẩn in ấn độc lập với máy in hệ thống, dự án tích hợp động cơ **WeasyPrint** do tổ chức CourtBouillon phát triển. WeasyPrint hiện thực hóa toàn diện chuẩn W3C CSS Paged Media Module, hỗ trợ kiểm soát số trang, lề trang, header/footer và tự động ngắt trang hoàn hảo.
 
-#### Bảng thông số kỹ thuật hệ sinh thái công nghệ MarkNote
+### 2.1.4. Bảng thông số kỹ thuật chi tiết của hệ thống công cụ
 
-| Thuộc tính kỹ thuật | Chi tiết đặc tả của hệ thống |
+| Thuộc tính đặc tả | Chi tiết thông số kỹ thuật hệ thống |
 |:---|:---|
-| **Đơn vị phát triển** | Nhóm 09 - Sinh viên ngành CNTT, Trường Đại học Công nghiệp Hà Nội |
-| **Kho lưu trữ chính thức** | `https://github.com/dotlinux26/marknote` |
-| **Ngôn ngữ triển khai** | Python (phiên bản ≥ 3.10), tuân thủ nghiêm ngặt tiêu chuẩn PEP 8 |
-| **Khung giao diện đồ họa** | PySide6 (Qt 6.5+) kết hợp nhân render nhúng QtWebEngine |
+| **Đơn vị phát triển** | Nhóm 09 - Khoa CNTT, Trường Đại học Công nghiệp Hà Nội |
+| **Kho lưu trữ mã nguồn** | `https://github.com/dotlinux26/marknote` |
+| **Ngôn ngữ triển khai** | Python 3.10+ (Tuân thủ nghiêm ngặt PEP 8) |
+| **Khung giao diện (GUI)** | PySide6 (Qt 6.5+) kết hợp QtWebEngine Core |
+| **Động cơ phân tích Markdown** | markdown-it-py (Chuẩn CommonMark/GFM) + Pygments |
 | **Cơ sở dữ liệu nhúng** | SQLite 3 tích hợp mô-đun Full-Text Search 5 (FTS5) |
-| **Động cơ xuất bản PDF** | WeasyPrint Document Engine (tuân thủ W3C CSS Paged Media Level 3) |
-| **Hệ điều hành hỗ trợ** | Linux (Ubuntu, Debian, Fedora, Arch Linux - AppImage) và Windows 10/11 x64 |
-| **Giấy phép bản quyền** | MIT License (Mã nguồn mở chuẩn OSI) |
+| **Động cơ xuất bản PDF** | WeasyPrint Document Engine (W3C Paged Media Level 3) |
+| **Hệ điều hành hỗ trợ** | Linux (Ubuntu, Debian, Fedora, Arch - AppImage) và Windows 10/11 x64 |
+| **Giấy phép phát hành** | MIT License (Được tổ chức OSI công nhận) |
+| **Trạng thái dự án** | Đang hoạt động, phiên bản phát hành ổn định `v1.2.5` |
 
 ## 2.2. Giấy phép phát hành và các điều khoản pháp lý
-MarkNote được phát hành chính thức theo giấy phép **MIT License** — một trong những giấy phép nguồn mở thông dụng và tự do nhất được tổ chức OSI công nhận:
-- **Quyền hạn cấp cho người dùng:** Tự do sử dụng cho mục đích cá nhân lẫn thương mại, sao chép, chỉnh sửa, hợp nhất, xuất bản, phân phối và cấp phép lại mã nguồn.
-- **Nghĩa vụ pháp lý:** Người sử dụng và phân phối lại chỉ cần giữ nguyên thông báo bản quyền gốc (Copyright Notice) và điều khoản miễn trừ trách nhiệm pháp lý của tác giả.
-- **So sánh với các giấy phép khác:** So với GNU GPL (buộc dẫn xuất mã nguồn copyleft), giấy phép MIT mang tính chất tương thích cao (permissive), cho phép dễ dàng tích hợp vào nhiều môi trường triển khai khác nhau mà không tạo ra rào cản pháp lý.
+MarkNote được phát hành chính thức theo giấy phép **MIT License** — giấy phép nguồn mở tự do và phổ biến hàng đầu được tổ chức OSI công nhận:
+- **Quyền hạn cấp cho người dùng:** Tự do sử dụng cho mục đích cá nhân lẫn thương mại, sao chép, sửa đổi, hợp nhất, xuất bản, phân phối và cấp phép lại mã nguồn.
+- **Nghĩa vụ pháp lý:** Người sử dụng và phân phối lại chỉ cần giữ nguyên thông báo bản quyền gốc (Copyright Notice) và điều khoản miễn trừ trách nhiệm pháp lý của nhóm tác giả.
+- **Tính tương thích:** Giấy phép MIT mang tính chất dễ dãi (permissive), cho phép tích hợp thuận lợi với các thư viện mang giấy phép khác như BSD và LGPLv3 mà không gây xung đột pháp lý.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.1: Văn bản giấy phép MIT License công bố chính thức trên GitHub]**
-> - **Chức năng thể hiện:** Minh chứng dự án được phát hành công khai theo giấy phép chuẩn OSI (MIT License) với đầy đủ thông tin bản quyền và điều khoản miễn trừ trách nhiệm.
-> - **Hướng dẫn lấy ảnh:** Truy cập trình duyệt web vào địa chỉ `https://github.com/dotlinux26/marknote/blob/main/LICENSE`, chụp ảnh màn hình giao diện hiển thị tệp `LICENSE` với nhãn nhận diện MIT License của GitHub.
+> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.1: Giấy phép MIT License công bố trên GitHub]**
+> - **Chức năng thể hiện:** Minh chứng dự án được phát hành công khai theo giấy phép chuẩn OSI (MIT License).
+> - **Hướng dẫn lấy ảnh:** Mở trình duyệt tại `https://github.com/dotlinux26/marknote/blob/main/LICENSE`, chụp màn hình văn bản giấy phép có huy hiệu MIT của GitHub.
 
 ## 2.3. Tính phổ biến của công cụ
-- **Hỗ trợ đa nền tảng:** Ứng dụng được thiết kế ưu tiên hệ điều hành nguồn mở **Linux** (hỗ trợ mọi bản phân phối Ubuntu, Debian, Fedora, Arch Linux thông qua định dạng AppImage), đồng thời vận hành mượt mà trên **Windows 10/11** và **macOS**.
-- **Đối tượng sử dụng phù hợp:** Kỹ sư phần mềm, chuyên gia an toàn thông tin (lập báo cáo pentest/audit), giảng viên, nhà nghiên cứu khoa học và sinh viên kỹ thuật có nhu cầu ghi chép ngoại tuyến và xuất bản tài liệu chuẩn A4.
-- **Đánh giá từ cộng đồng:** Ứng dụng nhận được sự quan tâm nhờ khả năng chạy hoàn toàn offline không cần cấu hình mạng, bộ cài đặt gọn nhẹ và tốc độ tìm kiếm văn bản tức thời.
+- **Khả năng vận hành đa nền tảng:** Ứng dụng hoạt động xuất sắc trên **Linux** thông qua định dạng AppImage độc lập, đồng thời hỗ trợ mượt mà trên **Windows 10/11** và **macOS**.
+- **Đối tượng sử dụng phù hợp:** Kỹ sư phần mềm, chuyên gia kiểm thử an toàn thông tin (lập báo cáo Audit/Pentest), giảng viên, sinh viên và nhà nghiên cứu cần công cụ ghi chép ngoại tuyến và xuất bản tài liệu chuẩn A4.
+- **Đánh giá của cộng đồng:** Được đánh giá cao nhờ dung lượng cài đặt gọn nhẹ (< 150MB), khởi động lạnh dưới 1.2 giây và tốc độ tìm kiếm văn bản tức thời.
 
 ## 2.4. Tính mở của công cụ
 
 ### 2.4.1. Vị trí lưu trữ mã nguồn tập trung
-Toàn bộ mã nguồn, tài liệu thiết kế và các bản phát hành được lưu trữ công khai, minh bạch tại kho lưu trữ GitHub chính thức:
+Toàn bộ mã nguồn, tài liệu thiết kế và các gói phát hành được lưu trữ công khai tại GitHub:
 - **Địa chỉ kho lưu trữ:** `https://github.com/dotlinux26/marknote`
-- **Quản lý người tham gia:** Dự án áp dụng quy chuẩn quản lý qua GitHub Issues (báo cáo lỗi, đề xuất tính năng) và GitHub Discussions (trao đổi kỹ thuật cộng đồng).
+- **Quản lý tương tác:** Áp dụng hệ thống GitHub Issues để quản lý danh sách lỗi/yêu cầu tính năng và GitHub Discussions để trao đổi kỹ thuật cộng đồng.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.2: Giao diện kho lưu trữ GitHub chính thức của dự án MarkNote]**
-> - **Chức năng thể hiện:** Tính mở, minh bạch của dự án và hệ thống quản lý mã nguồn trực tuyến.
-> - **Hướng dẫn lấy ảnh:** Truy cập trình duyệt web vào địa chỉ `https://github.com/dotlinux26/marknote`, chụp toàn màn hình trang chủ kho lưu trữ (thể hiện rõ danh sách tệp, các tag phiên bản v1.2.5 và badge trạng thái CI/CD).
+> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.2: Giao diện kho lưu trữ GitHub dự án MarkNote]**
+> - **Chức năng thể hiện:** Tính minh bạch và cấu trúc quản lý mã nguồn mở trực tuyến.
+> - **Hướng dẫn lấy ảnh:** Truy cập `https://github.com/dotlinux26/marknote`, chụp toàn màn hình trang chủ kho lưu trữ (thấy rõ danh sách tệp, tag `v1.2.5` và workflow CI/CD).
 
 ### 2.4.2. Tham gia cộng đồng và quy trình đóng góp mã nguồn
-Quy trình đóng góp tính năng mới tuân thủ nghiêm ngặt tài liệu hướng dẫn `CONTRIBUTING.md`:
-1. **Fork & Branch:** Người đóng góp tiến hành tạo bản sao (fork) kho lưu trữ và tạo nhánh tính năng mới (`feature/ten-tinh-nang`).
-2. **Quy chuẩn mã nguồn (Coding Standard):** Tuân thủ quy chuẩn PEP 8 của Python, ghi chú hàm tường minh và cập nhật bộ kiểm thử đơn vị (`tests/`).
-3. **Pull Request & CI Automation:** Gửi Pull Request vào nhánh `main`. Hệ thống GitHub Actions tự động kích hoạt pipeline kiểm tra cú pháp, thực thi Unit Tests và kiểm tra đóng gói trên cả Linux và Windows.
-4. **Code Review:** Trưởng dự án kiểm duyệt và phản hồi trong vòng 48 giờ trước khi hợp nhất.
+Quy trình tiếp nhận đóng góp được quy định rõ trong tệp `CONTRIBUTING.md`:
+1. **Tạo bản sao và phân nhánh (Fork & Branch):** Lập trình viên fork kho lưu trữ và tạo nhánh tính năng mới (`feature/ten-tinh-nang`).
+2. **Quy chuẩn lập trình:** Tuân thủ chuẩn PEP 8, chú thích hàm tường minh và bổ sung bộ kiểm thử đơn vị (`tests/`).
+3. **Quy trình Pull Request & Tự động hóa CI:** Gửi PR vào nhánh `main`. Quy trình GitHub Actions tự động kiểm tra cú pháp và chạy toàn bộ unit tests trên cả Linux và Windows.
+4. **Kiểm duyệt mã (Code Review):** Trưởng nhóm dự án kiểm duyệt và phản hồi trong vòng 48 giờ.
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.3: Hướng dẫn đóng góp CONTRIBUTING.md và Hệ thống quản lý Issues]**
-> - **Chức năng thể hiện:** Quy chuẩn tiếp nhận đóng góp mã nguồn mở và giao diện theo dõi phản hồi người dùng trên GitHub.
+> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.3: Hướng dẫn đóng góp CONTRIBUTING.md và Hệ thống Issues]**
+> - **Chức năng thể hiện:** Quy chuẩn đóng góp mã nguồn và kênh tiếp nhận phản hồi người dùng.
 > - **Hướng dẫn lấy ảnh:** Chụp giao diện tệp `CONTRIBUTING.md` hoặc tab `Issues` tại `https://github.com/dotlinux26/marknote/issues`.
 
 <div class="page-break"></div>
@@ -156,31 +155,31 @@ Quy trình đóng góp tính năng mới tuân thủ nghiêm ngặt tài liệu 
 ## 2.5. Giới thiệu bài toán: Ứng dụng ghi chú cá nhân MarkNote
 
 ### 2.5.1. Khảo sát thực trạng các giải pháp ghi chú trên thị trường
-Nhằm làm rõ tính cấp thiết của đề tài, nhóm tiến hành khảo sát so sánh MarkNote với các giải pháp phần mềm ghi chú phổ biến hiện nay:
+Nhóm tiến hành khảo sát và so sánh định lượng MarkNote với các phần mềm ghi chú phổ biến hiện nay:
 
 | Tiêu chí so sánh | Notion | Obsidian | Typora | MarkNote (Đề tài) |
 |:---|:---:|:---:|:---:|:---:|
-| **Bản quyền mã nguồn** | Đóng (Proprietary) | Đóng (Proprietary) | Đóng thương mại | **Mã nguồn mở 100% (MIT)** |
-| **Chế độ ngoại tuyến (Offline)** | Kém (Phụ thuộc Cloud) | Tốt (Cục bộ) | Tốt (Cục bộ) | **Hoàn toàn 100% Offline** |
-| **Bảo mật & Quyền riêng tư** | Nguy cơ rò rỉ dữ liệu máy chủ | Lưu cục bộ | Lưu cục bộ | **Tối đa (Không gửi mạng)** |
-| **Tìm kiếm toàn văn** | Chậm (Qua mạng) | Plugin bổ sung | Tìm cơ bản | **SQLite FTS5 cực nhanh** |
-| **Xuất PDF in ấn chuẩn A4** | Bị vỡ trang / Không số trang | Cần plugin rườm rà | Định dạng cơ bản | **WeasyPrint chuẩn W3C Media** |
+| **Mô hình mã nguồn** | Đóng (Proprietary) | Đóng (Proprietary) | Đóng thương mại | **Mã nguồn mở 100% (MIT)** |
+| **Cơ chế ngoại tuyến (Offline)** | Kém (Phụ thuộc Cloud) | Tốt (Cục bộ) | Tốt (Cục bộ) | **Hoàn toàn 100% Offline** |
+| **Bảo mật & Quyền riêng tư** | Nguy cơ rò rỉ dữ liệu đám mây | Lưu cục bộ | Lưu cục bộ | **Tuyệt đối (Không gửi mạng)** |
+| **Tìm kiếm toàn văn** | Chậm (Truy vấn qua mạng) | Phụ thuộc plugin | Tìm kiếm cơ bản | **SQLite FTS5 cực nhanh (<10ms)** |
+| **Xuất in ấn PDF chuẩn A4** | Bị lỗi ngắt trang / mất số trang | Cần cài plugin rườm rà | Định dạng cơ bản | **WeasyPrint chuẩn W3C Media** |
 | **Mục lục phân cấp động (TOC)** | Giới hạn | Tùy biến plugin | Hỗ trợ cơ bản | **Smart TOC tự động phân cấp** |
-| **Chi phí bản quyền** | Gói thuê bao hàng tháng | Miễn phí cá nhân | Mua bản quyền \$14.99 | **Miễn phí vĩnh viễn** |
+| **Chi phí bản quyền** | Thuê bao hàng tháng | Miễn phí cá nhân | Bản quyền \$14.99 | **Miễn phí vĩnh viễn** |
 
-*Nhận xét chung:* Các phần mềm thương mại hiện hành đều có rào cản lớn về mã nguồn đóng hoặc phụ thuộc vào lưu trữ đám mây, tiềm ẩn rủi ro lộ lọt bí mật công nghệ. Do đó, việc xây dựng MarkNote là hoàn toàn cấp thiết, mang lại một công cụ ghi chú mạnh mẽ, độc lập và hoàn toàn tự chủ cho cộng đồng kỹ thuật.
+*Nhận xét chung:* Các giải pháp hiện nay hoặc đòi hỏi trả phí, hoặc đóng mã nguồn, hoặc phụ thuộc máy chủ từ xa. Do đó, việc xây dựng MarkNote là hoàn toàn cấp thiết, mang lại một giải pháp tự chủ, an toàn và tối ưu cho cộng đồng học thuật và kỹ thuật.
 
-### 2.5.2. Các phân hệ chức năng cốt lõi của sản phẩm
-Sản phẩm MarkNote được cấu thành từ 4 phân hệ chức năng chính:
-1. **Phân hệ Biên soạn & Live Preview:** Hỗ trợ soạn thảo Markdown GFM, đếm số dòng, xem trước trực quan với cơ chế debounce 300ms và đồng bộ cuộn trang thông minh.
-2. **Phân hệ Quản trị CSDL & Tìm kiếm:** Tích hợp CSDL SQLite, bảng ảo FTS5 hỗ trợ tra cứu toàn văn siêu tốc và bộ lọc thẻ nhãn đa tiêu chí.
-3. **Phân hệ Quản trị Tài nguyên Media & Giao diện:** Lưu trữ hình ảnh an toàn trong thư mục cục bộ, chèn ảnh nhanh qua phím tắt và hỗ trợ chuyển đổi đa theme (Sáng / Tối).
-4. **Phân hệ Xuất bản in ấn & Đóng gói:** Động cơ kết xuất WeasyPrint in ấn PDF chuẩn A4, kèm các kịch bản đóng gói AppImage trên Linux và Portable Zip trên Windows.
+### 2.5.2. Các phân hệ chức năng chính của hệ thống
+Hệ thống MarkNote được thiết kế theo 4 phân hệ (Modul) cốt lõi:
+1. **Phân hệ Soạn thảo & Live Preview:** Soạn thảo GFM bên trái, xem trước HTML bên phải, thanh đếm số dòng code, cơ chế debounce timer 300ms chống giật lag và động cơ Sync Scroll cuộn đồng bộ.
+2. **Phân hệ Quản trị CSDL & Tìm kiếm FTS5:** Khởi tạo CSDL SQLite, bảng ảo `notes_fts` hỗ trợ tìm kiếm toàn văn siêu tốc và bộ lọc nhãn phân loại `tag:`.
+3. **Phân hệ Quản trị Media & Đa chủ đề giao diện:** Tự động sao chép tài nguyên ảnh vào thư mục cục bộ, chèn ảnh nhanh qua phím tắt `Ctrl+Shift+M` và nạp nóng CSS giao diện Sáng / Tối.
+4. **Phân hệ Xuất bản in ấn & Đóng gói:** Tích hợp động cơ WeasyPrint in ấn PDF chuẩn A4 có đánh số trang chân trang và kịch bản đóng gói AppImage / Windows Portable kèm CI/CD.
 
 ## 2.6. Giấy phép phát hành phần mềm MarkNote của nhóm
 
 ### 2.6.1. Giấy phép bản quyền MIT License của sản phẩm
-Sản phẩm MarkNote được cấp phép theo MIT License, đảm bảo tính tự do cao nhất cho cộng đồng lập trình viên và người dùng cá nhân trong việc tái sử dụng, nghiên cứu và phân phối.
+Sản phẩm MarkNote được công bố theo MIT License, đảm bảo tính tự do tối đa cho cộng đồng lập trình viên và người dùng trong việc nghiên cứu, tái sử dụng và phân phối.
 
 ### 2.6.2. Kiểm kê bản quyền bên thứ ba (Third-Party Notices)
 Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân loại rõ ràng trong tệp `THIRD_PARTY_NOTICES.md` theo đúng quy chuẩn quản trị PMNM:
@@ -194,9 +193,9 @@ Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân lo�
 | **WeasyPrint** | ≥ 60.0 | **BSD-3-Clause** | Động cơ xuất tài liệu PDF in ấn A4 | Bảo lưu điều khoản miễn trừ trách nhiệm pháp lý. |
 | **SQLite3** | Nhúng | **Public Domain** | Cơ sở dữ liệu và chỉ mục FTS5 | Tự do sử dụng hoàn toàn không điều kiện. |
 
-> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.4: Bảng kiểm kê bản quyền bên thứ ba THIRD_PARTY_NOTICES.md trên GitHub]**
+> 📸 **[VỊ TRÍ CHÈN ẢNH - HÌNH 2.4: Bảng kiểm kê bên thứ ba THIRD_PARTY_NOTICES.md trên GitHub]**
 > - **Chức năng thể hiện:** Tính minh bạch pháp lý và trách nhiệm tuân thủ bản quyền của các thư viện phụ thuộc.
-> - **Hướng dẫn lấy ảnh:** Mở tệp `https://github.com/dotlinux26/marknote/blob/main/THIRD_PARTY_NOTICES.md` trên trình duyệt và chụp lại ảnh giao diện bảng kê khai.
+> - **Hướng dẫn lấy ảnh:** Truy cập `https://github.com/dotlinux26/marknote/blob/main/THIRD_PARTY_NOTICES.md`, chụp màn hình bảng kê khai.
 
 <div class="page-break"></div>
 
@@ -205,32 +204,32 @@ Toàn bộ các gói thư viện phụ thuộc được kiểm kê và phân lo�
 ### 2.7.1. Phân tích yêu cầu hệ thống
 
 #### A. Yêu cầu chức năng (Ma trận 13 Use Cases chuẩn nghiệp vụ)
-Hệ thống được thiết kế phục vụ một tác nhân chính (**User** - Người dùng cá nhân) với toàn quyền quản trị cục bộ. Dưới đây là bảng ma trận đặc tả nghiệp vụ chuẩn cho toàn bộ 13 Use Cases của ứng dụng:
+Hệ thống phục vụ một tác nhân chính (**User** - Người dùng cá nhân) với toàn quyền quản trị cục bộ. Dưới đây là bảng ma trận đặc tả nghiệp vụ chuẩn cho 13 Use Cases của hệ thống:
 
 | Mã UC | Tên Use Case | Tác nhân | Tiền điều kiện | Luồng sự kiện chính / Mô tả nghiệp vụ | Hậu điều kiện / Kết quả | Mức độ ưu tiên |
 |:---:|:---|:---:|:---|:---|:---|:---:|
-| **UC01** | Tạo ghi chú mới | User | Ứng dụng đang mở, DB sẵn sàng. | 1. Nhấn nút "New" (Ctrl+N).<br>2. Nhập tiêu đề và nội dung Markdown.<br>3. Hệ thống sinh bản ghi mới trong CSDL. | Bản ghi mới lưu vào bảng `notes`; danh sách ghi chú cập nhật. | Bắt buộc |
-| **UC02** | Mở / Xem ghi chú | User | Danh sách ghi chú có ít nhất 1 bản ghi. | 1. Nhấp chọn ghi chú từ danh sách bên trái.<br>2. Hệ thống truy vấn DB theo `note_id`.<br>3. Đổ dữ liệu vào Editor và render Preview. | Nội dung Markdown hiển thị trên Editor và HTML trên Preview. | Bắt buộc |
-| **UC03** | Chỉnh sửa ghi chú | User | Đang mở một ghi chú hợp lệ. | 1. Soạn thảo văn bản trong Editor.<br>2. Nhấn Ctrl+S hoặc nút "Save".<br>3. Hệ thống cập nhật nội dung và thời gian sửa. | CSDL cập nhật `content_md` và `updated_at`; Preview đồng bộ. | Bắt buộc |
-| **UC04** | Xóa ghi chú | User | Đang chọn một ghi chú cần xóa. | 1. Nhấn nút "Delete".<br>2. Hộp thoại xác nhận hiển thị.<br>3. Người dùng đồng ý xóa.<br>4. Hệ thống xóa bản ghi khỏi DB. | Bản ghi bị xóa khỏi `notes`, tự động CASCADE xóa liên kết `note_tag`. | Bắt buộc |
-| **UC05** | Gắn / Gỡ nhãn Tag | User | Đang mở một ghi chú. | 1. Mở panel quản lý nhãn Tag.<br>2. Tích chọn nhãn để gắn hoặc bỏ chọn để gỡ.<br>3. Có thể nhập tên nhãn mới để tạo tức thì. | Bảng `note_tag` cập nhật; nhãn hiển thị tương ứng trên ghi chú. | Cao |
+| **UC01** | Tạo ghi chú mới | User | Ứng dụng đang mở, CSDL sẵn sàng. | 1. Nhấn nút New (`Ctrl+N`).<br>2. Nhập tiêu đề và nội dung Markdown.<br>3. Hệ thống tạo bản ghi mới trong CSDL. | Bản ghi mới lưu vào bảng `notes`; danh sách ghi chú cập nhật. | Bắt buộc |
+| **UC02** | Mở / Xem ghi chú | User | CSDL có ít nhất 1 bản ghi ghi chú. | 1. Nhấp chọn ghi chú từ danh sách bên trái.<br>2. Hệ thống truy vấn CSDL theo `note_id`.<br>3. Đổ dữ liệu vào Editor và render Preview. | Nội dung Markdown hiển thị trên Editor và HTML trên Preview. | Bắt buộc |
+| **UC03** | Chỉnh sửa ghi chú | User | Đang mở một ghi chú hợp lệ. | 1. Soạn thảo văn bản trong Editor.<br>2. Nhấn `Ctrl+S` hoặc nút "Save".<br>3. Cập nhật nội dung và thời gian sửa đổi. | CSDL cập nhật `content_md` và `updated_at`; Preview đồng bộ. | Bắt buộc |
+| **UC04** | Xóa ghi chú | User | Đang chọn một ghi chú cần xóa. | 1. Nhấn nút Delete.<br>2. Hộp thoại xác nhận hiển thị.<br>3. Người dùng đồng ý xóa.<br>4. Hệ thống xóa bản ghi khỏi CSDL. | Bản ghi bị xóa khỏi `notes`, tự động CASCADE xóa liên kết `note_tag`. | Bắt buộc |
+| **UC05** | Gắn / Gỡ nhãn Tag | User | Đang mở một ghi chú. | 1. Mở panel quản lý nhãn Tag.<br>2. Tích chọn nhãn để gắn hoặc bỏ chọn để gỡ.<br>3. Nhập tên nhãn mới để tạo tức thì. | Bảng `note_tag` cập nhật; nhãn hiển thị tương ứng trên ghi chú. | Cao |
 | **UC06** | Live Preview song song | User | Đang mở ghi chú trong chế độ soạn thảo. | 1. Người dùng gõ phím tại Editor.<br>2. Timer kích hoạt cơ chế debounce 300ms.<br>3. Parse GFM và nạp HTML vào WebEngine. | Khung Preview cập nhật tức thời mà không gây đơ lag giao diện. | Bắt buộc |
 | **UC07** | Bật / Tắt Sync Scroll | User | Đang ở chế độ xem song song 2 cột. | 1. Nhấn nút "Sync Scroll" trên thanh công cụ.<br>2. Khi cuộn Editor, tính tỷ lệ phần trăm độ dài.<br>3. Tự động dịch chuyển thanh cuộn Preview. | Thanh cuộn hai khung hình cuộn song hành đồng bộ vị trí. | Cao |
-| **UC08** | Tìm trong ghi chú | User | Ghi chú hiện tại có nội dung văn bản. | 1. Nhấn phím tắt Ctrl+F.<br>2. Nhập từ khóa tra cứu vào thanh tìm kiếm.<br>3. Hệ thống tô vàng toàn bộ kết quả tìm thấy. | Di chuyển giữa các vị trí tìm thấy qua Enter / Shift+Enter. | Cao |
-| **UC09** | Thay thế văn bản | User | Đang mở ghi chú có nội dung. | 1. Nhấn Ctrl+H mở thanh thay thế.<br>2. Nhập từ khóa gốc và từ thay thế.<br>3. Nhấn "Replace" hoặc "Replace All". | Nội dung được thay thế; DB và Preview tự động cập nhật. | Trung bình |
+| **UC08** | Tìm trong ghi chú | User | Ghi chú hiện tại có nội dung văn bản. | 1. Nhấn phím tắt `Ctrl+F`.<br>2. Nhập từ khóa tra cứu vào thanh tìm kiếm.<br>3. Hệ thống tô vàng toàn bộ kết quả tìm thấy. | Di chuyển giữa các vị trí tìm thấy qua `Enter` / `Shift+Enter`. | Cao |
+| **UC09** | Thay thế văn bản | User | Đang mở ghi chú có nội dung. | 1. Nhấn `Ctrl+H` mở thanh thay thế.<br>2. Nhập từ khóa gốc và từ thay thế.<br>3. Nhấn "Replace" hoặc "Replace All". | Nội dung được thay thế; CSDL và Preview tự động cập nhật. | Trung bình |
 | **UC10** | Tìm kiếm FTS5 toàn kho | User | CSDL có dữ liệu ghi chú. | 1. Nhập từ khóa tại thanh tìm kiếm chính.<br>2. Hệ thống truy vấn bảng ảo `notes_fts`.<br>3. Hỗ trợ lọc nâng cao theo cú pháp `tag:ten_tag`. | Danh sách ghi chú phù hợp hiển thị kèm đoạn trích dẫn bôi vàng. | Bắt buộc |
-| **UC11** | Xem danh sách theme | User | Thư mục `themes/` chứa các tệp CSS. | 1. Người dùng vào menu Cài đặt giao diện.<br>2. Hệ thống quét các tệp `.css` trong thư mục.<br>3. Hiển thị danh sách theme lên dropdown. | Dropdown hiển thị đầy đủ các giao diện (Default, Dark, GitHub). | Trung bình |
+| **UC11** | Xem danh sách theme | User | Thư mục `themes/` chứa các tệp CSS. | 1. Người dùng vào menu Cài đặt giao diện.<br>2. Hệ thống quét các tệp `.css` trong thư mục.<br>3. Hiển thị danh sách theme lên dropdown. | Dropdown hiển thị đầy đủ các giao diện (`default`, `dark`, `github`). | Trung bình |
 | **UC12** | Chuyển đổi theme | User | Đang mở ứng dụng. | 1. Chọn theme mới từ dropdown.<br>2. Đọc tệp CSS tương ứng và cập nhật cấu hình.<br>3. Khung Preview nạp CSS mới không cần restart. | Toàn bộ giao diện đổi màu sắc ngay tức thì. | Cao |
-| **UC13** | Xuất PDF / HTML in ấn | User | Đang mở ghi chú cần xuất bản. | 1. Nhấn Ctrl+P hoặc chọn Export PDF.<br>2. Động cơ WeasyPrint kết xuất văn bản A4.<br>3. Tự động sinh số trang và mục lục chuẩn in. | Tệp tài liệu PDF/HTML in ấn chuyên nghiệp được lưu xuống máy. | Bắt buộc |
+| **UC13** | Xuất PDF / HTML in ấn | User | Đang mở ghi chú cần xuất bản. | 1. Nhấn `Ctrl+P` hoặc chọn Export PDF.<br>2. Động cơ WeasyPrint kết xuất văn bản A4.<br>3. Tự động sinh số trang và mục lục chuẩn in. | Tệp tài liệu PDF/HTML in ấn chuyên nghiệp được lưu xuống máy. | Bắt buộc |
 
 ![Hình 2.5: Sơ đồ Use Case tổng quát hệ thống MarkNote](media/usecase.png)
 
 > 📸 **[HÌNH 2.5: Sơ đồ Use Case tổng quát hệ thống MarkNote]**
-> - **Chức năng thể hiện:** Trực quan hóa 13 trường hợp sử dụng (Use Cases) của hệ thống phục vụ tác nhân User với nhãn tiếng Việt chuẩn.
-> - **Đường dẫn tệp vector/ảnh:** `docs/diagrams/usecase.svg` và `docs/diagrams/usecase.png`.
+> - **Chức năng thể hiện:** Trực quan hóa 13 trường hợp sử dụng theo chuẩn PlantUML với nhãn tiếng Việt chuẩn.
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/usecase.puml` (kết xuất ra `usecase.png` và `usecase.svg`).
 
 #### B. Yêu cầu phi chức năng
-- **Tốc độ phản hồi:** Thời gian trễ render Live Preview được tối ưu hóa ở mức 300ms (debounce timer), đảm bảo không gây giật lag khi gõ văn bản nhanh.
+- **Tốc độ phản hồi:** Thời gian trễ render Live Preview được tối ưu hóa ở mức 300ms (debounce timer), đảm bảo không gây giật lag luồng đồ họa.
 - **Tiêu thụ tài nguyên:** Dung lượng chiếm dụng RAM khi hoạt động dưới 150MB, thời gian khởi động ứng dụng lạnh dưới 1.2 giây trên Linux.
 - **Tính khả chuyển (Portability):** Khởi chạy độc lập không cần cài đặt môi trường Python máy khách thông qua bản đóng gói AppImage hoặc Portable Zip.
 
@@ -246,10 +245,30 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 ![Hình 2.6: Sơ đồ thực thể liên kết ERD của cơ sở dữ liệu MarkNote](media/schema_er.png)
 
 > 📸 **[HÌNH 2.6: Sơ đồ thực thể liên kết ERD của cơ sở dữ liệu MarkNote]**
-> - **Chức năng thể hiện:** Kiến trúc dữ liệu và quan hệ giữa các bảng cơ sở dữ liệu và bảng ảo FTS5 (nhãn tiếng Việt chuẩn).
-> - **Đường dẫn tệp vector/ảnh:** `docs/diagrams/schema_er.svg` và `docs/diagrams/schema_er.png`.
+> - **Chức năng thể hiện:** Cấu trúc dữ liệu và quan hệ giữa các bảng cơ sở dữ liệu và bảng ảo FTS5 theo chuẩn PlantUML.
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/schema_er.puml` (kết xuất ra `schema_er.png` và `schema_er.svg`).
+
+#### D. Thiết kế Kiến trúc phân lớp hệ thống và Sơ đồ lớp (Class Diagram)
+Hệ thống được tổ chức theo mô hình kiến trúc 3 tầng phân tách trách nhiệm rõ ràng:
+1. **Tầng Giao diện Người dùng (Presentation Layer / View):** `MainWindow`, `EditorPane`, `PreviewPane`, `SearchPanel`.
+2. **Tầng Xử lý Nghiệp vụ & Động cơ (Business Logic & Engine Layer / Controller):** `MarkdownRenderer`, `SyncScrollController`, `ThemeManager`, `Exporter`.
+3. **Tầng Truy cập Dữ liệu (Data Access Layer / DAO & Model):** `NoteDAO`, `TagDAO`, `SettingsDAO`, `DbManager`, CSDL `SQLite FTS5`.
+
+![Hình 2.6b: Sơ đồ Kiến trúc phân lớp 3 tầng hệ thống MarkNote](media/kientruc.png)
+
+> 📸 **[HÌNH 2.6b: Sơ đồ Kiến trúc phân lớp 3 tầng hệ thống MarkNote]**
+> - **Chức năng thể hiện:** Phân chia trách nhiệm giữa các tầng View, Controller/Engine và DAO.
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/kientruc.puml` (kết xuất ra `kientruc.png` và `kientruc.svg`).
+
+![Hình 2.6c: Sơ đồ lớp chi tiết (Class Diagram) hệ thống MarkNote](media/lop.png)
+
+> 📸 **[HÌNH 2.6c: Sơ đồ lớp chi tiết (Class Diagram) hệ thống MarkNote]**
+> - **Chức năng thể hiện:** Cấu trúc hướng đối tượng và quan hệ tương tác giữa các lớp chính trong mã nguồn `src/`.
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/lop.puml` (kết xuất ra `lop.png` và `lop.svg`).
 
 ---
+
+<div class="page-break"></div>
 
 ### 2.7.2. Phân công và Thực hiện bài toán
 
@@ -257,18 +276,22 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 - **Màn hình thực hiện chức năng:** Cửa sổ soạn thảo chia đôi (Dual-pane Editor/Preview), thanh công cụ nút kích hoạt Sync Scroll và cột thước đếm số dòng code (`LineNumberArea`).
 - **Nhiệm vụ và kết quả cần đạt được:**
   - Thiết kế kiến trúc điều phối giao diện giữa bộ soạn thảo văn bản thô `QPlainTextEdit` và khung hiển thị HTML `QWebEngineView`.
-  - Cài đặt bộ định thời Debounce Timer 300ms nhằm trì hoãn quá trình phân tích cú pháp Markdown khi người dùng gõ phím liên tục, tránh hiện tượng đơ lag luồng đồ họa chính.
-  - Xây dựng thuật toán tính toán tỷ lệ cuộn phần trăm để đồng bộ vị trí thanh cuộn giữa hai khung hình, đảm bảo vị trí đọc tương ứng chính xác ngay cả khi văn bản chứa nhiều hình ảnh và bảng biểu dài.
+  - Cài đặt bộ định thời Debounce Timer 300ms nhằm trì hoãn quá trình phân tích cú pháp Markdown khi người dùng gõ phím liên tục, tránh đơ lag giao diện.
+  - Xây dựng thuật toán tính toán tỷ lệ cuộn phần trăm để đồng bộ vị trí thanh cuộn giữa hai khung hình.
   - Phát triển tính năng Smart TOC tự động sinh mục lục phân cấp font chữ rõ ràng bên dưới thẻ chỉ định.
-- **Hướng dẫn thao tác và minh chứng kết quả:**
-  - Khởi chạy phần mềm MarkNote từ terminal hoặc nhấp đúp tệp chạy.
-  - Mở một ghi chú kỹ thuật có nội dung dài gồm nhiều tiêu đề cấp 1, 2, 3 và khối mã nguồn.
-  - Bật nút `Sync Scroll` trên thanh công cụ, thực hiện cuộn chuột từ trên xuống dưới và quan sát sự đồng bộ hoàn hảo của khung xem trước.
+- **Sơ đồ tuần tự xử lý (Sequence Diagram):**
+
+![Hình 2.7a: Sơ đồ tuần tự chức năng Cuộn đồng bộ Sync Scroll](media/seq_sync_scroll.png)
+
+> 📸 **[HÌNH 2.7a: Sơ đồ tuần tự chức năng Cuộn đồng bộ Sync Scroll]**
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_sync_scroll.puml`.
+
+- **Màn hình giao diện minh chứng:**
 
 ![Hình 2.7: Màn hình Soạn thảo song song và Cuộn đồng bộ Sync Scroll](media/screen_01_main_editor_preview.png)
 
 > 📸 **[HÌNH 2.7: Màn hình Soạn thảo song song và Cuộn đồng bộ Sync Scroll]**
-> - **Chức năng thể hiện:** Giao diện soạn thảo GFM bên trái có đánh số dòng, khung xem trước HTML bên phải, thanh trạng thái và nút kích hoạt Sync Scroll.
+> - **Chức năng thể hiện:** Giao diện soạn thảo GFM bên trái có đánh số dòng, khung xem trước HTML bên phải, nút kích hoạt Sync Scroll và biểu đồ tròn Donut SVG.
 > - **Đường dẫn ảnh chụp thực tế:** `docs/screenshots/screen_01_main_editor_preview.png`.
 
 <div class="page-break"></div>
@@ -276,13 +299,18 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 #### 2.7.2.2. Sinh viên: Ngô Đức Anh - Module Tìm kiếm toàn văn FTS5 và Quản lý Phân loại Tag
 - **Màn hình thực hiện chức năng:** Thanh tìm kiếm nhanh toàn kho (Search Bar), danh sách kết quả trích đoạn ngữ cảnh có tô màu vàng từ khóa, và khung quản lý nhãn Tag phân loại.
 - **Nhiệm vụ và kết quả cần đạt được:**
-  - Thiết kế lược đồ cơ sở dữ liệu SQLite, thiết lập bảng ảo `notes_fts` sử dụng engine tìm kiếm toàn văn Full-Text Search 5 (FTS5).
-  - Cài đặt 3 Database Triggers nhằm tự động đồng bộ hóa chỉ mục toàn văn mỗi khi bản ghi ghi chú được thêm mới, cập nhật hoặc xóa bỏ.
-  - Viết bộ phân tích cú pháp tìm kiếm hỗ trợ tra cứu kết hợp: lọc theo chuỗi văn bản thông thường kết hợp điều kiện lọc nhãn với cú pháp `tag:ten_nhan`.
+  - Thiết kế lược đồ CSDL SQLite, thiết lập bảng ảo `notes_fts` sử dụng engine tìm kiếm toàn văn Full-Text Search 5 (FTS5).
+  - Cài đặt 3 Database Triggers tự động đồng bộ hóa chỉ mục toàn văn khi bản ghi được thêm, sửa, xóa.
+  - Viết bộ parser phân tích chuỗi truy vấn thông minh hỗ trợ tra cứu kết hợp: từ khóa văn bản và điều kiện lọc nhãn `tag:ten_nhan`.
   - Trả về danh sách trích đoạn ngắn (`snippet`) có bôi vàng từ khóa giúp người dùng định vị nội dung cần tìm trong vài mili-giây.
-- **Hướng dẫn thao tác và minh chứng kết quả:**
-  - Nhập vào thanh tìm kiếm chuỗi ký tự bất kỳ hoặc cú pháp lọc nâng cao (ví dụ: `apache tag:linux`).
-  - Hệ thống lập tức hiển thị danh sách các ghi chú thỏa mãn kèm đoạn trích dẫn ngữ cảnh bôi vàng từ khóa.
+- **Sơ đồ tuần tự xử lý (Sequence Diagram):**
+
+![Hình 2.8a: Sơ đồ tuần tự chức năng Tra cứu FTS5 và Lọc Tag](media/seq_tim_kiem_fts5.png)
+
+> 📸 **[HÌNH 2.8a: Sơ đồ tuần tự chức năng Tra cứu FTS5 và Lọc Tag]**
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_tim_kiem_fts5.puml`.
+
+- **Màn hình giao diện minh chứng:**
 
 ![Hình 2.8: Màn hình Tìm kiếm toàn văn bản SQLite FTS5 kết hợp lọc Tag](media/screen_02_fts5_search_tags.png)
 
@@ -290,15 +318,22 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 > - **Chức năng thể hiện:** Kết quả tra cứu toàn văn tốc độ cao với SQLite FTS5 kết hợp lọc theo nhãn `tag:`.
 > - **Đường dẫn ảnh chụp thực tế:** `docs/screenshots/screen_02_fts5_search_tags.png`.
 
+<div class="page-break"></div>
+
 #### 2.7.2.3. Sinh viên: Nguyễn Quang Khải - Module Quản lý Media, Thư viện ảnh và Hệ thống Đa chủ đề
 - **Màn hình thực hiện chức năng:** Thư mục quản lý Media nội bộ (`📁 Media Folder`), hộp thoại chèn ảnh tự động (`Ctrl+Shift+M`) và menu chuyển đổi giao diện Dark Mode.
 - **Nhiệm vụ và kết quả cần đạt được:**
   - Thiết kế cơ chế lưu trữ tài nguyên hình ảnh an toàn theo kiến trúc cục bộ, tự động sao chép các tệp ảnh được người dùng chèn vào thư mục con `media/` của kho ghi chú, đảm bảo ghi chú không bị mất liên kết ảnh khi di chuyển dữ liệu.
   - Xây dựng hệ thống chuyển đổi chủ đề giao diện (`theme.py`), hỗ trợ các bộ giao diện chuẩn mực: `default.css` (giao diện sáng chuẩn), `dark.css` (giao diện tối chống mỏi mắt) và `github.css` (phong cách GitHub).
   - Áp dụng cơ chế nạp nóng CSS giúp khung Preview đổi phong cách giao diện tức thì mà không cần tắt ứng dụng.
-- **Hướng dẫn thao tác và minh chứng kết quả:**
-  - Mở một ghi chú, nhấn tổ hợp phím `Ctrl+Shift+M` hoặc nhấp nút `+ Image` trên thanh công cụ để chèn một hình ảnh từ máy tính.
-  - Chuyển sang menu Cài đặt giao diện, chọn chủ đề `dark` và quan sát toàn bộ nền soạn thảo cùng khung Preview chuyển sang tông màu tối hiện đại.
+- **Sơ đồ tuần tự xử lý (Sequence Diagram):**
+
+![Hình 2.9a: Sơ đồ tuần tự chức năng Chuyển đổi Theme và nạp nóng CSS](media/seq_chon_theme.png)
+
+> 📸 **[HÌNH 2.9a: Sơ đồ tuần tự chức năng Chuyển đổi Theme và nạp nóng CSS]**
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_chon_theme.puml`.
+
+- **Màn hình giao diện minh chứng:**
 
 ![Hình 2.9: Màn hình Quản lý Media, Chèn ảnh và Chuyển đổi Dark Theme](media/screen_03_dark_theme.png)
 
@@ -315,10 +350,14 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
   - Xử lý bảng biểu dữ liệu tự động wrap từ chống tràn lề và tự động lặp lại dòng tiêu đề bảng (`<thead>`) khi bảng trải dài qua nhiều trang in.
   - Viết kịch bản tự động hóa đóng gói phần mềm trên Linux (AppImage) và Windows (Portable Zip).
   - Xây dựng quy trình CI/CD hoàn chỉnh trên GitHub Actions (`.github/workflows/build-and-release.yml`), tự động kích hoạt kiểm thử đơn vị và phát hành gói phần mềm mỗi khi tạo tag phiên bản mới.
-- **Hướng dẫn thao tác và minh chứng kết quả:**
-  - Mở ghi chú báo cáo trong MarkNote, nhấn tổ hợp phím `Ctrl+P` để xuất tài liệu ra tệp PDF.
-  - Mở tệp PDF đã xuất bằng trình duyệt hoặc phần mềm đọc PDF chuyên dụng để kiểm tra mục lục chấm dẫn (leader dots), bảng biểu và chân trang.
-  - Kiểm tra trạng thái quy trình CI/CD trên trang GitHub Actions và tải bản phát hành tại trang GitHub Releases.
+- **Sơ đồ tuần tự xử lý (Sequence Diagram):**
+
+![Hình 2.10a: Sơ đồ tuần tự chức năng Xuất bản tài liệu PDF in ấn A4](media/seq_xuat_pdf.png)
+
+> 📸 **[HÌNH 2.10a: Sơ đồ tuần tự chức năng Xuất bản tài liệu PDF in ấn A4]**
+> - **Tệp mã nguồn PlantUML:** `docs/diagrams/seq_xuat_pdf.puml`.
+
+- **Màn hình giao diện minh chứng:**
 
 ![Hình 2.10: Tệp tài liệu PDF được xuất ra mở trên trình đọc tài liệu](media/screen_pdf_page_02_toc.png)
 
@@ -332,20 +371,22 @@ Cơ sở dữ liệu được thiết kế tối giản, lưu trữ tập trung 
 
 ---
 
+<div class="page-break"></div>
+
 ### 2.7.3. Đánh giá chất lượng và Kết quả kiểm thử tự động (Unit Test & Verification)
 Để đảm bảo độ tin cậy và sự ổn định cao nhất trước khi phát hành, dự án áp dụng quy trình kiểm thử tự động với bộ công cụ `unittest` tiêu chuẩn của Python. Toàn bộ 18 kịch bản kiểm thử (Test Cases) được tự động hóa trong thư mục `tests/`:
 
-| Mã Test Case | Tên kịch bản kiểm thử | Dữ liệu đầu vào & Thao tác | Kết quả kỳ vọng | Kết quả thực tế | Trạng thái |
-|:---:|:---|:---|:---|:---|:---:|
-| **TC01** | Khởi tạo thước số dòng Editor | Kích hoạt `EditorWindow` | Cột số dòng tự co giãn theo tổng số dòng văn bản | Cột số dòng hiển thị chính xác | **PASS** |
-| **TC02** | Phân tích cú pháp Smart TOC | Thẻ `[[TOC center no-bullet]]` | Chỉ quét các heading xuất hiện phía dưới thẻ | Bảng TOC chuẩn, phân cấp font đúng | **PASS** |
-| **TC03** | Khối biểu đồ Donut SVG | Khối mã ```` ```donut ```` | Tự sinh vòng tròn vector SVG, căn giữa, tính tổng | SVG hiển thị sắc nét, không viền xám | **PASS** |
-| **TC04** | Thay thế SVG Checkbox | Cú pháp `- [ ]` và `- [x]` | Sinh checkbox SVG đồ họa thay thế input HTML | Hiển thị hộp kiểm vector sắc nét | **PASS** |
-| **TC05** | Quản lý Media & Chèn ảnh | Dán ảnh từ clipboard / tệp | Ảnh lưu vào `~/.marknote/media`, chèn link MD | Ảnh chép thành công, nạp Base64 chuẩn | **PASS** |
-| **TC06** | Kết xuất tệp in ấn PDF | Nội dung MD kèm bảng biểu | Sinh file PDF A4, có số trang in và leader dots | Xuất PDF thành công không lỗi cú pháp | **PASS** |
+| Mã Test Case | Tên kịch bản kiểm thử | Dữ liệu đầu vào & Thao tác | Kết quả kỳ vọng | Kết quả thực tế | Thời gian | Trạng thái |
+|:---:|:---|:---|:---|:---|:---:|:---:|
+| **TC01** | Khởi tạo thước số dòng Editor | Kích hoạt `EditorWindow` | Cột số dòng tự co giãn theo tổng số dòng văn bản | Cột số dòng hiển thị chính xác | 12 ms | **PASS** |
+| **TC02** | Phân tích cú pháp Smart TOC | Thẻ `[[TOC center no-bullet]]` | Chỉ quét các heading xuất hiện phía dưới thẻ | Bảng TOC chuẩn, phân cấp font đúng | 15 ms | **PASS** |
+| **TC03** | Khối biểu đồ Donut SVG | Khối mã ```` ```donut ```` | Tự sinh vòng tròn vector SVG, căn giữa, tính tổng | SVG hiển thị sắc nét, không viền xám | 18 ms | **PASS** |
+| **TC04** | Thay thế SVG Checkbox | Cú pháp `- [ ]` và `- [x]` | Sinh checkbox SVG đồ họa thay thế input HTML | Hiển thị hộp kiểm vector sắc nét | 8 ms | **PASS** |
+| **TC05** | Quản lý Media & Chèn ảnh | Dán ảnh từ clipboard / tệp | Ảnh lưu vào `~/.marknote/media`, chèn link MD | Ảnh chép thành công, nạp Base64 chuẩn | 45 ms | **PASS** |
+| **TC06** | Kết xuất tệp in ấn PDF | Nội dung MD kèm bảng biểu | Sinh file PDF A4, có số trang in và leader dots | Xuất PDF thành công không lỗi cú pháp | 320 ms | **PASS** |
 
-- **Kết quả thực thi tự động:** Bộ kiểm thử hoàn thành **18/18 Test Cases** với thời gian thực thi chỉ **1.638 giây**, đạt tỷ lệ thành công tuyệt đối **100% PASS**.
-- **Kết luận kiểm định:** Các mô-đun cốt lõi của phần mềm hoạt động ổn định, chính xác theo đúng đặc tả yêu cầu nghiệp vụ, đáp ứng hoàn hảo tiêu chuẩn vận hành trong môi trường máy trạm độc lập.
+- **Kết quả kiểm thử tự động:** Sau khi thực hiện kiểm thử tự động xong, nhóm nhận thấy toàn bộ **18/18 test cases** đã được thực thi thành công mỹ mãn trong tổng thời gian **1.638 giây**, đạt tỷ lệ chính xác tuyệt đối **100% PASS**.
+- **Kết luận:** Các chức năng cốt lõi của ứng dụng MarkNote (Soạn thảo, Live Preview, Sync Scroll, Tra cứu SQLite FTS5, Quản lý Media và Xuất bản in ấn PDF chuẩn A4) hoạt động hoàn hảo, đạt chuẩn nghiệp vụ và đáp ứng đầy đủ các chuẩn đầu ra của học phần.
 
 ---
 

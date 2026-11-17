@@ -1,39 +1,65 @@
 @startuml
-left to right direction
-actor "Nguoi dung" as U
-rectangle MarkNote {
-  (Tao note) as UC1
-  (Mo/Xem note) as UC2
-  (Sua note) as UC3
-  (Xoa note) as UC4
-  (Gan/Go tag) as UC5
-  (Preview song song) as UC6
-  (Sync-scroll ON/OFF) as UC7
-  (Tim trong note) as UC8
-  (Thay the trong note) as UC9
-  (Tim toan kho + loc tag) as UC10
-  (Xem danh sach theme) as UC11
-  (Chon theme) as UC12
-  (Xuat HTML/PDF) as UC13
-}
-U --> UC1
-U --> UC2
-U --> UC3
-U --> UC4
-U --> UC5
-U --> UC6
-U --> UC7
-U --> UC8
-U --> UC9
-U --> UC10
-U --> UC11
-U --> UC12
-U --> UC13
+skinparam defaultFontName "Segoe UI"
+skinparam handwritten false
+skinparam packageStyle rectangle
+skinparam shadowing true
 
-UC6  <.. UC12 : <<include>>
-UC6  <.. UC11 : <<include>>
-UC11 <.. UC12 : <<include>>
-UC13 <.. UC12 : <<include>>
-UC13 <.. UC6  : <<include>>
-UC10 <.. UC2  : <<include>>
+skinparam actor {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+}
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #0284C7
+  ArrowColor #2563EB
+}
+
+left to right direction
+
+actor "Người dùng\n(Cá nhân / User)" as User
+
+rectangle "Hệ thống Soạn thảo & Quản lý Ghi chú Mã nguồn mở MarkNote" {
+  package "Quản lý Ghi chú & Soạn thảo" {
+    usecase "UC01: Tạo ghi chú mới" as UC01
+    usecase "UC02: Mở / Xem ghi chú" as UC02
+    usecase "UC03: Sửa ghi chú (Ctrl+S)" as UC03
+    usecase "UC04: Xóa ghi chú (Cascade)" as UC04
+    usecase "UC05: Gắn / Gỡ nhãn Tag" as UC05
+    usecase "UC08: Tìm trong ghi chú (Ctrl+F)" as UC08
+    usecase "UC09: Thay thế văn bản (Ctrl+H)" as UC09
+  }
+
+  package "Trình diễn & Tra cứu FTS5" {
+    usecase "UC06: Live Preview song song\n(Debounce timer 300ms)" as UC06
+    usecase "UC07: Bật / Tắt Cuộn đồng bộ\n(Sync Scroll Engine)" as UC07
+    usecase "UC10: Tìm toàn kho FTS5\n(& Lọc nhãn tag:)" as UC10
+  }
+
+  package "Giao diện & Xuất bản In ấn" {
+    usecase "UC11: Xem danh sách theme" as UC11
+    usecase "UC12: Chuyển đổi theme" as UC12
+    usecase "UC13: Xuất PDF / HTML in ấn\n(WeasyPrint A4 W3C CSS)" as UC13
+  }
+}
+
+User --> UC01
+User --> UC02
+User --> UC03
+User --> UC04
+User --> UC05
+User --> UC06
+User --> UC07
+User --> UC08
+User --> UC09
+User --> UC10
+User --> UC11
+User --> UC12
+User --> UC13
+
+UC06 ..> UC12 : <<include>>
+UC06 ..> UC11 : <<include>>
+UC10 ..> UC02 : <<include>>
+UC13 ..> UC06 : <<include>>
+UC13 ..> UC12 : <<include>>
+
 @enduml

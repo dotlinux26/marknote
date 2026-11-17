@@ -1,21 +1,20 @@
 @startuml
-actor User
-participant SettingsDialog
-participant ThemeManager
-participant PreviewPane
-participant DB
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing true
 
-User -> SettingsDialog : mo Setting > Appearance
-SettingsDialog -> ThemeManager : listThemes()
-ThemeManager -> ThemeManager : os.listdir(~/.marknote/themes)
-ThemeManager --> SettingsDialog : [default.css, github.css, dark.css]
-SettingsDialog -> DB : SELECT value WHERE key='theme'
-DB --> SettingsDialog : 'github'
-SettingsDialog --> User : hien thi dropdown, chon 'github'
-User -> SettingsDialog : click "dark"
-SettingsDialog -> ThemeManager : applyTheme('dark')
-ThemeManager -> ThemeManager : doc file dark.css
-ThemeManager -> DB : UPDATE settings SET value='dark' WHERE key='theme'
-ThemeManager -> PreviewPane : reloadCss(css_text)
-PreviewPane --> User : render lai bang CSS moi
+autonumber
+actor "Người dùng" as User
+participant "Menu Cài đặt\nAppearanceMenu" as Menu
+participant "Quản trị Theme\nThemeManager" as ThemeMgr
+participant "Cấu hình\nSettingsDAO" as Settings
+participant "Xem trước\nPreviewPane" as Preview
+
+User -> Menu : Chọn chủ đề "dark"
+Menu -> ThemeMgr : applyTheme("dark")
+ThemeMgr -> Settings : set("theme", "dark")
+ThemeMgr -> ThemeMgr : Đọc nội dung tệp assets/themes/dark.css
+ThemeMgr -> Preview : reloadCss()
+Preview -> Preview : Nạp CSS mới vào QWebEngineView (Không khởi động lại)
+Preview --> User : Toàn bộ giao diện chuyển sang chế độ tối (Dark Mode)
+
 @enduml

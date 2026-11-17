@@ -1,23 +1,25 @@
 @startuml
-actor User
-participant MainWindow
-participant ThemeManager
-participant Renderer
-participant Exporter
-participant DB
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing true
 
-User -> MainWindow : Export PDF(path)
-MainWindow -> DB : SELECT value FROM settings WHERE key='theme'
-DB --> MainWindow : 'dark'
-MainWindow -> ThemeManager : getCss('dark')
-ThemeManager --> MainWindow : css_text
-MainWindow -> DB : SELECT content_md FROM notes WHERE id=?
-DB --> MainWindow : md
-MainWindow -> Renderer : markdown_gfm(md)
-Renderer --> MainWindow : html_body
-MainWindow -> Exporter : to_pdf(html_body, css_text, path)
-Exporter -> Exporter : inline css vao html
-Exporter -> Exporter : weasyprint.write_pdf(kho A4)
-Exporter --> MainWindow : ok
-MainWindow --> User : Done + Open file
+autonumber
+actor "Người dùng" as User
+participant "Cửa sổ chính\nMainWindow" as Main
+participant "Bộ phân tích\nMarkdownRenderer" as Renderer
+participant "Động cơ Xuất bản\nExporter" as Exporter
+participant "Thư viện in ấn\nWeasyPrint Engine" as Weasy
+participant "Hệ thống tệp\nFileSystem" as FS
+
+User -> Main : Nhấn phím tắt Ctrl+P (Xuất PDF)
+Main -> Main : Mở hộp thoại chọn nơi lưu tệp
+User -> Main : Chọn đường dẫn "BaoCao.pdf"
+Main -> Renderer : render(content_md)
+Renderer --> Main : Trả về HTML chuẩn W3C (nhúng SVG TOC & Donut)
+Main -> Exporter : toPdf(html_body, theme_css, path)
+Exporter -> Exporter : Chèn quy chuẩn @page A4 và số trang chân trang
+Exporter -> Weasy : Thực thi biên dịch HTML/CSS -> PDF
+Weasy -> FS : Ghi tệp PDF chuẩn in ấn A4 xuống ổ đĩa
+Exporter --> Main : Xuất bản thành công
+Main --> User : Thông báo hoàn tất và gợi ý mở tệp PDF
+
 @enduml

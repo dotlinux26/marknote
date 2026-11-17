@@ -1,0 +1,44 @@
+@startuml
+skinparam defaultFontName "Segoe UI"
+skinparam packageStyle rectangle
+
+package "Tầng Giao diện (Presentation Layer)" {
+  class MainWindow
+  class EditorPane
+  class PreviewPane
+  class SearchPanel
+}
+
+package "Tầng Nghiệp vụ (Business Logic Layer)" {
+  class MarkdownRenderer
+  class SyncScrollController
+  class ThemeManager
+  class Exporter
+}
+
+package "Tầng Dữ liệu (Data Access Layer)" {
+  class DbManager
+  class NoteDAO
+  class TagDAO
+  class SettingsDAO
+  class SQLite_FTS5 <<Database>>
+}
+
+MainWindow --> EditorPane
+MainWindow --> PreviewPane
+MainWindow --> SearchPanel
+MainWindow --> SyncScrollController
+MainWindow --> MarkdownRenderer
+MainWindow --> ThemeManager
+MainWindow --> Exporter
+
+MainWindow --> NoteDAO
+MainWindow --> TagDAO
+MainWindow --> SettingsDAO
+
+NoteDAO --> DbManager
+TagDAO --> DbManager
+SettingsDAO --> DbManager
+DbManager --> SQLite_FTS5
+
+@enduml

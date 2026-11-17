@@ -1,92 +1,81 @@
 @startuml
+skinparam defaultFontName "Segoe UI"
+skinparam classAttributeIconSize 0
+skinparam shadowing true
+
 class DbManager {
-  +connect()
-  +execute(sql, params)
-  +query(sql, params)
-}
-class NoteDAO {
-  +insert(title, md)
-  +update(id, md)
-  +delete(id)
-  +getById(id)
-  +list(sortKey, tagName)
-  +searchFTS(query, tagName)
-}
-class TagDAO {
-  +create(name)
-  +listAll()
-  +getByNote(note_id)
-  +assign(note_id, tag_id)
-  +unassign(note_id, tag_id)
-}
-class SettingsDAO {
-  +get(key)
-  +set(key, value)
-}
-class MarkdownRenderer {
-  +render(md) : html
-}
-class ThemeManager {
-  +listThemes() : string[]
-  +getCss(name) : string
-  +applyTheme(name)
-  +ensureDefaults()
-}
-class MainWindow {
-  +openNote(id)
-  +save()
-  +exportHtml(path)
-  +exportPdf(path)
-}
-class EditorPane {
-  +setText(md)
-  +getText()
-  +find(keyword)
-  +replace(find, replace)
-}
-class PreviewPane {
-  +render(html)
-  +setScroll(percent)
-  +reloadCss(css)
-}
-class SyncScrollController {
-  +onScroll(percent)
-  +setEnabled(bool)
-  +isEnabled()
-}
-class FindReplaceDialog {
-  +findNext()
-  +replaceOne()
-  +replaceAll()
-}
-class SearchPanel {
-  +onSearch(query)
-  +onFilterTag(tag)
-}
-class SettingsDialog {
-  +showAppearance()
-  +onThemeChanged(name)
-}
-class Exporter {
-  +toHtml(html, css, path)
-  +toPdf(html, css, path)
+  - _db_path : Path
+  + get_connection() : sqlite3.Connection
+  + init_schema() : void
 }
 
-MainWindow --> NoteDAO
-MainWindow --> TagDAO
-MainWindow --> SettingsDAO
-MainWindow *-- EditorPane
-MainWindow *-- PreviewPane
-MainWindow *-- FindReplaceDialog
-MainWindow *-- SearchPanel
-MainWindow *-- SettingsDialog
-MainWindow --> SyncScrollController
-MainWindow --> Exporter
-MainWindow --> ThemeManager
-PreviewPane --> MarkdownRenderer
-Exporter --> MarkdownRenderer
-ThemeManager --> DbManager
+class NoteDAO {
+  - db : DbManager
+  + insert(title: str, content_md: str) : int
+  + update(note_id: int, content_md: str) : void
+  + delete(note_id: int) : void
+  + getById(note_id: int) : dict
+  + list(tag_name: str) : list
+  + searchFTS(query: str, tag_name: str) : list
+}
+
+class TagDAO {
+  - db : DbManager
+  + listAll() : list
+  + create(name: str, color: str) : int
+  + assign(note_id: int, tag_id: int) : void
+  + unassign(note_id: int, tag_id: int) : void
+}
+
+class SettingsDAO {
+  - db : DbManager
+  + get(key: str, default: str) : str
+  + set(key: str, val: str) : void
+}
+
+class MarkdownRenderer {
+  - md_parser : MarkdownIt
+  + render(md_text: str) : str
+  + parse_donut_spec(text: str) : dict
+  + render_donut_widget(spec: dict) : str
+}
+
+class Exporter {
+  + toHtml(html_body: str, css: str, path: str) : void
+  + toPdf(html_body: str, css: str, path: str) : void
+}
+
+class ThemeManager {
+  - settings : SettingsDAO
+  - current_theme : str
+  + listThemes() : list
+  + getCss(theme_name: str) : str
+  + applyTheme(theme_name: str) : void
+}
+
+class MainWindow {
+  - editor : EditorPane
+  - preview : PreviewPane
+  - notes : NoteDAO
+  - tags : TagDAO
+  - settings : SettingsDAO
+  - renderer : MarkdownRenderer
+  - exporter : Exporter
+  + openNote(id: int) : void
+  + save() : void
+  + onExportPdf() : void
+  + _on_sync_toggled(bool) : void
+}
+
+MainWindow "1" *-- "1" NoteDAO
+MainWindow "1" *-- "1" TagDAO
+MainWindow "1" *-- "1" SettingsDAO
+MainWindow "1" *-- "1" MarkdownRenderer
+MainWindow "1" *-- "1" Exporter
+MainWindow "1" *-- "1" ThemeManager
+
 NoteDAO --> DbManager
 TagDAO --> DbManager
 SettingsDAO --> DbManager
+
 @enduml

@@ -1,0 +1,23 @@
+@startuml
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing true
+
+autonumber
+actor "Người dùng" as User
+participant "Thanh tìm kiếm\nSearchPanel" as Search
+participant "Điều phối\nMainWindow" as Main
+participant "Tầng dữ liệu\nNoteDAO" as DAO
+database "Bảng ảo\nnotes_fts" as FTS5
+participant "Khung hiển thị\nNoteList" as List
+
+User -> Search : Nhập chuỗi tra cứu "apache tag:linux"
+Search -> Main : Tín hiệu filtersChanged
+Main -> Search : Phân tách keyword="apache", tag="linux"
+Main -> DAO : searchFTS(query="apache", tag="linux")
+DAO -> FTS5 : SELECT snippet(...) FROM notes_fts WHERE MATCH 'apache'
+FTS5 --> DAO : Trả về các dòng ghi chú khớp tiêu chí
+DAO --> Main : Danh sách Note kèm đoạn trích dẫn (Snippet)
+Main -> List : Đổ danh sách & bôi vàng từ khóa
+List --> User : Người dùng nhấp chuột để mở ghi chú tìm thấy
+
+@enduml

@@ -1,14 +1,24 @@
 @startuml
-actor User
-participant EditorPane
-participant SyncScrollController
-participant PreviewPane
-participant DB
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing true
 
-User -> EditorPane : scroll
-EditorPane -> SyncScrollController : onScroll(scrollTop, maxScroll)
-SyncScrollController -> DB : SELECT value WHERE key='sync_scroll'
-DB --> SyncScrollController : 'ON'
-SyncScrollController -> PreviewPane : setScroll(percent = scrollTop/maxScroll)
-PreviewPane --> User : preview cuon theo
+autonumber
+actor "Người dùng" as User
+participant "Thanh công cụ\nMainWindow" as GUI
+participant "Soạn thảo\nEditorPane" as Editor
+participant "Bộ điều khiển\nSyncScrollController" as Sync
+participant "Xem trước\nPreviewPane" as Preview
+
+User -> GUI : Nhấn nút "Sync Scroll"
+GUI -> Sync : setEnabled(True)
+GUI -> GUI : Cập nhật trạng thái "Sync: ON"
+
+User -> Editor : Cuộn chuột trên khung soạn thảo
+Editor -> GUI : Tín hiệu verticalScrollBar.valueChanged
+GUI -> Sync : on_editor_scroll(scroll_pos)
+Sync -> Sync : Tính tỷ lệ cuộn: percent = pos / maxScroll
+Sync -> Preview : setScroll(percent)
+Preview -> Preview : JavaScript: window.scrollTo(0, scrollTarget)
+Preview --> User : Khung xem trước cuộn đồng bộ tức thời
+
 @enduml

@@ -1,0 +1,52 @@
+@startuml
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam shadowing true
+skinparam linetype ortho
+
+entity "notes\n(Bảng Ghi chú)" as notes {
+  * **id** : INTEGER <<PK>>
+  --
+  * **title** : TEXT NOT NULL
+  content_md : TEXT
+  created_at : DATETIME
+  updated_at : DATETIME
+  pinned : INTEGER (0 / 1)
+  archived : INTEGER (0 / 1)
+}
+
+entity "tags\n(Bảng Nhãn phân loại)" as tags {
+  * **id** : INTEGER <<PK>>
+  --
+  * **name** : TEXT <<UNIQUE>>
+  color : TEXT (HEX #rrggbb)
+}
+
+entity "note_tag\n(Quan hệ nhiều - nhiều N:N)" as note_tag {
+  * **note_id** : INTEGER <<FK>>
+  * **tag_id** : INTEGER <<FK>>
+  --
+  PRIMARY KEY (note_id, tag_id)
+  ON DELETE CASCADE
+}
+
+entity "settings\n(Bảng Cấu hình hệ thống)" as settings {
+  * **key** : TEXT <<PK>>
+  --
+  value : TEXT
+}
+
+entity "notes_fts\n(Bảng ảo SQLite FTS5)" as notes_fts <<Virtual Table>> {
+  title : TEXT
+  content_md : TEXT
+  --
+  content = 'notes'
+  tokenize = 'porter unicode61'
+}
+
+notes ||--o{ note_tag : "1 .. N"
+tags ||--o{ note_tag : "1 .. N"
+
+notes .. notes_fts : "Đồng bộ tự động qua\n3 Database Triggers\n(AFTER INSERT, UPDATE, DELETE)"
+
+@enduml

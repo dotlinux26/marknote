@@ -1,23 +1,25 @@
 @startuml
-actor User
-participant MainWindow
-participant EditorPane
-participant PreviewPane
-participant Renderer
-participant ThemeManager
-participant NoteDAO
-participant DB
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing true
 
-User -> MainWindow : New / Save(title, md)
-MainWindow -> NoteDAO : insert(title, md)
-NoteDAO -> DB : INSERT INTO notes
-DB --> NoteDAO : last_insert_rowid
-NoteDAO --> MainWindow : note_id
-MainWindow -> EditorPane : setText(md)
-MainWindow -> PreviewPane : render(md)
-PreviewPane -> ThemeManager : getCss(currentTheme)
-ThemeManager --> PreviewPane : css_text
-PreviewPane -> Renderer : markdown_gfm(md)
-Renderer --> PreviewPane : html
-PreviewPane --> User : hien thi render + CSS
+autonumber
+actor "Người dùng" as User
+participant "Giao diện\nMainWindow" as GUI
+participant "Soạn thảo\nEditorPane" as Editor
+participant "Tầng dữ liệu\nNoteDAO" as DAO
+database "CSDL SQLite\nnotes.db" as DB
+participant "Xem trước\nPreviewPane" as Preview
+
+User -> GUI : Nhấn nút "New" (Ctrl+N)
+GUI -> Editor : setText("")
+GUI -> GUI : Thiết lập tiêu đề mặc định "Untitled"
+User -> Editor : Nhập tiêu đề và soạn thảo Markdown
+User -> GUI : Nhấn nút "Save" (Ctrl+S)
+GUI -> DAO : insert(title, content_md)
+DAO -> DB : INSERT INTO notes (title, content_md)
+DB --> DAO : Trả về note_id mới
+DAO --> GUI : Xác nhận lưu thành công
+GUI -> Preview : render(content_md)
+Preview --> User : Cập nhật hiển thị trang xem trước
+
 @enduml
