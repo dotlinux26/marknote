@@ -30,6 +30,15 @@ CHECKED_SVG = (
     '</svg>'
 )
 
+DEFAULT_DONUT_SVG = (
+    '<svg viewBox="0 0 36 36" class="donut-svg-ring" style="width: 72px; height: 72px; position: absolute; top: 0; left: 0; transform: rotate(-90deg); border-radius: 50%;">'
+    '<circle cx="18" cy="18" r="15.9155" fill="#ffffff"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#2b6cb0" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="0"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#b7791f" stroke-width="4.5" stroke-dasharray="40 60" stroke-dashoffset="-40"></circle>'
+    '<circle cx="18" cy="18" r="15.9155" fill="transparent" stroke="#c53030" stroke-width="4.5" stroke-dasharray="20 80" stroke-dashoffset="-80"></circle>'
+    '</svg>'
+)
+
 
 def replace_checkboxes_with_svg(html: str) -> str:
     """Thay the checkbox mac dinh bang vector SVG sac net va can le chuan."""
@@ -41,6 +50,22 @@ def replace_checkboxes_with_svg(html: str) -> str:
         return CHECKED_SVG if "checked" in tag else UNCHECKED_SVG
 
     return CHECKBOX_TAG_RE.sub(_repl, html)
+
+
+def enhance_html_components(html: str) -> str:
+    """Thay the checkbox bang SVG va tu dong bo sung vector cho donut chart neu thieu."""
+    if not html:
+        return html
+    html = replace_checkboxes_with_svg(html)
+    if "donut-chart" in html and "donut-svg-ring" not in html:
+        html = re.sub(
+            r'(<div\b[^>]*class=["\'][^"\']*donut-chart[^"\']*["\'][^>]*>)',
+            r'\1\n' + DEFAULT_DONUT_SVG,
+            html,
+            count=0,
+            flags=re.IGNORECASE,
+        )
+    return html
 
 
 DOCUMENT_BASE_CSS = (
@@ -75,6 +100,37 @@ DOCUMENT_BASE_CSS = (
     "  margin-right: 6px;\n"
     "  display: inline-block;\n"
     "  flex-shrink: 0;\n"
+    "}\n"
+    "/* Phan cap tieu de H1, H2, H3, H4 chuan dep, dong nhat Markdown va HTML */\n"
+    ".markdown-body h1, .markdown-body .report h1 {\n"
+    "  font-size: 2.1rem !important;\n"
+    "  font-weight: 700 !important;\n"
+    "  margin: 0.6rem 0 1rem !important;\n"
+    "  line-height: 1.3 !important;\n"
+    "  letter-spacing: -0.02em !important;\n"
+    "}\n"
+    ".markdown-body h2, .markdown-body .report h2 {\n"
+    "  font-size: 1.45rem !important;\n"
+    "  font-weight: 600 !important;\n"
+    "  border-bottom: 2px solid var(--line, var(--border-muted, #d8dee4)) !important;\n"
+    "  padding-bottom: 0.4rem !important;\n"
+    "  margin-top: 2rem !important;\n"
+    "  margin-bottom: 0.8rem !important;\n"
+    "  line-height: 1.35 !important;\n"
+    "  letter-spacing: -0.01em !important;\n"
+    "}\n"
+    ".markdown-body h3, .markdown-body .report h3 {\n"
+    "  font-size: 1.15rem !important;\n"
+    "  font-weight: 600 !important;\n"
+    "  margin-top: 1.4rem !important;\n"
+    "  margin-bottom: 0.6rem !important;\n"
+    "  line-height: 1.4 !important;\n"
+    "}\n"
+    ".markdown-body h4, .markdown-body .report h4 {\n"
+    "  font-size: 1.02rem !important;\n"
+    "  font-weight: 600 !important;\n"
+    "  margin-top: 1.1rem !important;\n"
+    "  margin-bottom: 0.4rem !important;\n"
     "}\n"
     "/* Ep bang luon fit 100% chieu rong va tu dong wrap noi dung thong minh */\n"
     ".markdown-body table {\n"
@@ -167,6 +223,29 @@ DOCUMENT_BASE_CSS = (
     "  padding-left: 18px !important;\n"
     "  margin-left: 0 !important;\n"
     "}\n"
+    "/* Bo cuc Metrics Dashboard Bar va Donut Chart vector */\n"
+    ".metrics-dashboard-bar .donut-chart {\n"
+    "  position: relative !important;\n"
+    "  width: 72px !important;\n"
+    "  height: 72px !important;\n"
+    "  display: block !important;\n"
+    "  flex-shrink: 0 !important;\n"
+    "}\n"
+    ".metrics-dashboard-bar .donut-chart .donut-center {\n"
+    "  position: absolute !important;\n"
+    "  top: 14px !important;\n"
+    "  left: 14px !important;\n"
+    "  width: 44px !important;\n"
+    "  height: 44px !important;\n"
+    "  background: #ffffff !important;\n"
+    "  border-radius: 50% !important;\n"
+    "  display: flex !important;\n"
+    "  flex-direction: column !important;\n"
+    "  align-items: center !important;\n"
+    "  justify-content: center !important;\n"
+    "  box-shadow: 0 0 4px rgba(0,0,0,0.08) !important;\n"
+    "  z-index: 2 !important;\n"
+    "}\n"
     "/* Ho tro tuong thich cho Metrics Dashboard va KPI Widgets khi in/xuat PDF */\n"
     "@media print {\n"
     "  .metrics-dashboard-bar {\n"
@@ -191,8 +270,23 @@ DOCUMENT_BASE_CSS = (
     "    display: block !important;\n"
     "  }\n"
     "  .metrics-dashboard-bar .donut-chart {\n"
+    "    position: relative !important;\n"
+    "    width: 72px !important;\n"
+    "    height: 72px !important;\n"
+    "    display: block !important;\n"
     "    float: left !important;\n"
     "    margin-right: 12px !important;\n"
+    "  }\n"
+    "  .metrics-dashboard-bar .donut-chart .donut-center {\n"
+    "    position: absolute !important;\n"
+    "    top: 14px !important;\n"
+    "    left: 14px !important;\n"
+    "    width: 44px !important;\n"
+    "    height: 44px !important;\n"
+    "    background: #ffffff !important;\n"
+    "    border-radius: 50% !important;\n"
+    "    text-align: center !important;\n"
+    "    z-index: 2 !important;\n"
     "  }\n"
     "  .metrics-dashboard-bar .donut-legend {\n"
     "    float: left !important;\n"
@@ -345,10 +439,11 @@ HTML_FOOTER = (
 def build_document(html_body: str, css: str, title: str = "MarkNote") -> str:
     """Ghep HTML da render voi CSS inline thanh mot trang doc lap."""
     full_css = (css or "") + "\n" + TASKLIST_BASE_CSS
+    enhanced_body = enhance_html_components(html_body)
     return (
         HTML_HEADER % title
         + full_css
-        + HTML_FOOTER.replace("\n</main>\n", "\n" + html_body + "\n</main>\n")
+        + HTML_FOOTER.replace("\n</main>\n", "\n" + enhanced_body + "\n</main>\n")
     )
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from html import escape
+from html import escape, unescape
 from pathlib import Path
 
 from PySide6.QtCore import QUrl
@@ -12,7 +12,11 @@ from PySide6.QtGui import QColor
 from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
-from exporter import build_document, replace_checkboxes_with_svg
+from exporter import (
+    build_document,
+    enhance_html_components,
+    replace_checkboxes_with_svg,
+)
 from settings import (
     APP_DIR,
     KEY_SYNC_SCROLL,
@@ -118,7 +122,7 @@ class MarkdownRenderer:
     def render(self, md: str) -> str:
         clean_md = normalize_tasklists(md or "")
         html = self.md.render(clean_md)
-        return replace_checkboxes_with_svg(html)
+        return enhance_html_components(html)
 
     @staticmethod
     def _highlight(code: str, lang: str | None, attrs: str) -> str:
@@ -240,16 +244,26 @@ def _parse_toc_directive(raw: str) -> tuple[bool, str, str, bool]:
 
 
 TOC_RE = TOC_DIRECTIVE_RE
+HTML_HEADING_RE = re.compile(
+    r"<h([1-6])\b([^>]*)>(.*?)</h\1>",
+    re.IGNORECASE | re.DOTALL,
+)
+ID_ATTR_RE = re.compile(r"""\bid\s*=\s*(?:\"([^\"]*)\"|'([^']*)')""", re.IGNORECASE)
+TOC_DIRECTIVE_SEARCH_RE = re.compile(
+    r"\[\[TOC(?P<body>.*?)\]\](?:\((?P<tail>.*?)\))?",
+    re.IGNORECASE,
+)
 
 
 def _anchors_toc(state):
-    """Gan id cho heading va thay [[TOC ...]] bang muc luc co link nhan."""
+    """Gan id cho heading (Markdown # va HTML <h1-6>) va thay [[TOC ...]] bang muc luc co link nhan."""
     taken = set()
     headings = []
     toc_index = None
     toc_label = "Table of Contents"
     toc_align = "left"
     toc_no_bullet = False
+    toc_in_html = False
     tokens = state.tokens
     i = 0
     while i < len(tokens):
@@ -261,6 +275,38 @@ def _anchors_toc(state):
             anchor = _slugify(text, taken)
             tok.attrSet("id", anchor)
             headings.append((level, anchor, escape(text)))
+        elif tok.type in ("html_block", "html_inline"):
+            if "<h" in tok.content.lower():
+                def _repl_h(m: re.Match) -> str:
+                    lvl = int(m.group(1))
+                    attrs = m.group(2)
+                    inner = m.group(3)
+                    pure_text = unescape(re.sub(r"<[^>]+>", "", inner).strip())
+                    if not pure_text:
+                        return m.group(0)
+                    id_m = ID_ATTR_RE.search(attrs)
+                    if id_m:
+                        anc = id_m.group(1) or id_m.group(2)
+                        taken.add(anc)
+                        new_tag = f"<h{lvl}{attrs}>{inner}</h{lvl}>"
+                    else:
+                        anc = _slugify(pure_text, taken)
+                        new_tag = f'<h{lvl} id="{anc}"{attrs}>{inner}</h{lvl}>'
+                    headings.append((lvl, anc, escape(pure_text)))
+                    return new_tag
+
+                tok.content = HTML_HEADING_RE.sub(_repl_h, tok.content)
+
+            if toc_index is None and ("[[toc" in tok.content.lower()):
+                dm = TOC_DIRECTIVE_SEARCH_RE.search(tok.content)
+                if dm:
+                    is_toc, label, align, no_bullet = _parse_toc_directive(dm.group(0))
+                    if is_toc:
+                        toc_index = i
+                        toc_label = label
+                        toc_align = align
+                        toc_no_bullet = no_bullet
+                        toc_in_html = True
         elif toc_index is None and tok.type == "inline":
             is_toc, label, align, no_bullet = _parse_toc_directive(tok.content)
             if is_toc:
@@ -268,19 +314,27 @@ def _anchors_toc(state):
                 toc_label = label
                 toc_align = align
                 toc_no_bullet = no_bullet
+                toc_in_html = False
         i += 1
+
     if toc_index is None:
         return
-    start = toc_index - 1
-    if start >= 0 and tokens[start].type == "paragraph_open":
-        if headings:
-            token = tokens[start]
-            token.type = "html_block"
-            token.tag = ""
-            token.content = _build_toc(headings, toc_label, align=toc_align, no_bullet=toc_no_bullet)
-            del tokens[start + 1 : start + 3]
-        else:
-            del tokens[start : start + 3]
+
+    toc_html = _build_toc(headings, toc_label, align=toc_align, no_bullet=toc_no_bullet) if headings else ""
+
+    if toc_in_html:
+        tokens[toc_index].content = TOC_DIRECTIVE_SEARCH_RE.sub(lambda _: toc_html, tokens[toc_index].content, count=1)
+    else:
+        start = toc_index - 1
+        if start >= 0 and tokens[start].type == "paragraph_open":
+            if headings:
+                token = tokens[start]
+                token.type = "html_block"
+                token.tag = ""
+                token.content = toc_html
+                del tokens[start + 1 : start + 3]
+            else:
+                del tokens[start : start + 3]
 
 
 class PreviewPane(QWebEngineView):

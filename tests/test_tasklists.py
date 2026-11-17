@@ -140,6 +140,32 @@ class TestMarkdownRenderer(unittest.TestCase):
             else:
                 self.assertNotIn('<div class="toc no-bullet">', html)
 
+    def test_render_toc_html_and_markdown_headings(self):
+        md = (
+            "[[TOC center no-bullet]]\n\n"
+            '<div class="report">\n'
+            "  <h1>Document Overview</h1>\n"
+            "  <h2>1. Executive Summary</h2>\n"
+            "  <p>Text here</p>\n"
+            "</div>\n\n"
+            "### 1.1 First Sub-task\n\n"
+            "### 1.2 Second Sub-task\n\n"
+            "<h2>2. Detailed Methodology</h2>\n\n"
+            "### 2.1 Tooling Setup\n"
+        )
+        html = self.renderer.render(md)
+        self.assertIn('<div class="toc no-bullet">', html)
+        self.assertIn("Document Overview", html)
+        self.assertIn("1. Executive Summary", html)
+        self.assertIn("1.1 First Sub-task", html)
+        self.assertIn("1.2 Second Sub-task", html)
+        self.assertIn("2. Detailed Methodology", html)
+        self.assertIn("2.1 Tooling Setup", html)
+        # Check injected anchor IDs
+        self.assertIn('id="document-overview"', html)
+        self.assertIn('id="1-executive-summary"', html)
+        self.assertIn('id="2-detailed-methodology"', html)
+
 
 class TestEditorLineNumbers(unittest.TestCase):
     def test_line_number_area_initialization_and_width(self):
