@@ -40,7 +40,11 @@ class ThemeManager:
             elif target.name in ("default.css", "dark.css", "github.css"):
                 try:
                     content = target.read_text(encoding="utf-8")
-                    if "ul.task-list-item" in content and "contains-task-list" not in content:
+                    if (
+                        ("ul.task-list-item" in content and "contains-task-list" not in content)
+                        or "box-decoration-break" not in content
+                        or "pre-wrap" not in content
+                    ):
                         target.write_text(css.read_text(encoding="utf-8"), encoding="utf-8")
                 except Exception:
                     pass

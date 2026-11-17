@@ -106,7 +106,7 @@ class TestExporter(unittest.TestCase):
         self.renderer = MarkdownRenderer()
 
     def test_export_html_contains_svg_and_styles(self):
-        md = "- [ ] To Do\n- [x] Done"
+        md = "- [ ] To Do\n- [x] Done\n\n```python\nlong_code_line = 1\n```\n\n| Col 1 | Col 2 |\n|---|---|\n| A | B |\n"
         html_body = self.renderer.render(md)
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as f:
             tmp_path = Path(f.name)
@@ -115,6 +115,9 @@ class TestExporter(unittest.TestCase):
             content = tmp_path.read_text(encoding="utf-8")
             self.assertIn("task-svg", content)
             self.assertIn("contains-task-list", content)
+            self.assertIn("table-layout: auto", content)
+            self.assertIn("white-space: pre-wrap", content)
+            self.assertIn("box-decoration-break: clone", content)
             self.assertIn("To Do", content)
             self.assertIn("Done", content)
         finally:
