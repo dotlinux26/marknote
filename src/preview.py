@@ -13,10 +13,14 @@ from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from exporter import (
+    PRINT_DIRECTIVE_RE,
+    PRINT_DIRECTIVE_STRIP_RE,
     build_document,
     enhance_html_components,
-    replace_checkboxes_with_svg,
+    generate_page_css,
+    parse_print_directives,
     render_donut_widget,
+    replace_checkboxes_with_svg,
     DONUT_DIRECTIVE_RE,
 )
 from settings import (
@@ -134,12 +138,22 @@ class MarkdownRenderer:
             return self.md.renderer.renderToken(tokens, idx, options)
 
         self.md.renderer.rules["fence"] = _render_fence
+        self.last_print_directives = []
 
     def render(self, md: str) -> str:
         clean_md = normalize_tasklists(md or "")
         if "[[donut" in clean_md.lower():
             clean_md = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), clean_md)
+        print_css = ""
+        self.last_print_directives = []
+        if PRINT_DIRECTIVE_RE.search(clean_md):
+            self.last_print_directives = parse_print_directives(clean_md)
+            if self.last_print_directives:
+                print_css = generate_page_css(self.last_print_directives)
+            clean_md = PRINT_DIRECTIVE_STRIP_RE.sub("", clean_md)
         html = self.md.render(clean_md)
+        if print_css:
+            html = f'{html}\n<style class="marknote-print-rules" media="print">\n{print_css}\n</style>'
         return enhance_html_components(html)
 
     @staticmethod

@@ -15,7 +15,7 @@
 #  Python weasyprint khong tim thay Pango.
 # =========================================================================
 $ErrorActionPreference = "Stop"
-$AppVersion = if ($env:APP_VERSION) { $env:APP_VERSION } else { "1.2.5" }
+$AppVersion = if ($env:APP_VERSION) { $env:APP_VERSION } else { "1.2.6" }
 $Python = "python"
 # Nie nhat dinh ban weasyprint-windows.zip (co san Pango, file chinh thuc)
 $WeasyVersion = "v68.1"
@@ -28,33 +28,39 @@ function Run-Checked {
     if ($LASTEXITCODE -ne 0) { throw "That bai: $Desc" }
 }
 
-if (-not (Get-Command $Python -ErrorAction SilentlyContinue)) {
-    Write-Host "Chua co Python trong PATH. Cai Python 3.10+ roi chay lai."
-    exit 1
-}
+if (-not (Test-Path ".\.venv\Scripts\python.exe")) {
+    if (-not (Get-Command $Python -ErrorAction SilentlyContinue)) {
+        Write-Host "Chua co Python trong PATH. Cai Python 3.10+ roi chay lai."
+        exit 1
+    }
 
-Run-Checked "Tao moi truong ao .venv" {
-    & $Python -m venv .venv
-    & ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
-}
+    Run-Checked "Tao moi truong ao .venv" {
+        & $Python -m venv .venv
+        & ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
+    }
 
-Run-Checked "Cai thu vien tu requirements.txt" {
-    & ".\.venv\Scripts\python.exe" -m pip install -r requirements.txt
-}
+    Run-Checked "Cai thu vien tu requirements.txt" {
+        & ".\.venv\Scripts\python.exe" -m pip install -r requirements.txt
+    }
 
-Run-Checked "Cai PyInstaller" {
-    & ".\.venv\Scripts\python.exe" -m pip install pyinstaller
+    Run-Checked "Cai PyInstaller" {
+        & ".\.venv\Scripts\python.exe" -m pip install pyinstaller
+    }
 }
 
 Run-Checked "Build ung dung (PyInstaller onedir)" {
     Get-Process -Name "marknote*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 500
     & ".\.venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onedir `
-        --name marknote --windowed --paths src --add-data "assets;assets" `
+        --name marknote --windowed --paths src --icon "assets\marknote.ico" --add-data "assets;assets" `
         --hidden-import markdown_it.presets.gfm_like `
         --hidden-import markdown_it.plugins.linkify `
         --hidden-import markdown_it.plugins `
         --hidden-import media `
+        --hidden-import icons `
+        --hidden-import PIL `
+        --hidden-import PIL.Image `
+        --hidden-import PySide6.QtSvg `
         --collect-all mdit_py_plugins --collect-all pygments `
         --collect-all weasyprint --collect-all tinycss2 `
         --collect-all cssselect2 --collect-all tinyhtml5 `

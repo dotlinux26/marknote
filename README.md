@@ -1,7 +1,7 @@
 # MarkNote - Phần Mềm Nguồn Mở Soạn Thảo Ghi Chú Cá Nhân
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release: v1.2.5](https://img.shields.io/badge/Release-v1.2.5-brightgreen.svg)](https://github.com/dotlinux26/marknote/releases)
+[![Release: v1.3.0](https://img.shields.io/badge/Release-v1.3.0-brightgreen.svg)](https://github.com/dotlinux26/marknote/releases)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![GUI: PySide6](https://img.shields.io/badge/GUI-PySide6%20%2F%20Qt%206-green.svg)](https://wiki.qt.io/Qt_for_Python)
 [![Open Source: OSI Compliant](https://img.shields.io/badge/Open%20Source-OSI%20Compliant-brightgreen.svg)](docs/LICENSE_COMPLIANCE.md)
@@ -69,6 +69,39 @@
 - **Tasklist / Checklist:** Tự động chuẩn hóa `[ ]`, `[x]`, `- [ ]` thành checkbox vector SVG sắc nét, không bị lệch lề.
 - **Ngắt trang chủ động:** Dễ dàng ngắt trang in PDF bằng thẻ `<div class="page-break"></div>`.
 
+### 5. Tối Ưu Hóa CSDL SQLite & Hiệu Năng Lưu Trữ Siêu Tinh Gọn
+MarkNote được thiết kế đặc biệt để lưu trữ hàng nghìn trang ghi chú tài liệu mà dung lượng cơ sở dữ liệu vẫn siêu nhẹ và truy xuất tức thì:
+- **Lưu trữ mật độ cao, định dạng siêu nhẹ:** Mỗi trang ghi chú được lưu trữ dưới dạng văn bản thuần / Markdown chuẩn UTF-8 (chỉ tốn vài KB cho tài liệu dài hàng chục trang thay vì hàng chục MB như các file Word/Docx cồng kềnh). Metadata tiêu đề, nhãn, ngày tạo được chuẩn hóa tối thiểu (< 50 bytes/bản ghi).
+- **Chế độ WAL (Write-Ahead Logging):** Kích hoạt `PRAGMA journal_mode = WAL` cho phép các tác vụ đọc (Search, Load) và ghi (Auto-save) chạy song song đồng thời mà không bao giờ bị nghẽn (non-blocking concurrency).
+- **Đồng bộ hóa hiệu năng cao (`PRAGMA synchronous = NORMAL`):** Giảm thiểu tối đa các lệnh `fsync()` vật lý xuống ổ cứng trong khi vẫn đảm bảo an toàn tuyệt đối chống hỏng dữ liệu (corruption-safe) ngay cả khi ứng dụng bị tắt đột ngột hoặc mất điện.
+- **Bộ nhớ đệm thông minh 64MB RAM:** Thiết lập `PRAGMA cache_size = -64000` dành riêng 64MB RAM làm trang cache, đảm bảo mọi thao tác cuộn, chuyển đổi giữa hàng trăm ghi chú diễn ra mượt mà tức thì 0ms.
+- **Xử lý bảng tạm trực tiếp trên RAM:** Kích hoạt `PRAGMA temp_store = MEMORY` giúp các truy vấn tìm kiếm phức tạp, phép join và sắp xếp chỉ mục trung gian diễn ra hoàn toàn trên bộ nhớ RAM, loại bỏ độ trễ I/O đĩa.
+- **Kích thước trang chuẩn hóa 4KB:** `PRAGMA page_size = 4096` khớp tối ưu với block size của các hệ thống tệp hiện đại (NTFS trên Windows, ext4 trên Linux, APFS trên macOS), giảm thiểu hiện tượng khuếch đại ghi (write amplification).
+- **Chỉ mục FTS5 nén tự động:** Hệ thống Full-Text Search FTS5 được đồng bộ hóa tức thì qua Trigger SQL, cho phép tìm kiếm bất kỳ từ khóa nào trong toàn bộ kho tài liệu với dung lượng lưu trữ chỉ mục cực kỳ tinh gọn.
+- **Tự động bảo trì & chống phân mảnh (`vacuum_and_optimize()`):** Thu hồi không gian đĩa thừa sau khi xóa ghi chú và tối ưu hóa cây B-Tree, giữ cho tệp SQLite luôn ở trạng thái nhỏ gọn và tốc độ truy vấn cao nhất.
+
+### 6. Nền Giấy In PDF & Định Dạng Trang Đa Dạng (`[[print ...]]`)
+Soạn thảo ghi chú với khả năng tùy biến trang in ấn chất lượng cao:
+- **Cú pháp directive linh hoạt:**
+  ```markdown
+  [[print bg="watermark.png" mode="repeat" opacity="0.25" pages="all"]]
+  [[page-bg bg="linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)" pages="1"]]
+  ```
+- **Chế độ hiển thị nền đa dạng:** `repeat` (lặp lại dạng pattern / giấy kẻ caro), `stretch` (kéo giãn toàn trang `100% 100%`), `cover` (phủ kín giữ tỷ lệ), `contain` (vừa vặn).
+- **Tự động cân chỉnh độ mờ (Opacity/Alpha):** Nhận diện các giá trị `0.25`, `30%`, tự động xử lý kênh Alpha qua Pillow để xuất PDF chuẩn xác mà không che mất chữ viết.
+- **Chọn trang in đích thực:** Hỗ trợ chỉ định linh hoạt `pages="1"` (chỉ trang bìa), `pages="1-3"`, `pages="odd"` (trang lẻ), `pages="even"` (trang chẵn), hoặc `pages="all"`.
+- **Giao diện sạch sẽ:** Toàn bộ token directive được tự động ẩn khỏi khung xem trước (Markdown Preview), mang lại trải nghiệm đọc tập trung nhất.
+
+### 7. Nhập Ghi Chú Đa Dạng & Kéo Thả Trực Quan (Drag & Drop)
+- **Hỗ trợ kéo thả tức thì:** Kéo trực tiếp các tệp `.md`, `.markdown`, `.txt` từ File Explorer / Desktop vào bất kỳ khu vực nào của MarkNote để nhập nhanh ghi chú.
+- **Phím tắt mở tệp (`Ctrl + O`):** Chọn cùng lúc nhiều tệp ghi chú từ hộp thoại hệ thống qua menu `File -> Import...`.
+- **Tự động đặt tên & chống trùng lặp:** Tự động lấy tên file làm tiêu đề và tự động sinh hậu tố đánh số tăng dần (ví dụ `Ghi Chú (1)`) nếu tên đã tồn tại, tuyệt đối không ghi đè dữ liệu có sẵn.
+
+### 8. Giao Diện Tinh Biến & Icon Vector Font Awesome 6
+- **Thanh bên co giãn linh hoạt (`QSplitter`):** Phân chia danh sách Nhãn (Tags) và Ghi chú (Notes) bằng thanh trượt dọc, cho phép người dùng tùy ý điều chỉnh tỷ lệ hiển thị và mở rộng chiều ngang thanh bên thoải mái.
+- **Hệ thống Icon Vector Font Awesome 6:** Toàn bộ thanh công cụ, menu và nút chức năng sử dụng icon vector SVG hiển thị sắc nét 100% trên màn hình High-DPI và 4K.
+- **Biểu tượng Bookmark Ribbon độc đáo:** Logo ứng dụng mang phong cách Bookmark Ribbon hiện đại với dải màu chuyển tiếp Cyan -> Blue -> Indigo sang trọng, thanh lịch.
+
 > 📖 **Xem hướng dẫn cú pháp chi tiết tại:** [**`MARKNOTE_SYNTAX_GUIDE.md`**](MARKNOTE_SYNTAX_GUIDE.md)
 
 ---
@@ -126,6 +159,7 @@ sudo pacman -S pango
 | Phím tắt | Chức năng |
 |:---|:---|
 | `Ctrl + N` | Tạo ghi chú mới |
+| `Ctrl + O` | Nhập tệp văn bản từ máy tính (Import .md, .markdown, .txt) |
 | `Ctrl + S` | Lưu ghi chú hiện tại |
 | `F2` | Đổi tên tiêu đề ghi chú nhanh |
 | `Ctrl + D` | Xóa ghi chú |

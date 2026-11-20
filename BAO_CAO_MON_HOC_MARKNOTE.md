@@ -91,6 +91,59 @@
 
 <div style="page-break-after: always; break-after: page;"></div>
 
+## BẢNG PHÂN CÔNG VÀ ĐÁNH GIÁ MỨC ĐỘ HOÀN THÀNH NHIỆM VỤ
+
+<table style="font-size: 0.82rem; width: 100%; line-height: 1.35; margin-top: 4px; margin-bottom: 8px;">
+<thead>
+  <tr>
+    <th style="width: 6%; text-align: center; padding: 5px 6px;">STT</th>
+    <th style="width: 17%; padding: 5px 6px;">Họ và tên sinh viên</th>
+    <th style="width: 14%; text-align: center; padding: 5px 6px;">Mã SV</th>
+    <th style="width: 15%; text-align: center; padding: 5px 6px;">Vai trò</th>
+    <th style="width: 36%; padding: 5px 6px;">Phân hệ phụ trách & Nội dung thực hiện</th>
+    <th style="width: 12%; text-align: center; padding: 5px 6px;">Xếp loại</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td style="text-align: center; padding: 5px 6px;">1</td>
+    <td style="padding: 5px 6px;"><b>Nguyễn Đức Cảnh</b></td>
+    <td style="text-align: center; padding: 5px 6px;">2024601793</td>
+    <td style="text-align: center; padding: 5px 6px;"><b>Trưởng nhóm<br>(Chủ trì kỹ thuật)</b></td>
+    <td style="padding: 5px 6px;"><b>Module Soạn thảo & Cuộn đồng bộ Sync Scroll, Kiến trúc lõi:</b><br>- Thiết kế kiến trúc 3 tầng MVC/DAO, chủ trì tích hợp toàn bộ hệ thống.<br>- Lập trình Editor GFM, Live Preview, thuật toán Sync Scroll (Debounce 300ms).<br>- Phát triển bộ parser Smart TOC, Donut SVG; vẽ 9 sơ đồ PlantUML.<br>- Xây dựng 19 Unit Tests tự động; biên soạn 100% tài liệu báo cáo học phần.</td>
+    <td style="text-align: center; padding: 5px 6px;"><b>A<br>(Xuất sắc)</b></td>
+  </tr>
+  <tr>
+    <td style="text-align: center; padding: 5px 6px;">2</td>
+    <td style="padding: 5px 6px;"><b>Ngô Đức Anh</b></td>
+    <td style="text-align: center; padding: 5px 6px;">2023602011</td>
+    <td style="text-align: center; padding: 5px 6px;">Thành viên</td>
+    <td style="padding: 5px 6px;"><b>Module Tìm kiếm FTS5 và Quản lý Phân loại Tag:</b><br>- Phân tích cú pháp SQLite FTS5 và bộ lọc tiền tố nhãn `tag:`.<br>- Hỗ trợ kiểm thử tra cứu từ khóa và rà soát tài liệu Use Case.</td>
+    <td style="text-align: center; padding: 5px 6px;"><b>B<br>(Hoàn thành)</b></td>
+  </tr>
+  <tr>
+    <td style="text-align: center; padding: 5px 6px;">3</td>
+    <td style="padding: 5px 6px;"><b>Nguyễn Quang Khải</b></td>
+    <td style="text-align: center; padding: 5px 6px;">2024604327</td>
+    <td style="text-align: center; padding: 5px 6px;">Thành viên</td>
+    <td style="padding: 5px 6px;"><b>Module Quản lý Media, Thư viện ảnh và Đa chủ đề Theme:</b><br>- Cấu hình cơ chế tự động sao chép tài nguyên ảnh vào kho `media/`.<br>- Hỗ trợ kiểm thử nạp nóng CSS đổi Dark Theme và rà soát nội dung.</td>
+    <td style="text-align: center; padding: 5px 6px;"><b>B<br>(Hoàn thành)</b></td>
+  </tr>
+  <tr>
+    <td style="text-align: center; padding: 5px 6px;">4</td>
+    <td style="padding: 5px 6px;"><b>Nguyễn Công Tiến</b></td>
+    <td style="text-align: center; padding: 5px 6px;">2024605077</td>
+    <td style="text-align: center; padding: 5px 6px;">Thành viên</td>
+    <td style="padding: 5px 6px;"><b>Module Xuất bản PDF in ấn chuẩn A4 và CI/CD Packaging:</b><br>- Thử nghiệm kết xuất tài liệu PDF in ấn WeasyPrint khổ A4.<br>- Hỗ trợ kiểm thử đóng gói phần mềm CI/CD và rà soát tài liệu nộp.</td>
+    <td style="text-align: center; padding: 5px 6px;"><b>B<br>(Hoàn thành)</b></td>
+  </tr>
+</tbody>
+</table>
+
+<p style="font-size: 0.82rem; font-style: italic; margin-top: 8px; margin-bottom: 0;"><b>Xác nhận của Trưởng nhóm:</b> Kết quả đánh giá xếp loại thành viên được căn cứ theo khối lượng mã nguồn thực tế, thời lượng đóng góp kỹ thuật và mức độ hoàn thành nhiệm vụ được giao.</p>
+
+<div style="page-break-after: always; break-after: page;"></div>
+
 ## BẢNG DANH MỤC TỪ VIẾT TẮT
 
 | STT | Ký hiệu viết tắt | Thuật ngữ đầy đủ tiếng Anh | Giải nghĩa tiếng Việt |

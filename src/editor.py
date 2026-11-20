@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from PySide6.QtCore import QMimeData, QPoint, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QEvent, QMimeData, QPoint, QRect, QSize, Qt, Signal
 from PySide6.QtGui import (
     QColor,
     QFontDatabase,
@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QPlainTextEdit,
     QPushButton,
+    QSplitter,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -77,6 +78,7 @@ class EditorPane(QPlainTextEdit):
     imageInserted = Signal(str)
     insertImageRequested = Signal()
     openMediaRequested = Signal()
+    notesDropped = Signal(list)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -342,6 +344,17 @@ class EditorPane(QPlainTextEdit):
 
         super().insertFromMimeData(source)
 
+    def _extract_text_note_urls(self, mime: QMimeData) -> list[str]:
+        paths = []
+        if mime.hasUrls():
+            for u in mime.urls():
+                p = u.toLocalFile()
+                if not p:
+                    p = u.path()
+                if p and any(p.lower().endswith(ext) for ext in (".md", ".markdown", ".txt")):
+                    paths.append(p)
+        return paths
+
     def _has_acceptable_media(self, mime: QMimeData) -> bool:
         if mime.hasImage():
             return True
@@ -350,19 +363,39 @@ class EditorPane(QPlainTextEdit):
         return False
 
     def dragEnterEvent(self, event):
-        if self._has_acceptable_media(event.mimeData()):
+        mime = event.mimeData()
+        if self._extract_text_note_urls(mime):
             event.acceptProposedAction()
+            return
+        if self._has_acceptable_media(mime):
+            event.acceptProposedAction()
+            return
+        if mime.hasUrls():
+            event.ignore()
             return
         super().dragEnterEvent(event)
 
     def dragMoveEvent(self, event):
-        if self._has_acceptable_media(event.mimeData()):
+        mime = event.mimeData()
+        if self._extract_text_note_urls(mime):
             event.acceptProposedAction()
+            return
+        if self._has_acceptable_media(mime):
+            event.acceptProposedAction()
+            return
+        if mime.hasUrls():
+            event.ignore()
             return
         super().dragMoveEvent(event)
 
     def dropEvent(self, event):
         mime = event.mimeData()
+        text_paths = self._extract_text_note_urls(mime)
+        if text_paths:
+            event.acceptProposedAction()
+            self.notesDropped.emit(text_paths)
+            return
+
         if self._has_acceptable_media(mime):
             pos = event.position().toPoint() if hasattr(event, "position") else event.pos()
             cursor = self.cursorForPosition(pos)
@@ -552,12 +585,14 @@ class SearchPanel(QWidget):
 
     filtersChanged = Signal()
     noteSelected = Signal(int)
+    filesDropped = Signal(list)
+    fileDropped = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._root = None
         self.setMinimumWidth(230)
-        self.setMaximumWidth(360)
+        self.setAcceptDrops(True)
 
         self._search_edit = QLineEdit()
         self._search_edit.setPlaceholderText("Search all notes, e.g.: apache tag:linux")
@@ -574,16 +609,102 @@ class SearchPanel(QWidget):
         self._note_list.setSpacing(2)
         self._note_list.itemClicked.connect(self._on_note_clicked)
 
+        # R3: Vertical splitter between 'Filter by tag' and 'Notes'
+        self.tag_container = QWidget(self)
+        tag_layout = QVBoxLayout(self.tag_container)
+        tag_layout.setContentsMargins(0, 0, 0, 0)
+        tag_layout.setSpacing(4)
+        tag_layout.addWidget(tag_header)
+        tag_layout.addWidget(self._tag_list)
+
+        self.note_container = QWidget(self)
+        note_layout = QVBoxLayout(self.note_container)
+        note_layout.setContentsMargins(0, 0, 0, 0)
+        note_layout.setSpacing(4)
+        note_layout.addWidget(note_header)
+        note_layout.addWidget(self._note_list)
+
+        self.vertical_splitter = QSplitter(Qt.Orientation.Vertical, self)
+        self.vertical_splitter.addWidget(self.tag_container)
+        self.vertical_splitter.addWidget(self.note_container)
+        self.vertical_splitter.setStretchFactor(0, 1)
+        self.vertical_splitter.setStretchFactor(1, 2)
+        self.vertical_splitter.setSizes([160, 360])
+        self.vertical_splitter.setChildrenCollapsible(False)
+        self.vertical_splitter.setHandleWidth(4)
+
+        # Aliases for backward compatibility
+        self.splitter = self.vertical_splitter
+        self._splitter = self.vertical_splitter
+
+        # Forward drag-drop events from child widgets
+        self._tag_list.installEventFilter(self)
+        self._tag_list.viewport().installEventFilter(self)
+        self._note_list.installEventFilter(self)
+        self._note_list.viewport().installEventFilter(self)
+        self.vertical_splitter.installEventFilter(self)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(8)
         layout.addWidget(self._search_edit)
-        layout.addWidget(tag_header)
-        layout.addWidget(self._tag_list, 0)
-        layout.addWidget(note_header)
-        layout.addWidget(self._note_list, 1)
+        layout.addWidget(self.vertical_splitter, 1)
 
         self._clear_filters()
+
+    def _extract_dropped_files(self, mime: QMimeData) -> list[str]:
+        files = []
+        if mime.hasUrls():
+            for url in mime.urls():
+                p = url.toLocalFile()
+                if p:
+                    files.append(p)
+        elif mime.hasText():
+            for line in mime.text().splitlines():
+                line = line.strip().strip('"').strip("'")
+                if Path(line).exists():
+                    files.append(line)
+        return files
+
+    def dragEnterEvent(self, event):
+        mime = event.mimeData()
+        if mime.hasUrls() or mime.hasText():
+            event.acceptProposedAction()
+            return
+        super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        mime = event.mimeData()
+        if mime.hasUrls() or mime.hasText():
+            event.acceptProposedAction()
+            return
+        super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        files = self._extract_dropped_files(event.mimeData())
+        if files:
+            event.acceptProposedAction()
+            self.filesDropped.emit(files)
+            for f in files:
+                self.fileDropped.emit(f)
+            return
+        super().dropEvent(event)
+
+    def eventFilter(self, watched, event):
+        if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+            mime = event.mimeData()
+            if mime.hasUrls() or mime.hasText():
+                event.acceptProposedAction()
+                return True
+        elif event.type() == QEvent.Type.Drop:
+            files = self._extract_dropped_files(event.mimeData())
+            if files:
+                event.acceptProposedAction()
+                self.filesDropped.emit(files)
+                for f in files:
+                    self.fileDropped.emit(f)
+                return True
+        return super().eventFilter(watched, event)
 
     def _clear_filters(self):
         self._keyword = ""

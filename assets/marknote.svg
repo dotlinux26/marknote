@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Vibrant Cyan-Blue-Indigo Gradient identical to user sample -->
+    <linearGradient id="bookmarkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00d2ff"/>
+      <stop offset="35%" stop-color="#0ea5e9"/>
+      <stop offset="70%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- Subtle Top Fold / Shading for Depth -->
+    <linearGradient id="topFold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Ambient Glow / Drop Shadow -->
+    <filter id="ribbonShadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0284c7" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Inner Highlight -->
+    <linearGradient id="highlightEdge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="8%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="92%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Bookmark Ribbon Body with V-Tail Notch -->
+  <g filter="url(#ribbonShadow)">
+    <!-- Main Ribbon Path -->
+    <path d="M128 32 C128 20, 138 12, 150 12 L362 12 C374 12, 384 20, 384 32 L384 456 C384 472, 365 481, 352 470 L256 392 L160 470 C147 481, 128 472, 128 456 Z" fill="url(#bookmarkGrad)"/>
+
+    <!-- Subtle Edge Bevel Highlight -->
+    <path d="M128 32 C128 20, 138 12, 150 12 L362 12 C374 12, 384 20, 384 32 L384 456 C384 472, 365 481, 352 470 L256 392 L160 470 C147 481, 128 472, 128 456 Z" fill="url(#highlightEdge)"/>
+
+    <!-- Top Shading Bar -->
+    <rect x="128" y="12" width="256" height="40" rx="4" fill="url(#topFold)"/>
+  </g>
+</svg>

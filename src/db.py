@@ -57,22 +57,33 @@ CREATE TRIGGER IF NOT EXISTS notes_au AFTER UPDATE ON notes BEGIN
   INSERT INTO notes_fts(rowid, title, content_md)
   VALUES (new.id, new.title, new.content_md);
 END;
+
+CREATE INDEX IF NOT EXISTS idx_notes_pinned_updated ON notes(pinned, updated_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_note_tag_tag_id ON note_tag(tag_id);
 """
 
 
 class DbManager:
     """Quan ly mot ket noi SQLite duy nhat: ~/.marknote/notes.db."""
 
-    def __init__(self, path: Path = DB_PATH):
-        self.path = Path(path)
+    def __init__(self, path: Path | str = DB_PATH):
+        self.path = Path(path) if str(path) != ":memory:" else ":memory:"
         self._conn = None
 
     def connect(self) -> sqlite3.Connection:
         if self._conn is not None:
             return self._conn
-        APP_DIR.mkdir(parents=True, exist_ok=True)
+        if self.path != ":memory:":
+            Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(self.path), timeout=5.0)
         self._conn.row_factory = sqlite3.Row
+        self._conn.execute("PRAGMA page_size = 4096")
+        self._conn.execute("PRAGMA auto_vacuum = INCREMENTAL")
+        self._conn.execute("PRAGMA journal_mode = WAL")
+        self._conn.execute("PRAGMA synchronous = NORMAL")
+        self._conn.execute("PRAGMA temp_store = MEMORY")
+        self._conn.execute("PRAGMA cache_size = -16000")
+        self._conn.execute("PRAGMA mmap_size = 268435456")
         self._conn.execute("PRAGMA foreign_keys = ON")
         self._conn.executescript(SCHEMA)
         self._seed_settings()
@@ -100,8 +111,47 @@ class DbManager:
         rows = self.query(sql, params)
         return rows[0] if rows else None
 
+    def optimize(self):
+        """Routine maintenance: compact FTS5 index and run PRAGMA optimize."""
+        conn = self.connect()
+        try:
+            with conn:
+                conn.execute("INSERT INTO notes_fts(notes_fts) VALUES('optimize')")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            with conn:
+                conn.execute("PRAGMA optimize")
+        except sqlite3.OperationalError:
+            pass
+
+    def vacuum(self):
+        """Routine VACUUM to reclaim free space, incremental vacuum and truncate WAL."""
+        conn = self.connect()
+        old_iso = conn.isolation_level
+        try:
+            conn.commit()
+            conn.isolation_level = None
+            conn.execute("VACUUM")
+            conn.execute("PRAGMA incremental_vacuum")
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        finally:
+            conn.isolation_level = old_iso
+
+    def routine_optimize(self):
+        """Combined routine maintenance: optimize and vacuum."""
+        self.optimize()
+        self.vacuum()
+
     def close(self):
         if self._conn is not None:
+            try:
+                self.optimize()
+            except Exception:
+                try:
+                    self._conn.execute("PRAGMA optimize")
+                except Exception:
+                    pass
             self._conn.close()
             self._conn = None
 
@@ -141,6 +191,44 @@ class NoteDAO:
             "FROM notes WHERE id=?",
             (note_id,),
         )
+
+    def getByTitle(self, title: str):
+        return self.db.query_one(
+            "SELECT id, title, content_md, created_at, updated_at "
+            "FROM notes WHERE title=?",
+            (title,),
+        )
+
+    def title_exists(self, title: str) -> bool:
+        """Kiem tra xem tieu de da ton tai trong bang notes hay chua."""
+        row = self.db.query_one("SELECT 1 FROM notes WHERE title=?", (title,))
+        return row is not None
+
+    def get_unique_title(self, base_title: str) -> str:
+        """Sinh tieu de duy nhat: giu nguyen stem neu chua ton tai, them (1), (2)... neu trung."""
+        stem = (base_title or "").strip() or "Untitled"
+        if not self.title_exists(stem):
+            return stem
+        counter = 1
+        while True:
+            candidate = f"{stem} ({counter})"
+            if not self.title_exists(candidate):
+                return candidate
+            counter += 1
+
+    def import_file(self, path: Path | str) -> int:
+        """Doc file .txt hoac .md, tu dong dat ten theo stem kem hau to (1) neu trung."""
+        file_path = Path(path)
+        content = file_path.read_text(encoding="utf-8", errors="replace")
+        title = self.get_unique_title(file_path.stem)
+        return self.insert(title, content)
+
+    # Aliases
+    get_by_id = getById
+    get_by_title = getByTitle
+    titleExists = title_exists
+    getUniqueTitle = get_unique_title
+    importFile = import_file
 
     def list(self, tagName: str | None = None) -> list:
         """Danh sach note, sap xep: pinned DESC, updated_at DESC."""

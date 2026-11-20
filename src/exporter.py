@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import io
 import os
 import re
 import subprocess
@@ -11,6 +13,7 @@ from html import escape
 from pathlib import Path
 
 from media import embed_images_as_base64
+from settings import APP_DIR, MEDIA_DIR
 
 CHECKBOX_TAG_RE = re.compile(
     r'<input\b[^>]*class=["\'][^"\']*task-list-item-checkbox[^"\']*["\'][^>]*>'
@@ -178,8 +181,506 @@ def replace_checkboxes_with_svg(html: str) -> str:
     return CHECKBOX_TAG_RE.sub(_repl, html)
 
 
+PRINT_DIRECTIVE_RE = re.compile(
+    r"\[\[\s*(?P<type>print|page-bg)\b(?P<body>.*?)\]\]",
+    re.IGNORECASE | re.DOTALL,
+)
+
+PRINT_DIRECTIVE_STRIP_RE = re.compile(
+    r"(?:<p>\s*)?\[\[\s*(?P<type>print|page-bg)\b(?P<body>.*?)\]\](?:\s*</p>)?",
+    re.IGNORECASE | re.DOTALL,
+)
+
+PRINT_ATTR_RE = re.compile(
+    r"""(?P<key>[\w-]+)\s*[=:]\s*(?:\"(?P<val_dq>[^\"]*)\"|'(?P<val_sq>[^']*)'|(?P<val_fn>[\w-]+\((?:[^()]+|\([^()]*\))*\))|(?P<val_uq>[^\s,;]+))""",
+    re.IGNORECASE,
+)
+
+
+class PrintDirectiveConfig:
+    """Cau hinh cho chi thi in an [[print ...]] va [[page-bg ...]]."""
+
+    def __init__(
+        self,
+        directive_type: str = "print",
+        bg: str = "",
+        mode: str = "cover",
+        position: str = "center",
+        opacity: float = 1.0,
+        bg_color: str = "",
+        gradient: str = "",
+        text_color: str = "",
+        pages: str = "all",
+        style: str = "",
+    ):
+        self.directive_type = directive_type
+        self.bg = bg
+        self.mode = mode
+        self.position = position
+        self.opacity = opacity
+        self.bg_color = bg_color
+        self.gradient = gradient
+        self.text_color = text_color
+        self.pages = pages
+        self.style = style
+
+    def __repr__(self) -> str:
+        return (
+            f"PrintDirectiveConfig(type={self.directive_type!r}, bg={self.bg!r}, "
+            f"mode={self.mode!r}, position={self.position!r}, opacity={self.opacity!r}, "
+            f"bg_color={self.bg_color!r}, gradient={self.gradient!r}, "
+            f"text_color={self.text_color!r}, pages={self.pages!r}, style={self.style!r})"
+        )
+
+
+def parse_page_targets(pages_str: str) -> list[str | int]:
+    """Phan tich chuoi trang (all, 1, 1-2, 1,3,5, odd, even) thanh danh sach target."""
+    if not pages_str:
+        return ["all"]
+    s = str(pages_str).strip().lower()
+    if s in ("all", "*", ":all"):
+        return ["all"]
+    if s in ("first", ":first"):
+        return [1]
+    if s in ("odd", ":right"):
+        return ["odd"]
+    if s in ("even", ":left"):
+        return ["even"]
+
+    results: list[str | int] = []
+    parts = re.split(r"[,;]+", s)
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if p in ("all", "*", ":all"):
+            return ["all"]
+        if p in ("first", ":first"):
+            results.append(1)
+            continue
+        if p in ("odd", ":right"):
+            results.append("odd")
+            continue
+        if p in ("even", ":left"):
+            results.append("even")
+            continue
+        if "-" in p:
+            range_match = re.match(r"^(\d+)\s*-\s*(\d+)$", p)
+            if range_match:
+                start = int(range_match.group(1))
+                end = int(range_match.group(2))
+                if start <= end:
+                    results.extend(range(start, end + 1))
+                else:
+                    results.extend(range(end, start + 1))
+                continue
+        try:
+            results.append(int(p))
+        except ValueError:
+            pass
+
+    seen = set()
+    deduped: list[str | int] = []
+    for item in results:
+        if item not in seen:
+            seen.add(item)
+            deduped.append(item)
+    return deduped if deduped else ["all"]
+
+
+def parse_directive_attributes(body: str) -> dict[str, str]:
+    """Trich xuat cac cap key=val hoac key='...' tu than directive."""
+    attrs: dict[str, str] = {}
+    for m in PRINT_ATTR_RE.finditer(body):
+        k = m.group("key").lower()
+        val = (
+            m.group("val_dq")
+            if m.group("val_dq") is not None
+            else (
+                m.group("val_sq")
+                if m.group("val_sq") is not None
+                else (m.group("val_fn") if m.group("val_fn") is not None else m.group("val_uq"))
+            )
+        )
+        if val is not None:
+            attrs[k] = val.strip()
+    return attrs
+
+
+def parse_print_directive(text: str) -> PrintDirectiveConfig:
+    """Phan tich cu phap directive [[print ...]] hoac [[page-bg ...]]."""
+    m = re.search(r"\[\[\s*(?P<type>print|page-bg)\b(?P<body>.*?)\]\]", text, re.IGNORECASE | re.DOTALL)
+    if m:
+        directive_type = m.group("type").lower()
+        body = m.group("body") or ""
+    else:
+        directive_type = "print"
+        body = text
+
+    kv = parse_directive_attributes(body)
+
+    # 1. bg / image / src / paper / watermark
+    bg = ""
+    for k in ("bg", "image", "src", "bg-image", "background", "background-image", "paper", "watermark"):
+        if k in kv:
+            bg = kv[k].strip()
+            break
+
+    # 2. mode / fit / repeat (repeat, tile, repeat-x, repeat-y, stretch, cover, contain)
+    mode = "cover"
+    for k in ("mode", "fit", "size", "background-size", "bg-size", "bg-mode", "repeat", "background-repeat"):
+        if k in kv:
+            mode = kv[k].strip().lower()
+            break
+    else:
+        for bword in ("repeat-x", "repeat-y", "stretch", "cover", "contain", "repeat", "tile"):
+            if re.search(r"\b" + re.escape(bword) + r"\b", body, re.IGNORECASE):
+                mode = bword.lower()
+                break
+
+    if mode in ("tile", "repeat"):
+        mode = "repeat"
+    elif mode in ("repeat-x", "repeat_x"):
+        mode = "repeat-x"
+    elif mode in ("repeat-y", "repeat_y"):
+        mode = "repeat-y"
+    elif mode in ("stretch", "contain", "cover"):
+        pass
+    else:
+        mode = "cover"
+
+    # 3. position
+    position = "center"
+    for k in ("position", "pos", "background-position", "bg-pos", "bg-position", "align"):
+        if k in kv:
+            position = kv[k].strip()
+            break
+    else:
+        pos_patterns = [
+            r"\b(top\s+left)\b",
+            r"\b(top\s+right)\b",
+            r"\b(bottom\s+left)\b",
+            r"\b(bottom\s+right)\b",
+            r"\b(top\s+center)\b",
+            r"\b(bottom\s+center)\b",
+            r"\b(center\s+left)\b",
+            r"\b(center\s+right)\b",
+            r"\b(center\s+center)\b",
+            r"\b(center)\b",
+            r"\b(top)\b",
+            r"\b(bottom)\b",
+            r"\b(left)\b",
+            r"\b(right)\b",
+        ]
+        for ppat in pos_patterns:
+            m_pos = re.search(ppat, body, re.IGNORECASE)
+            if m_pos:
+                position = m_pos.group(1).lower()
+                break
+
+    # 4. opacity / alpha (adjust image alpha via Pillow)
+    opacity = 1.0
+    for k in ("opacity", "alpha", "bg-opacity", "image-opacity"):
+        if k in kv:
+            val_str = kv[k].strip()
+            if val_str.endswith("%"):
+                try:
+                    opacity = float(val_str[:-1].strip()) / 100.0
+                except ValueError:
+                    pass
+            else:
+                try:
+                    val_num = float(val_str)
+                    if val_num > 1.0 and val_num <= 100.0:
+                        opacity = val_num / 100.0
+                    else:
+                        opacity = val_num
+                except ValueError:
+                    pass
+            break
+    opacity = max(0.0, min(1.0, opacity))
+
+    # 5. bg-color / gradient (linear-gradient/radial-gradient)
+    bg_color = ""
+    gradient = ""
+    for k in ("bg-color", "bgcolor", "bg_color", "background-color", "color-bg"):
+        if k in kv:
+            val = kv[k].strip()
+            if "gradient" in val.lower():
+                gradient = val
+            else:
+                bg_color = val
+            break
+
+    for k in ("gradient", "bg-gradient", "background-gradient"):
+        if k in kv:
+            val = kv[k].strip()
+            if "gradient" in val.lower():
+                gradient = val
+            else:
+                bg_color = val
+            break
+
+    if bg and "gradient" in bg.lower():
+        gradient = bg
+        bg = ""
+
+    # 6. text-color
+    text_color = ""
+    for k in ("text-color", "textcolor", "text_color", "color", "fg", "fg-color"):
+        if k in kv:
+            text_color = kv[k].strip()
+            break
+
+    # 7. pages / page (all, 1, 1-2, 1,3,5)
+    pages = "all"
+    for k in ("pages", "page", "target-pages", "target-page", "targets"):
+        if k in kv:
+            pages = kv[k].strip()
+            break
+    else:
+        for pword in ("all", "odd", "even", "first"):
+            if re.search(r"\b" + pword + r"\b", body, re.IGNORECASE):
+                pages = pword
+                break
+
+    # 8. custom CSS style
+    style = ""
+    for k in ("style", "css", "custom-style", "custom_style"):
+        if k in kv:
+            style = kv[k].strip()
+            break
+
+    return PrintDirectiveConfig(
+        directive_type=directive_type,
+        bg=bg,
+        mode=mode,
+        position=position,
+        opacity=opacity,
+        bg_color=bg_color,
+        gradient=gradient,
+        text_color=text_color,
+        pages=pages,
+        style=style,
+    )
+
+
+def parse_print_directives(text: str) -> list[PrintDirectiveConfig]:
+    """Trich xuat toan bo chi thi [[print ...]] va [[page-bg ...]] trong van ban."""
+    if not text:
+        return []
+    configs: list[PrintDirectiveConfig] = []
+    for m in PRINT_DIRECTIVE_RE.finditer(text):
+        cfg = parse_print_directive(m.group(0))
+        configs.append(cfg)
+    return configs
+
+
+def resolve_image_file(path_or_str: str | Path) -> Path | None:
+    """Tim kiem file anh hop le tren may theo duong dan tuong doi, MEDIA_DIR, hoac assets."""
+    p = Path(path_or_str)
+    if p.is_file():
+        return p.resolve()
+
+    str_path = str(path_or_str).replace("\\", "/")
+    if str_path.startswith("file:///"):
+        from PySide6.QtCore import QUrl
+        local = QUrl(str_path).toLocalFile()
+        if local and Path(local).is_file():
+            return Path(local).resolve()
+
+    clean_rel = str_path
+    if clean_rel.startswith("media/"):
+        clean_rel = clean_rel[6:]
+
+    candidates = [
+        MEDIA_DIR / clean_rel,
+        MEDIA_DIR / p.name,
+        APP_DIR / clean_rel,
+        Path.cwd() / clean_rel,
+        Path(__file__).resolve().parent.parent / clean_rel,
+        Path(__file__).resolve().parent.parent / "assets" / clean_rel,
+    ]
+    for cand in candidates:
+        if cand.is_file():
+            return cand.resolve()
+    return None
+
+
+def adjust_image_alpha(img_input: str | Path | bytes, alpha: float) -> str:
+    """Dieu chinh do trong suot (alpha) cua anh bang Pillow va tra ve data URI base64."""
+    alpha = max(0.0, min(1.0, float(alpha)))
+    img = None
+    try:
+        from PIL import Image
+
+        if isinstance(img_input, bytes):
+            img = Image.open(io.BytesIO(img_input))
+        elif isinstance(img_input, (str, Path)):
+            str_val = str(img_input).strip()
+            if str_val.startswith("data:image/"):
+                comma_idx = str_val.find(",")
+                if comma_idx != -1:
+                    raw_b64 = str_val[comma_idx + 1 :]
+                    img = Image.open(io.BytesIO(base64.b64decode(raw_b64)))
+            else:
+                found_path = resolve_image_file(str_val)
+                if found_path:
+                    img = Image.open(found_path)
+
+        if img is not None:
+            rgba = img.convert("RGBA")
+            if alpha < 1.0:
+                r, g, b, a = rgba.split()
+                a = a.point(lambda p: max(0, min(255, int(round(p * alpha)))))
+                rgba.putalpha(a)
+            buf = io.BytesIO()
+            rgba.save(buf, format="PNG")
+            b64_str = base64.b64encode(buf.getvalue()).decode("ascii")
+            return f"data:image/png;base64,{b64_str}"
+    except Exception:
+        pass
+
+    str_val = str(img_input).strip() if isinstance(img_input, (str, Path)) else ""
+    return str_val
+
+
+def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveConfig) -> str:
+    """Tao cac quy tac @page CSS hop le tu danh sach PrintDirectiveConfig."""
+    if isinstance(directives, PrintDirectiveConfig):
+        directive_list = [directives]
+    else:
+        directive_list = directives or []
+
+    if not directive_list:
+        return ""
+
+    css_blocks: list[str] = []
+    print_media_styles: list[str] = []
+
+    for cfg in directive_list:
+        image_uri = ""
+        if cfg.bg:
+            bg_clean = cfg.bg.strip()
+            url_match = re.match(r"^url\([\"']?(.*?)[\"']?\)$", bg_clean, re.IGNORECASE)
+            if url_match:
+                bg_clean = url_match.group(1).strip()
+
+            processed = adjust_image_alpha(bg_clean, cfg.opacity)
+            if processed.startswith("data:") or processed.startswith("http://") or processed.startswith("https://"):
+                image_uri = f'url("{processed}")'
+            elif processed:
+                image_uri = f'url("{processed}")'
+
+        props: list[str] = []
+
+        if image_uri and cfg.gradient:
+            props.append(f"background-image: {image_uri}, {cfg.gradient};")
+        elif image_uri:
+            props.append(f"background-image: {image_uri};")
+        elif cfg.gradient:
+            props.append(f"background-image: {cfg.gradient};")
+
+        if cfg.mode == "repeat":
+            props.append("background-repeat: repeat;")
+            props.append("background-size: auto;")
+        elif cfg.mode == "repeat-x":
+            props.append("background-repeat: repeat-x;")
+            props.append("background-size: auto;")
+        elif cfg.mode == "repeat-y":
+            props.append("background-repeat: repeat-y;")
+            props.append("background-size: auto;")
+        elif cfg.mode == "stretch":
+            props.append("background-repeat: no-repeat;")
+            props.append("background-size: 100% 100%;")
+        elif cfg.mode == "contain":
+            props.append("background-repeat: no-repeat;")
+            props.append("background-size: contain;")
+        else:  # cover
+            props.append("background-repeat: no-repeat;")
+            props.append("background-size: cover;")
+
+        if cfg.position:
+            pos_clean = re.sub(r"[{};]", "", cfg.position).strip()
+            if pos_clean:
+                props.append(f"background-position: {pos_clean};")
+
+        if cfg.bg_color:
+            color_val = cfg.bg_color.strip().rstrip(";")
+            color_val = re.sub(r"[{}]", "", color_val).strip()
+            if cfg.opacity < 1.0 and color_val.startswith("#") and len(color_val) in (4, 7):
+                try:
+                    if len(color_val) == 7:
+                        r = int(color_val[1:3], 16)
+                        g = int(color_val[3:5], 16)
+                        b = int(color_val[5:7], 16)
+                    else:
+                        r = int(color_val[1] * 2, 16)
+                        g = int(color_val[2] * 2, 16)
+                        b = int(color_val[3] * 2, 16)
+                    color_val = f"rgba({r}, {g}, {b}, {cfg.opacity:.2f})"
+                except ValueError:
+                    pass
+            elif cfg.opacity < 1.0 and color_val.lower().startswith("rgb("):
+                m_rgb = re.match(r"^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", color_val, re.IGNORECASE)
+                if m_rgb:
+                    color_val = f"rgba({m_rgb.group(1)}, {m_rgb.group(2)}, {m_rgb.group(3)}, {cfg.opacity:.2f})"
+            props.append(f"background-color: {color_val};")
+
+        if cfg.text_color:
+            tc = re.sub(r"[{};]", "", cfg.text_color).strip()
+            if tc:
+                props.append(f"color: {tc};")
+                props.append(f"@bottom-center {{ color: {tc} !important; }}")
+                props.append(f"@top-center {{ color: {tc} !important; }}")
+                props.append(f"@bottom-left {{ color: {tc} !important; }}")
+                props.append(f"@bottom-right {{ color: {tc} !important; }}")
+                props.append(f"@top-left {{ color: {tc} !important; }}")
+                props.append(f"@top-right {{ color: {tc} !important; }}")
+
+        if cfg.style:
+            clean_style = re.sub(r"[{}]", "", cfg.style).strip()
+            decls = [d.strip() for d in re.split(r"[;\n]+", clean_style) if d.strip()]
+            for decl in decls:
+                if ":" in decl:
+                    prop_name, prop_val = decl.split(":", 1)
+                    prop_name = prop_name.strip()
+                    prop_val = prop_val.strip()
+                    if re.match(r"^[a-zA-Z_-][a-zA-Z0-9_-]*$", prop_name) and prop_val:
+                        props.append(f"{prop_name}: {prop_val};")
+
+        targets = parse_page_targets(cfg.pages)
+        inner_css = "\n".join("  " + p for p in props)
+
+        for target in targets:
+            if target == "all":
+                css_blocks.append(f"@page {{\n{inner_css}\n}}")
+                if cfg.text_color:
+                    tc = re.sub(r"[{};]", "", cfg.text_color).strip()
+                    if tc:
+                        print_media_styles.append(
+                            f"body, .markdown-body {{ color: {tc} !important; }}"
+                        )
+            elif target == 1:
+                css_blocks.append(f"@page :first {{\n{inner_css}\n}}")
+                css_blocks.append(f"@page :nth(1) {{\n{inner_css}\n}}")
+            elif target == "odd":
+                css_blocks.append(f"@page :right {{\n{inner_css}\n}}")
+                css_blocks.append(f"@page :nth(odd) {{\n{inner_css}\n}}")
+            elif target == "even":
+                css_blocks.append(f"@page :left {{\n{inner_css}\n}}")
+                css_blocks.append(f"@page :nth(even) {{\n{inner_css}\n}}")
+            else:
+                css_blocks.append(f"@page :nth({target}) {{\n{inner_css}\n}}")
+
+    result = "\n" + "\n\n".join(css_blocks) + "\n"
+    if print_media_styles:
+        result += "\n@media print {\n  " + "\n  ".join(print_media_styles) + "\n}\n"
+    return result
+
+
 def enhance_html_components(html: str) -> str:
-    """Thay the checkbox bang SVG, ho tro donut directive va bo sung vector cho donut chart neu thieu."""
+    """Thay the checkbox bang SVG, ho tro donut directive, xoa raw print tokens."""
     if not html:
         return html
     html = replace_checkboxes_with_svg(html)
@@ -193,6 +694,9 @@ def enhance_html_components(html: str) -> str:
             count=0,
             flags=re.IGNORECASE,
         )
+    if PRINT_DIRECTIVE_RE.search(html):
+        html = PRINT_DIRECTIVE_STRIP_RE.sub("", html)
+        html = re.sub(r"<p>\s*</p>", "", html)
     return html
 
 
@@ -636,11 +1140,15 @@ def _extract_theme_page_colors(css: str) -> tuple[str | None, str]:
     return bg_color, muted_color
 
 
-def build_pdf_page_rule(css: str) -> str:
-    """Tao quy tac @page A4 dong bo mau nen khap kho giay (khong bi vien trang o Dark Mode)."""
+def build_pdf_page_rule(
+    css: str = "",
+    html_body: str = "",
+    directives: list[PrintDirectiveConfig] | None = None,
+) -> str:
+    """Tao quy tac @page A4 dong bo mau nen khap kho giay, kem theo chi thi in an neu co."""
     bg_color, muted_color = _extract_theme_page_colors(css)
     bg_line = f"  background-color: {bg_color};\n" if bg_color else ""
-    return (
+    base_rule = (
         "\n"
         "@page {\n"
         "  size: A4;\n"
@@ -653,6 +1161,19 @@ def build_pdf_page_rule(css: str) -> str:
         "  }\n"
         "}\n"
     )
+
+    if directives is not None:
+        all_directives = list(directives)
+    elif html_body:
+        all_directives = parse_print_directives(html_body)
+    else:
+        all_directives = []
+
+    if all_directives:
+        custom_page_css = generate_page_css(all_directives)
+        return base_rule + custom_page_css
+
+    return base_rule
 
 
 PDF_PAGE_RULE = build_pdf_page_rule("")
@@ -767,7 +1288,9 @@ HTML_FOOTER = (
 
 def build_document(html_body: str, css: str, title: str = "MarkNote") -> str:
     """Ghep HTML da render voi CSS inline thanh mot trang doc lap."""
-    full_css = (css or "") + "\n" + TASKLIST_BASE_CSS
+    directives = parse_print_directives(html_body)
+    directive_css = generate_page_css(directives) if directives else ""
+    full_css = (css or "") + "\n" + TASKLIST_BASE_CSS + ("\n" + directive_css if directive_css else "")
     enhanced_body = enhance_html_components(html_body)
     return (
         HTML_HEADER % title
@@ -802,8 +1325,14 @@ def find_windows_weasyprint() -> Path | None:
     candidates.extend(
         [
             project_root / "dist" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
+            project_root.parent / "dist" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
+            project_root.parent / "dist" / "apps" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
+            project_root / "build" / "weasyprint-windows" / "dist" / "weasyprint.exe",
             project_root / "build" / "weasyprint-windows" / "weasyprint.exe",
             project_root / "build" / "weasyprint-test" / "weasyprint.exe",
+            Path.cwd() / "dist" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
+            Path.cwd() / "bin" / "weasyprint" / "weasyprint.exe",
+            Path.cwd().parent / "dist" / "marknote" / "bin" / "weasyprint" / "weasyprint.exe",
         ]
     )
     for candidate in candidates:
@@ -840,15 +1369,22 @@ class Exporter:
     def toHtml(self, html_body: str, css: str, path) -> None:
         html_body = replace_checkboxes_with_svg(html_body)
         html_body = embed_images_as_base64(html_body)
+        directives = parse_print_directives(html_body)
+        page_rules = generate_page_css(directives) if directives else ""
+        enhanced_body = enhance_html_components(html_body)
         Path(path).write_text(
-            build_document(html_body, css), encoding="utf-8"
+            build_document(enhanced_body, css + ("\n" + page_rules if page_rules else "")),
+            encoding="utf-8",
         )
 
     def toPdf(self, html_body: str, css: str, path) -> None:
         html_body = replace_checkboxes_with_svg(html_body)
         html_body = embed_images_as_base64(html_body)
+        directives = parse_print_directives(html_body)
+        page_rule = build_pdf_page_rule(css, html_body=html_body, directives=directives)
+        enhanced_body = enhance_html_components(html_body)
         document = build_document(
-            html_body, css + build_pdf_page_rule(css) + TOC_PRINT_RULE
+            enhanced_body, css + page_rule + TOC_PRINT_RULE
         )
         cli_exe = find_windows_weasyprint()
 

@@ -6,8 +6,15 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtCore import QSize, Qt, QTimer, Signal
+from PySide6.QtGui import (
+    QAction,
+    QDragEnterEvent,
+    QDragMoveEvent,
+    QDropEvent,
+    QIcon,
+    QKeySequence,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -29,6 +36,7 @@ from PySide6.QtWidgets import (
 from db import DbManager, NoteDAO, SettingsDAO, TagDAO
 from editor import EditorPane, FindReplaceDialog, SearchPanel
 from exporter import Exporter
+from icons import get_icon
 from media import open_media_folder
 from preview import MarkdownRenderer, PreviewPane, SyncScrollController
 from settings import (
@@ -130,7 +138,7 @@ class NoteTitleBar(QWidget):
 
         self.pencil = QToolButton()
         self.pencil.setObjectName("pencilButton")
-        self.pencil.setText("\u270e")
+        self.pencil.setIcon(get_icon("file_rename"))
         self.pencil.setToolTip("Rename note (F2)")
         self.pencil.setCursor(Qt.CursorShape.PointingHandCursor)
         self.pencil.setEnabled(False)
@@ -196,9 +204,9 @@ class NoteTitleBar(QWidget):
 class MainWindow(QMainWindow):
     """Cua so chinh, noi ket cac thanh phan va trien khai 13 UC."""
 
-    def __init__(self):
-        super().__init__()
-        self.db = DbManager()
+    def __init__(self, db: DbManager | None = None, parent=None):
+        super().__init__(parent)
+        self.db = db if db is not None else DbManager()
         self.db.connect()
         self.settings = SettingsDAO(self.db)
         self.notes = NoteDAO(self.db)
@@ -217,6 +225,8 @@ class MainWindow(QMainWindow):
         self._note_tags = []
 
         self.setWindowTitle(APP_NAME + " - Offline Markdown Notes")
+        self.setWindowIcon(get_icon("app"))
+        self.setAcceptDrops(True)
         self.resize(1200, 780)
 
         self._render_timer = QTimer(self)
@@ -237,38 +247,88 @@ class MainWindow(QMainWindow):
         act = QAction
         self.act_new = act("New", self)
         self.act_new.setShortcut(QKeySequence.StandardKey.New)
+        self.act_new.setIcon(get_icon("file_new"))
+        self.act_new.setIconVisibleInMenu(True)
+
+        self.act_import = act("Import Note...", self)
+        self.act_import.setShortcut(QKeySequence("Ctrl+O"))
+        self.act_import.setIcon(get_icon("file_import"))
+        self.act_import.setIconVisibleInMenu(True)
+
         self.act_save = act("Save", self)
         self.act_save.setShortcut(QKeySequence.StandardKey.Save)
+        self.act_save.setIcon(get_icon("file_save"))
+        self.act_save.setIconVisibleInMenu(True)
+
         self.act_rename = act("Rename...", self)
         self.act_rename.setShortcut(QKeySequence("F2"))
+        self.act_rename.setIcon(get_icon("file_rename"))
+        self.act_rename.setIconVisibleInMenu(True)
+
         self.act_delete = act("Delete", self)
         self.act_delete.setShortcut(QKeySequence("Ctrl+D"))
+        self.act_delete.setIcon(get_icon("file_delete"))
+        self.act_delete.setIconVisibleInMenu(True)
+
         self.act_export_html = act("Export HTML", self)
+        self.act_export_html.setIcon(get_icon("export_html"))
+        self.act_export_html.setIconVisibleInMenu(True)
+
         self.act_export_pdf = act("Export PDF", self)
+        self.act_export_pdf.setIcon(get_icon("export_pdf"))
+        self.act_export_pdf.setIconVisibleInMenu(True)
+
         self.act_export_md = act("Export Markdown", self)
+        self.act_export_md.setIcon(get_icon("export_md"))
+        self.act_export_md.setIconVisibleInMenu(True)
+
         self.act_quit = act("Quit", self)
         self.act_quit.setShortcut(QKeySequence("Ctrl+Q"))
+        self.act_quit.setIcon(get_icon("app_quit"))
+        self.act_quit.setIconVisibleInMenu(True)
+
         self.act_find = act("Find", self)
         self.act_find.setShortcut(QKeySequence.StandardKey.Find)
+        self.act_find.setIcon(get_icon("search_find"))
+        self.act_find.setIconVisibleInMenu(True)
+
         self.act_replace = act("Replace", self)
         self.act_replace.setShortcut(QKeySequence("Ctrl+H"))
+        self.act_replace.setIcon(get_icon("search_replace"))
+        self.act_replace.setIconVisibleInMenu(True)
+
         self.act_insert_image = act("Insert Image...", self)
         self.act_insert_image.setShortcut(QKeySequence("Ctrl+Shift+I"))
+        self.act_insert_image.setIcon(get_icon("media_image"))
+        self.act_insert_image.setIconVisibleInMenu(True)
         self.act_insert_image.setEnabled(False)
+
         self.act_open_media = act("Media Folder", self)
         self.act_open_media.setShortcut(QKeySequence("Ctrl+Shift+M"))
+        self.act_open_media.setIcon(get_icon("media_folder"))
+        self.act_open_media.setIconVisibleInMenu(True)
+
         self.act_sync = act("Sync Scroll", self)
         self.act_sync.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.act_sync.setCheckable(True)
         self.act_sync.setChecked(self.sync_controller.isEnabled())
+        self.act_sync.setIcon(get_icon("view_sync"))
+        self.act_sync.setIconVisibleInMenu(True)
+
         self.act_settings = act("Appearance...", self)
+        self.act_settings.setIcon(get_icon("settings_theme"))
+        self.act_settings.setIconVisibleInMenu(True)
+
         self.act_about = act("About", self)
+        self.act_about.setIcon(get_icon("help_about"))
+        self.act_about.setIconVisibleInMenu(True)
 
     def _build_ui(self):
         menubar = self.menuBar()
 
         menu_file = menubar.addMenu("&File")
         menu_file.addAction(self.act_new)
+        menu_file.addAction(self.act_import)
         menu_file.addAction(self.act_save)
         menu_file.addAction(self.act_rename)
         menu_file.addAction(self.act_delete)
@@ -297,8 +357,10 @@ class MainWindow(QMainWindow):
 
         toolbar = QToolBar("Toolbar", self)
         toolbar.setMovable(False)
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        toolbar.setIconSize(QSize(16, 16))
         toolbar.addAction(self.act_new)
+        toolbar.addAction(self.act_import)
         toolbar.addAction(self.act_save)
         toolbar.addAction(self.act_delete)
         toolbar.addSeparator()
@@ -318,15 +380,18 @@ class MainWindow(QMainWindow):
         self.editor = EditorPane(self)
         self.title_label = NoteTitleBar(self)
         self.tag_button = QPushButton("Tags", self)
+        self.tag_button.setIcon(get_icon("tag"))
         self.tag_menu = QMenu(self)
         self.tag_button.setMenu(self.tag_menu)
 
         self.btn_insert_image = QPushButton("+ Image", self)
+        self.btn_insert_image.setIcon(get_icon("media_image"))
         self.btn_insert_image.setToolTip("Insert image at cursor (Ctrl+Shift+I)")
         self.btn_insert_image.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_insert_image.setEnabled(False)
 
-        self.btn_open_media = QPushButton("📁 Media Folder", self)
+        self.btn_open_media = QPushButton("Media Folder", self)
+        self.btn_open_media.setIcon(get_icon("media_folder"))
         self.btn_open_media.setToolTip("Open shared media folder in File Explorer (Ctrl+Shift+M)")
         self.btn_open_media.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -369,8 +434,12 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
+        self.editor.installEventFilter(self)
+        self.panel.installEventFilter(self)
+
     def _connect_signals(self):
         self.act_new.triggered.connect(self.onNewNote)
+        self.act_import.triggered.connect(self.onImport)
         self.act_save.triggered.connect(self.save)
         self.act_rename.triggered.connect(self.onRename)
         self.act_delete.triggered.connect(self.onDelete)
@@ -390,6 +459,11 @@ class MainWindow(QMainWindow):
 
         self.panel.filtersChanged.connect(self._refresh_sidebar)
         self.panel.noteSelected.connect(self.openNote)
+        if hasattr(self.panel, "filesDropped"):
+            self.panel.filesDropped.connect(self.importFiles)
+        if hasattr(self.panel, "importRequested"):
+            self.panel.importRequested.connect(self.importFiles)
+
         self.editor.textChanged.connect(self._on_text_changed)
         self.editor.verticalScrollBar().valueChanged.connect(self._on_editor_scroll)
         self.editor.imageInserted.connect(self._on_image_inserted)
@@ -442,6 +516,55 @@ class MainWindow(QMainWindow):
         self.openNote(note_id)
         self.statusBar().showMessage("Note created")
         self.editor.setFocus()
+
+    def onImport(self):
+        """UC02 / R2 - Mo hop thoai chon file .txt/.md de import vao database."""
+        if not self._confirm_proceed():
+            return
+        files, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Import Notes",
+            "",
+            "Markdown and Text Files (*.md *.markdown *.txt);;All Files (*)",
+        )
+        if not files:
+            return
+        self.importFiles(files)
+
+    def importFiles(self, paths: list[str | Path]) -> list[int]:
+        """Import mot hoac nhieu file .md/.txt, dat ten theo stem kem hau to (1) neu trung."""
+        imported_ids = []
+        for p in paths:
+            path = Path(p)
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in (".md", ".markdown", ".txt"):
+                continue
+            try:
+                content = path.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                continue
+            title = self.notes.getUniqueTitle(path.stem)
+            note_id = self.notes.insert(title, content)
+            imported_ids.append(note_id)
+
+        if imported_ids:
+            self._refresh_sidebar()
+            self.openNote(imported_ids[-1])
+            if len(imported_ids) == 1:
+                self.statusBar().showMessage(f"Imported: {self.title_label.title()}")
+            else:
+                self.statusBar().showMessage(f"Imported {len(imported_ids)} notes")
+        return imported_ids
+
+    def importFile(self, path: str | Path) -> int | None:
+        """Import mot file don le."""
+        ids = self.importFiles([path])
+        return ids[0] if ids else None
+
+    # Aliases
+    import_file = importFile
+    import_files = importFiles
 
     def openNote(self, note_id: int):
         """UC02 - Mo va xem note: do noi dung vao editor va preview."""
@@ -538,6 +661,7 @@ class MainWindow(QMainWindow):
         if len(label) > 42:
             label = label[:41] + "..."
         self.tag_button.setText(label or "Tags")
+        self.tag_button.setIcon(get_icon("tag"))
         self.tag_button.setToolTip(", ".join(names) or "Tags")
 
     def _populate_tag_menu(self):
@@ -555,6 +679,7 @@ class MainWindow(QMainWindow):
             )
         self.tag_menu.addSeparator()
         new_action = self.tag_menu.addAction("New tag...")
+        new_action.setIcon(get_icon("plus"))
         new_action.triggered.connect(self._on_new_tag)
 
     def _on_tag_toggled(self, tag_id: int, checked: bool):
@@ -754,6 +879,83 @@ class MainWindow(QMainWindow):
             "HTML and PDF export. Runs 100% offline.",
         )
 
+    # -------------------------------------------------- Drag and Drop
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if any(
+                url.isLocalFile()
+                and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                for url in urls
+            ):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if any(
+                url.isLocalFile()
+                and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                for url in urls
+            ):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def dropEvent(self, event: QDropEvent):
+        if event.mimeData().hasUrls():
+            valid_paths = [
+                Path(url.toLocalFile())
+                for url in event.mimeData().urls()
+                if url.isLocalFile()
+                and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                and Path(url.toLocalFile()).is_file()
+            ]
+            if valid_paths:
+                event.acceptProposedAction()
+                self.importFiles(valid_paths)
+                return
+        event.ignore()
+
+    def eventFilter(self, watched, event):
+        t = event.type()
+        if t == event.Type.DragEnter:
+            if hasattr(event, "mimeData") and event.mimeData().hasUrls():
+                urls = event.mimeData().urls()
+                if any(
+                    url.isLocalFile()
+                    and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                    for url in urls
+                ):
+                    event.acceptProposedAction()
+                    return True
+        elif t == event.Type.DragMove:
+            if hasattr(event, "mimeData") and event.mimeData().hasUrls():
+                urls = event.mimeData().urls()
+                if any(
+                    url.isLocalFile()
+                    and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                    for url in urls
+                ):
+                    event.acceptProposedAction()
+                    return True
+        elif t == event.Type.Drop:
+            if hasattr(event, "mimeData") and event.mimeData().hasUrls():
+                valid_paths = [
+                    Path(url.toLocalFile())
+                    for url in event.mimeData().urls()
+                    if url.isLocalFile()
+                    and Path(url.toLocalFile()).suffix.lower() in (".md", ".markdown", ".txt")
+                    and Path(url.toLocalFile()).is_file()
+                ]
+                if valid_paths:
+                    event.acceptProposedAction()
+                    self.importFiles(valid_paths)
+                    return True
+        return super().eventFilter(watched, event)
+
     # ---------------------------------------------------------- editor
     def _on_text_changed(self):
         if self._loading_note:
@@ -791,6 +993,7 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setApplicationName(APP_NAME)
+    app.setWindowIcon(get_icon("app"))
     app.setPalette(_light_palette())
     app.setStyleSheet(APP_STYLE)
     window = MainWindow()
