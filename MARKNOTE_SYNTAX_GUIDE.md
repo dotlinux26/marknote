@@ -1,54 +1,198 @@
-# CẨM NANG HƯỚNG DẪN CÚ PHÁP MARKNOTE (v1.2.5)
+# CẨM NANG HƯỚNG DẪN CÚ PHÁP & TÍNH NĂNG MARKNOTE (v1.3.0)
 
-Tài liệu hướng dẫn chi tiết toàn bộ các cú pháp Markdown nâng cao, bảng biểu, sơ đồ, biểu đồ donut, mục lục và các widget chuyên dụng được tối ưu hóa cho hiển thị trực quan (Preview) và xuất bản PDF chất lượng cao trong **MarkNote**.
+Tài liệu chuẩn hóa toàn bộ cú pháp Markdown nâng cao, chỉ thị in ấn (`[[print ...]]`), tạo trang bìa Full-Bleed tràn viền 100%, bảng biểu, biểu đồ Donut SVG, mục lục động và các widget chuyên dụng phục vụ soạn thảo và xuất bản PDF/HTML chuyên nghiệp trong **MarkNote**.
 
 ---
 
-## 1. Mục Lục Thông Minh (Smart TOC)
+## 1. Hướng Dẫn Tạo Trang Bìa Tràn Viền 100% (Full-Bleed Cover Page)
 
-MarkNote trang bị bộ tạo mục lục động với khả năng nhận diện đa cấp bậc, tự động tạo liên kết anchor và hỗ trợ in ấn chuyên nghiệp.
+Khi xuất tài liệu sang PDF, trang bìa mặc định có thể bị co cụm và dính viền trắng của lề giấy in A4 (`margin: 18mm`). Để tạo một trang bìa to rộng **tràn viền 100% (Full A4 210mm × 297mm)**, không viền trắng và không dính số trang ở chân bìa, hãy áp dụng mẫu chuẩn sau:
 
-### Cú pháp
+### Cú pháp mẫu chuẩn (Copy & Paste dùng ngay)
+
+```html
+<style>
+/* 1. Xóa lề và ẩn số trang cho riêng Trang 1 */
+@page :first {
+  margin: 0;
+  @bottom-center { content: none; }
+  @top-center { content: none; }
+}
+
+/* 2. Khung bìa phủ trọn vẹn 100% khổ giấy A4 */
+.cover-page {
+  width: 210mm;
+  height: 297mm;
+  box-sizing: border-box;
+  padding: 35mm 25mm 25mm 25mm; /* Đệm nội dung bên trong lùi vào hợp lý */
+  background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 55%, #0284c7 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 3. Nhãn phân loại & Tiêu đề */
+.cover-tag {
+  font-size: 10pt;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  font-weight: 700;
+  margin-bottom: 10mm;
+}
+
+.cover-title {
+  font-size: 30pt;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+  margin-bottom: 8mm;
+}
+
+.cover-subtitle {
+  font-size: 13pt;
+  line-height: 1.5;
+  color: #cbd5e1;
+  max-width: 160mm;
+}
+
+/* 4. Khung Metadata phía dưới */
+.cover-meta {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  padding: 6mm 8mm;
+  display: flex;
+  justify-content: space-between;
+}
+
+.meta-col {
+  flex: 1;
+}
+
+.meta-label {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 2mm;
+}
+
+.meta-val {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #f8fafc;
+}
+</style>
+
+<!-- KHỐI BÌA TRANG 1 -->
+<div class="cover-page">
+  <div>
+    <div class="cover-tag">CONFIDENTIAL · INDEPENDENT SECURITY ASSESSMENT</div>
+    <div class="cover-title">BÁO CÁO ĐÁNH GIÁ AN TOÀN THÔNG TIN & RETEST</div>
+    <div class="cover-subtitle">Kiểm thử xâm nhập chuyên sâu kiến trúc đa khách thuê, hệ thống API và hạ tầng điện toán đám mây.</div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="meta-col">
+      <div class="meta-label">Đơn vị thụ hưởng</div>
+      <div class="meta-val">Tập đoàn / Doanh nghiệp ABC</div>
+      <br>
+      <div class="meta-label">Thời gian đánh giá</div>
+      <div class="meta-val">Tháng 11, 2026</div>
+    </div>
+    <div class="meta-col">
+      <div class="meta-label">Chuyên gia thực hiện</div>
+      <div class="meta-val">Nguyễn Đức Cảnh (canhnguyen26)</div>
+      <br>
+      <div class="meta-label">Trạng thái phát hành</div>
+      <div class="meta-val">Bản chính thức (Final Approved)</div>
+    </div>
+  </div>
+</div>
+
+<!-- LỆNH NGẮT TRANG BẮT BUỘC SAU BÌA -->
+<div class="page-break"></div>
+```
+
+> **Nguyên tắc kỹ thuật:**
+> - `@page :first { margin: 0; }` loại bỏ toàn bộ khoảng cách thừa để màu nền trải rộng 100% ra mép trang.
+> - `@bottom-center { content: none; }` tự động ẩn số trang `1 / N` trên bìa.
+> - Bắt buộc thêm `<div class="page-break"></div>` ở cuối khối bìa để các trang sau tiếp tục với lề tiêu chuẩn và số trang đánh từ trang 2.
+
+---
+
+## 2. Chỉ Thị Hình Nền & In Ấn (`[[print ...]]` / `[[page-bg ...]]`)
+
+MarkNote cho phép tùy biến nền tài liệu in PDF bằng chỉ thị directive 1 dòng cực kỳ linh hoạt (tự động ẩn khỏi màn hình Preview):
+
+### Các cú pháp thường dùng:
+
+1. **Hình nền Watermark / Giấy in cho toàn bộ tài liệu:**
+   ```markdown
+   [[print bg="media/watermark.png" mode="contain" opacity="0.15" position="center" pages="all"]]
+   ```
+
+2. **Hình nền dạng hoa văn lặp lại (Pattern / Giấy kẻ caro):**
+   ```markdown
+   [[print bg="media/grid-pattern.png" mode="repeat" opacity="0.2" pages="all"]]
+   ```
+
+3. **Chỉ đặt nền cho riêng Trang bìa (Trang 1):**
+   ```markdown
+   [[print bg="media/cover-art.jpg" mode="cover" pages="1"]]
+   ```
+
+4. **Nền dải màu Gradient theo trang lẻ hoặc chẵn:**
+   ```markdown
+   [[page-bg gradient="linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)" pages="even"]]
+   ```
+
+### Bảng tham số chi tiết:
+
+| Thuộc tính | Tùy chọn giá trị | Ý nghĩa |
+|:---|:---|:---|
+| `bg` / `image` | `"path/to/img.png"` hoặc URL | Đường dẫn ảnh nền (tự động nhúng Base64) |
+| `mode` / `fit` | `cover`, `contain`, `repeat`, `stretch` | Cách hiển thị ảnh (`stretch` = kéo giãn 100% 100%) |
+| `opacity` / `alpha` | `0.1` đến `1.0` hoặc `15%`, `30%` | Điều chỉnh độ trong suốt tự động qua Pillow |
+| `position` | `center`, `top left`, `top right`, ... | Vị trí đặt ảnh |
+| `gradient` | `linear-gradient(...)`, `radial-gradient(...)` | Nền chuyển sắc CSS |
+| `bg-color` | `#ffffff`, `rgba(...)` | Màu nền đơn sắc |
+| `pages` / `page` | `all`, `1`, `1-3`, `odd`, `even` | Các trang in được áp dụng |
+| `style` | `"margin: 0;"`, `"border: none;"` | CSS tùy biến bổ sung cho trang in |
+
+---
+
+## 3. Mục Lục Thông Minh (Smart TOC)
+
+Tự động quét và hiển thị các đề mục, tự sinh đường chấm dẫn (`leader dots`) và số trang thực tế khi in PDF:
+
 ```markdown
 [[TOC]]
 ```
 
-### Các tùy chọn nâng cao
-Bạn có thể kết hợp đổi tên tiêu đề, căn lề và loại bỏ dấu chấm bullet:
+### Các tùy chọn nâng cao:
 ```markdown
 [[TOC="MỤC LỤC BÁO CÁO" center no-bullet]]
 ```
 
 | Tham số | Ý nghĩa | Ví dụ |
 |:---|:---|:---|
-| `"Tên tùy chỉnh"` | Đặt lại tiêu đề mục lục | `[[TOC="NỘI DUNG CHÍNH"]]` |
-| `title-color="mau"` | Màu sắc tiêu đề mục lục (mặc định in đậm màu xanh `#0969da`) | `[[TOC title-color="#0284c7"]]` |
-| `c1="mau"`, `c2="mau"` | Đặt màu tùy ý theo từng cấp bậc (mặc định đen `#1f2328`) | `[[TOC c1="#000" c2="#0969da"]]` |
-| `color="mau"` | Đặt màu chung cho toàn bộ các mục listing | `[[TOC color="#111827"]]` |
-| `max-depth=N` | Giới hạn độ sâu tối đa của mục lục (1 - 6) | `[[TOC max-depth=3]]` |
-| `center` | Căn giữa tiêu đề mục lục | `[[TOC center]]` |
-| `right` | Căn phải tiêu đề mục lục | `[[TOC right]]` |
-| `left` | Căn trái tiêu đề (mặc định) | `[[TOC left]]` |
-| `no-bullet` | Ẩn dấu chấm bullet (`•`), thụt lề sạch sẽ | `[[TOC no-bullet]]` |
+| `"Tên tùy chỉnh"` | Đổi tên tiêu đề mục lục | `[[TOC="NỘI DUNG CHÍNH"]]` |
+| `center` / `left` / `right` | Căn chỉnh tiêu đề | `[[TOC center]]` |
+| `no-bullet` | Ẩn dấu chấm đầu dòng, thụt lề chuẩn | `[[TOC no-bullet]]` |
+| `max-depth=N` | Giới hạn cấp đề mục quét (1 - 6) | `[[TOC max-depth=3]]` |
+| `title-color="màu"` | Màu tiêu đề bảng | `[[TOC title-color="#0284c7"]]` |
 
-### Quy tắc hoạt động thông minh của MarkNote
-1. **Chỉ quét các mục bên dưới `[[TOC]]`:** Các tiêu đề xuất hiện trước `[[TOC]]` (như tiêu đề bìa, thông tin tác giả, metadata) sẽ **không** bị đưa vào mục lục.
-2. **Nhận diện cả Markdown `#` lẫn thẻ HTML `<h1>` - `<h6>`:** Dù bạn viết `# Heading` hay `<h2>Tiêu đề</h2>` trong HTML, mục lục đều tự động nhận diện và gán liên kết.
-3. **Phân cấp phông chữ chuẩn báo cáo nghiệp vụ:**
-   - **Tiêu đề Bảng mục lục:** In đậm (`font-weight: 800`), màu xanh nổi bật (`#0969da`) hoặc theo `title-color`.
-   - **Cấp 1 (Mục chính to nhất):** In đậm, chữ thẳng (`font-weight: 700`), màu đen chuẩn.
-   - **Cấp 2 (Mục con cấp 2, ví dụ 1.2):** Đậm nghiêng (`font-weight: 600; font-style: italic`), màu đen chuẩn.
-   - **Cấp 3 (Mục con cấp 3, ví dụ 1.1.2):** Nghiêng bình thường (`font-weight: 400; font-style: italic`), màu đen chuẩn.
-   - **Cấp 4+ (Mục con sâu hơn):** Chữ thường, thẳng.
-4. **Xuất PDF:** Khi in ra PDF, mục lục tự động sinh đường chấm dẫn (`leader dots`) kèm số trang chính xác bên phải.
+> **Lưu ý:** Mục lục chỉ quét các tiêu đề nằm **phía dưới** vị trí đặt `[[TOC]]`, giúp tự động loại bỏ tiêu đề trang bìa và metadata đầu file.
 
 ---
 
-## 2. Biểu Đồ Tròn Donut Chart (Donut Vector Widget)
+## 4. Biểu Đồ Tròn Donut Chart Vector SVG
 
-MarkNote hỗ trợ cú pháp vẽ biểu đồ donut vector SVG cực kỳ ngắn gọn, tự động căn giữa toàn trang, không nền viền và tính toán tỷ lệ chính xác.
+Biểu đồ vector sắc nét 100%, căn giữa tự động và tính tỷ lệ chính xác:
 
-### Cú pháp khối mã (Khuyên dùng)
 ````markdown
 ```donut
 5 Issues
@@ -59,17 +203,7 @@ Low: 2
 ```
 ````
 
-Hoặc viết ngắn gọn không cần ghi tổng (hệ thống tự động cộng dồn):
-````markdown
-```donut
-Critical: 0
-High: 1
-Medium: 2
-Low: 2
-```
-````
-
-Hoặc đổi tên nhãn ở tâm:
+Hoặc viết dạng rút gọn:
 ````markdown
 ```donut
 title: Findings
@@ -80,87 +214,43 @@ Low: 4
 ```
 ````
 
-### Cú pháp 1 dòng (Directive)
+Hoặc cú pháp 1 dòng:
 ```markdown
 [[donut 5 Issues | Critical: 0 | High: 1 | Medium: 2 | Low: 2]]
 ```
-hoặc:
-```markdown
-[[donut crit=0 high=1 med=2 low=2]]
-```
-
-### Đặc tính:
-- Vòng tròn donut hiển thị to rõ (~110px), số lượng tâm to đậm nổi bật.
-- Căn giữa toàn trang, viền trong suốt (`border: none; background: transparent`).
-- Khi xuất PDF bằng WeasyPrint, biểu đồ là vector SVG 100% sắc nét, không bị răng cưa hay mất màu.
 
 ---
 
-## 3. Bảng Dữ Liệu Tự Động Co Giãn & Ngắt Dòng (GFM Tables)
-
-Bảng biểu trong MarkNote được cấu hình CSS tự động thích ứng với trang giấy in:
+## 5. Bảng Dữ Liệu Tự Động Co Giãn & Ngắt Dòng (GFM Tables)
 
 ```markdown
-| Mã Module | Tên Tuyến API | Số Thao Tác | Trạng Thái | Ghi Chú Đánh Giá |
+| Mã Lỗi | Tên Chức Năng | Mức Độ | Trạng Thái | Mô Tả & Khuyến Nghị |
 |:---|:---|:---:|:---:|:---|
-| `MOD-01` | `auth` | 6 | **Directly Tested** | Đã kiểm thử trực tiếp 100% các endpoint xác thực. |
-| `MOD-02` | `listings` | 45 | **Deep Tested** | Module rủi ro cao: kiểm thử IDOR, Mass Assignment và Input Validation. |
+| `SEC-01` | Quản trị API | CRITICAL | **Fixed** | Lỗ hổng IDOR đã được kiểm tra vá triệt để. |
+| `SEC-02` | Xác thực JWT | HIGH | **Verified** | Đã bổ sung cơ chế xác minh khóa bí mật HS256. |
 ```
 
-- **Căn lề cột:**
-  - `:---` Căn trái
-  - `:---:` Căn giữa
-  - `---:` Căn phải
-- **Tính năng tự động của MarkNote:**
-  - **Tự động Fit chiều rộng 100% trang:** Bảng luôn trải đều không bị lệch.
-  - **Tự động bẻ dòng (Word Wrap):** Văn bản dài hoặc đường dẫn dài sẽ tự động xuống dòng, không bao giờ bị cắt cụt hay tràn ra ngoài mép giấy.
-  - **Lặp lại tiêu đề khi sang trang in:** Khi bảng dài nhiều trang, dòng tiêu đề (`thead`) sẽ tự động lặp lại ở đầu trang tiếp theo.
+- **Tự động Fit 100% trang:** Bảng luôn trải đều không bị lệch lề.
+- **Tự động bẻ dòng (Word Wrap):** Văn bản và đường dẫn dài tự động xuống hàng, không bao giờ bị cắt cụt.
+- **Tự động lặp lại tiêu đề:** Tiêu đề cột (`thead`) tự động xuất hiện ở đầu trang sau khi bảng dài nhiều trang.
 
 ---
 
-## 4. Danh Sách Công Việc (Tasklist / Checklist)
-
-Hỗ trợ cả cú pháp Markdown chuẩn và dấu ngoặc vuông viết tắt:
+## 6. Danh Sách Công Việc (Tasklist / Checklist)
 
 ```markdown
-- [x] Thu thập và rà soát danh sách endpoint OpenAPI
-- [x] Cấu hình tài khoản kiểm thử cho Tenant A và Tenant B
-- [ ] Thực hiện tấn công thử nghiệm leo quyền IDOR
-- [ ] Báo cáo kết quả và xác minh vá lỗi (Retest)
+- [x] Rà soát danh sách endpoint API
+- [x] Thiết lập môi trường Staging
+- [ ] Kiểm thử leo quyền dọc & ngang
+- [ ] Xuất báo cáo nghiệm thu
 ```
-
-MarkNote tự động chuyển đổi thành checkbox vector SVG đồng bộ, đẹp mắt và căn thẳng hàng hoàn hảo.
+Tự động chuyển đổi thành hộp checkbox vector SVG sắc nét, căn lề chuẩn mực.
 
 ---
 
-## 5. Sơ Đồ Quy Trình & Cây Kiến Trúc (Flow & Tree Blocks)
+## 7. Huy Hiệu Mức Độ (Severity Badges) & Hộp Cảnh Báo (Callouts)
 
-Để vẽ các giai đoạn quy trình hoặc cấu trúc phân cấp, sử dụng khối mã `text` với ký tự Unicode box-drawing:
-
-````markdown
-```text
-[Giai đoạn 1: Lập kế hoạch & Khóa phạm vi]
- └── Khớp nối OpenAPI 333 endpoints ──> Thiết lập tài khoản Tenant A & B
-
-[Giai đoạn 2: Khảo sát & Dò quét bề mặt]
- └── Quét tự động DAST ──> Liệt kê bảng danh mục tham số endpoint
-
-[Giai đoạn 3: Tấn công khai thác chuyên sâu]
- └── Ma trận phân quyền đa khách thuê ──> Kiểm thử leo quyền dọc & ngang
-
-[Giai đoạn 4: Xác minh, Báo cáo & Retest]
- └── Phân tích bán kính ảnh hưởng ──> Báo cáo và kiểm tra lại bản vá
-```
-````
-
-Trình in của MarkNote đã được ép cấu hình chống tràn lề, tự động ngắt dòng nếu dòng vẽ quá dài.
-
----
-
-## 6. Huy Hiệu Mức Độ Nghiêm Trọng (Severity Badges)
-
-Sử dụng trực tiếp trong văn bản hoặc bên trong bảng dữ liệu:
-
+### Huy hiệu:
 ```html
 <span class="sev-badge sev-crit">CRITICAL</span>
 <span class="sev-badge sev-high">HIGH</span>
@@ -169,67 +259,40 @@ Sử dụng trực tiếp trong văn bản hoặc bên trong bảng dữ liệu:
 <span class="sev-badge sev-pass">100% PASS</span>
 ```
 
----
-
-## 7. Khung Ghi Chú & Cảnh Báo (Callout Boxes)
-
-Dùng để nhấn mạnh thông tin quan trọng hoặc cảnh báo bảo mật:
-
+### Khung thông báo:
 ```html
 <div class="callout callout-info">
-  <b>Thông tin:</b> Quá trình kiểm thử được thực hiện trong môi trường Staging cách ly hoàn toàn.
+  <b>Thông tin:</b> Quá trình đánh giá được thực hiện độc lập và khách quan.
 </div>
 
 <div class="callout callout-warning">
-  <b>Cảnh báo:</b> API thiếu cơ chế kiểm soát tần suất truy vấn (Rate Limiting).
+  <b>Cảnh báo:</b> Cần cấu hình giới hạn tần suất truy vấn (Rate Limiting).
 </div>
 
 <div class="callout callout-danger">
-  <b>Nguy hiểm:</b> Lỗ hổng cho phép người dùng Tenant A xem dữ liệu của Tenant B.
-</div>
-
-<div class="callout callout-success">
-  <b>Đạt chuẩn:</b> Tất cả các phát hiện đã được khắc phục hoàn toàn trong lần tái kiểm tra.
+  <b>Lỗ hổng nghiêm trọng:</b> Truy cập trái phép dữ liệu nhạy cảm.
 </div>
 ```
 
 ---
 
-## 8. Ngắt Trang Chủ Động Khi Xuất PDF (Page Break)
+## 8. Lệnh Ngắt Trang & Phím Tắt Tiện Dụng
 
-Khi muốn một đề mục lớn hoặc phụ lục luôn bắt đầu ở trang mới trong PDF:
-
+### Ngắt trang chủ động:
 ```html
 <div class="page-break"></div>
 ```
 
----
-
-## 9. Định Dạng Văn Bản & Khối Mã (Code Highlighting)
-
-MarkNote tích hợp công cụ tô màu mã nguồn Pygments với hơn 100+ ngôn ngữ:
-
-````markdown
-```python
-def verify_token(token: str) -> bool:
-    # Xác thực chữ ký số
-    return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-```
-````
-
----
-
-## 10. Phím Tắt & Tiện Ích Trong MarkNote
-
-| Phím tắt | Chức năng |
+### Bảng phím tắt ứng dụng:
+| Phím tắt | Thao tác |
 |:---|:---|
 | `Ctrl + N` | Tạo ghi chú mới |
-| `Ctrl + O` | Mở tệp Markdown |
-| `Ctrl + S` | Lưu tệp hiện tại |
-| `Ctrl + E` | Xuất file HTML độc lập |
+| `Ctrl + O` | Nhập tệp ngoài (Import `.md`, `.markdown`, `.txt`) |
+| `Ctrl + S` | Lưu ghi chú hiện tại |
+| `F2` | Đổi tên ghi chú nhanh |
 | `Ctrl + P` | Xuất tài liệu ra PDF chuẩn in ấn A4 |
-| `Ctrl + F` | Tìm kiếm văn bản trong tài liệu |
-| `Ctrl + H` | Tìm kiếm và thay thế văn bản |
-| `F11` | Bật / tắt chế độ toàn màn hình |
-| `Sync Scroll` | Tự động đồng bộ vị trí cuộn giữa cửa sổ soạn thảo và cửa sổ xem trước |
-| `Line Numbers` | Đánh số dòng chuẩn code editor ở lề trái |
+| `Ctrl + E` | Xuất tài liệu ra file HTML độc lập |
+| `Ctrl + Shift + I` | Chèn hình ảnh tại vị trí con trỏ |
+| `Ctrl + Shift + M` | Mở thư mục Media dùng chung |
+| `Ctrl + Shift + S` | Bật / tắt cuộn đồng bộ (Sync Scroll) |
+| `Ctrl + F` / `Ctrl + H` | Tìm kiếm / Thay thế văn bản |
