@@ -581,7 +581,7 @@ def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveCon
         elif cfg.gradient:
             props.append(f"background-image: {cfg.gradient};")
 
-        if cfg.mode == "repeat":
+        if cfg.mode in ("repeat", "tile"):
             props.append("background-repeat: repeat;")
             props.append("background-size: auto;")
         elif cfg.mode == "repeat-x":
