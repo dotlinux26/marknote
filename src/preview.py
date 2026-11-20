@@ -23,8 +23,10 @@ from exporter import (
     replace_checkboxes_with_svg,
     DONUT_DIRECTIVE_RE,
 )
+from media import embed_images_as_base64, process_markdown_images
 from settings import (
     APP_DIR,
+    MEDIA_DIR,
     KEY_SYNC_SCROLL,
     SYNC_SCROLL_OFF,
     SYNC_SCROLL_ON,
@@ -142,6 +144,7 @@ class MarkdownRenderer:
 
     def render(self, md: str) -> str:
         clean_md = normalize_tasklists(md or "")
+        clean_md = process_markdown_images(clean_md)
         if "[[donut" in clean_md.lower():
             clean_md = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), clean_md)
         print_css = ""
@@ -529,13 +532,15 @@ class PreviewPane(QWebEngineView):
         )
 
     def _base_url(self) -> QUrl:
-        return QUrl.fromLocalFile(str(APP_DIR.resolve()) + "/")
+        return QUrl.fromLocalFile(str(MEDIA_DIR.resolve()) + "/")
 
     def render(self, md: str):
         """Render lai bang noi dung markdown hien tai (UC06)."""
         self._last_md = md or ""
         css = self._theme.getCss(self._theme.current())
-        doc = build_document(self._renderer.render(self._last_md), css or "")
+        rendered = self._renderer.render(self._last_md)
+        doc = build_document(rendered, css or "")
+        doc = embed_images_as_base64(doc)
         self.setHtml(doc, self._base_url())
 
     def reloadCss(self, css: str | None = None):
@@ -544,7 +549,9 @@ class PreviewPane(QWebEngineView):
             return
         if css is None:
             css = self._theme.getCss(self._theme.current()) or ""
-        doc = build_document(self._renderer.render(self._last_md), css)
+        rendered = self._renderer.render(self._last_md)
+        doc = build_document(rendered, css)
+        doc = embed_images_as_base64(doc)
         self.setHtml(doc, self._base_url())
 
     def setScroll(self, percent: float):

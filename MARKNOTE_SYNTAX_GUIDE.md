@@ -123,7 +123,65 @@ Khi xuất tài liệu sang PDF, trang bìa mặc định có thể bị co cụ
 
 ---
 
-## 2. Chỉ Thị Hình Nền & In Ấn (`[[print ...]]` / `[[page-bg ...]]`)
+## 2. Hướng Dẫn Chèn & Định Dạng Hình Ảnh (Kích Thước, Căn Lề & Media Root)
+
+MarkNote coi thư mục Media dùng chung (`~/.marknote/media`) là **gốc (root)**. Người dùng không cần gõ tiền tố `media/`, chỉ cần tên file là ứng dụng tự động nhận diện và nhúng dữ liệu Base64 độc lập khi xuất bản PDF và HTML.
+
+### 2.1. Cú pháp thư mục ảnh (Root & media/)
+Cả 2 cách viết sau đều hợp lệ và tương đương:
+```markdown
+![Logo](logo.png)
+![Logo](media/logo.png)
+```
+Hoặc trong HTML:
+```html
+<img src="logo.png" alt="Logo">
+<img src="media/logo.png" alt="Logo">
+```
+
+### 2.2. Chỉnh kích thước & Căn lề ảnh (Cú pháp ngoặc nhọn `{...}`)
+Hỗ trợ đầy đủ `width`, `height`, `align` (hoặc viết tắt `center`, `left`, `right`):
+```markdown
+<!-- Chỉnh kích thước -->
+![Signature](signature.png){width=120px}
+![Banner](banner.png){width=80% height=200px}
+![Icon](icon.png){64px}
+![Avatar](avatar.png){100x100}
+
+<!-- Căn giữa (Center) -->
+![Signature](signature.png){width=120px align=center}
+![Logo](logo.png){width=150px center}
+![Badge](badge.png){center}
+
+<!-- Căn trái / Căn phải -->
+![Diagram](diagram.png){width=350px left}
+![Stamp](stamp.png){width=100px right}
+```
+
+### 2.3. Cú pháp Obsidian / Wiki-style trong alt (`|`)
+```markdown
+![Logo|150](logo.png)                 <!-- Chiều rộng 150px -->
+![Banner|400x150](banner.png)         <!-- 400px x 150px -->
+![Signature|center](signature.png)    <!-- Căn giữa -->
+![Logo|150|center](logo.png)          <!-- 150px và căn giữa -->
+```
+
+### 2.4. Cú pháp đuôi URL (`=WxH`)
+```markdown
+![Banner](banner.png =300x150)
+![Logo](logo.png =120x)
+```
+
+### 2.5. Định dạng trực tiếp bằng HTML
+Trong HTML, bạn có thể dùng thuộc tính `align="center|left|right"` hoặc `style`:
+```html
+<img src="signature.png" width="120" align="center">
+<img src="logo.png" style="width: 150px; display: block; margin: 0 auto;">
+```
+
+---
+
+## 3. Chỉ Thị Hình Nền & In Ấn (`[[print ...]]` / `[[page-bg ...]]`)
 
 MarkNote cho phép tùy biến nền tài liệu in PDF bằng chỉ thị directive 1 dòng cực kỳ linh hoạt (tự động ẩn khỏi màn hình Preview):
 

@@ -12,7 +12,7 @@ import tempfile
 from html import escape
 from pathlib import Path
 
-from media import embed_images_as_base64
+from media import embed_images_as_base64, resolve_media_file, process_markdown_images
 from settings import APP_DIR, MEDIA_DIR
 
 CHECKBOX_TAG_RE = re.compile(
@@ -212,6 +212,7 @@ class PrintDirectiveConfig:
         text_color: str = "",
         pages: str = "all",
         style: str = "",
+        margin: str = "",
     ):
         self.directive_type = directive_type
         self.bg = bg
@@ -223,13 +224,15 @@ class PrintDirectiveConfig:
         self.text_color = text_color
         self.pages = pages
         self.style = style
+        self.margin = margin
 
     def __repr__(self) -> str:
         return (
             f"PrintDirectiveConfig(type={self.directive_type!r}, bg={self.bg!r}, "
             f"mode={self.mode!r}, position={self.position!r}, opacity={self.opacity!r}, "
             f"bg_color={self.bg_color!r}, gradient={self.gradient!r}, "
-            f"text_color={self.text_color!r}, pages={self.pages!r}, style={self.style!r})"
+            f"text_color={self.text_color!r}, pages={self.pages!r}, style={self.style!r}, "
+            f"margin={self.margin!r})"
         )
 
 
@@ -451,6 +454,16 @@ def parse_print_directive(text: str) -> PrintDirectiveConfig:
             style = kv[k].strip()
             break
 
+    # 9. page margin (vi du margin="0" hoac margin="10mm")
+    margin = ""
+    for k in ("margin", "page-margin", "page_margin"):
+        if k in kv:
+            margin = kv[k].strip()
+            break
+    if not margin:
+        if re.search(r"\bmargin\s*=\s*(?:\"0\"|'0'|0)\b", body, re.IGNORECASE):
+            margin = "0"
+
     return PrintDirectiveConfig(
         directive_type=directive_type,
         bg=bg,
@@ -462,6 +475,7 @@ def parse_print_directive(text: str) -> PrintDirectiveConfig:
         text_color=text_color,
         pages=pages,
         style=style,
+        margin=margin,
     )
 
 
@@ -477,34 +491,8 @@ def parse_print_directives(text: str) -> list[PrintDirectiveConfig]:
 
 
 def resolve_image_file(path_or_str: str | Path) -> Path | None:
-    """Tim kiem file anh hop le tren may theo duong dan tuong doi, MEDIA_DIR, hoac assets."""
-    p = Path(path_or_str)
-    if p.is_file():
-        return p.resolve()
-
-    str_path = str(path_or_str).replace("\\", "/")
-    if str_path.startswith("file:///"):
-        from PySide6.QtCore import QUrl
-        local = QUrl(str_path).toLocalFile()
-        if local and Path(local).is_file():
-            return Path(local).resolve()
-
-    clean_rel = str_path
-    if clean_rel.startswith("media/"):
-        clean_rel = clean_rel[6:]
-
-    candidates = [
-        MEDIA_DIR / clean_rel,
-        MEDIA_DIR / p.name,
-        APP_DIR / clean_rel,
-        Path.cwd() / clean_rel,
-        Path(__file__).resolve().parent.parent / clean_rel,
-        Path(__file__).resolve().parent.parent / "assets" / clean_rel,
-    ]
-    for cand in candidates:
-        if cand.is_file():
-            return cand.resolve()
-    return None
+    """Tim kiem file anh hop le, coi thu muc MEDIA_DIR la root."""
+    return resolve_media_file(path_or_str)
 
 
 def adjust_image_alpha(img_input: str | Path | bytes, alpha: float) -> str:
@@ -649,6 +637,9 @@ def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveCon
                     if re.match(r"^[a-zA-Z_-][a-zA-Z0-9_-]*$", prop_name) and prop_val:
                         props.append(f"{prop_name}: {prop_val};")
 
+        if cfg.margin:
+            props.append(f"margin: {cfg.margin} !important;")
+
         targets = parse_page_targets(cfg.pages)
         inner_css = "\n".join("  " + p for p in props)
 
@@ -662,8 +653,14 @@ def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveCon
                             f"body, .markdown-body {{ color: {tc} !important; }}"
                         )
             elif target == 1:
-                css_blocks.append(f"@page :first {{\n{inner_css}\n}}")
-                css_blocks.append(f"@page :nth(1) {{\n{inner_css}\n}}")
+                first_props = list(props)
+                # An so trang mac dinh o trang 1 khi co background rieng
+                first_props.append("@bottom-center { content: none !important; }")
+                first_props.append("@bottom-left { content: none !important; }")
+                first_props.append("@bottom-right { content: none !important; }")
+                first_inner = "\n".join("  " + p for p in first_props)
+                css_blocks.append(f"@page :first {{\n{first_inner}\n}}")
+                css_blocks.append(f"@page :nth(1) {{\n{first_inner}\n}}")
             elif target == "odd":
                 css_blocks.append(f"@page :right {{\n{inner_css}\n}}")
                 css_blocks.append(f"@page :nth(odd) {{\n{inner_css}\n}}")
@@ -679,11 +676,36 @@ def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveCon
     return result
 
 
+HTML_IMG_TAG_RE = re.compile(r'<img\b(?P<attrs>[^>]*)>', re.IGNORECASE)
+
+
+def _normalize_html_img_tags(html: str) -> str:
+    """Chuan hoa cac the <img> co thuoc tinh align='center|left|right' thanh khoi can le dep."""
+    def _repl(m: re.Match) -> str:
+        tag = m.group(0)
+        attrs = m.group("attrs") or ""
+        align_m = re.search(r'\balign=["\']?(center|centre|left|right)["\']?', attrs, re.IGNORECASE)
+        if not align_m:
+            return tag
+        al = align_m.group(1).lower()
+        clean_tag = re.sub(r'\s*\balign=["\']?(?:center|centre|left|right)["\']?', '', tag, flags=re.IGNORECASE)
+        if al in ("center", "centre"):
+            return f'<div class="img-align-center" style="text-align: center; margin: 1.2rem 0;">{clean_tag}</div>'
+        elif al == "left":
+            return f'<div class="img-align-left" style="text-align: left; margin: 1.2rem 0;">{clean_tag}</div>'
+        elif al == "right":
+            return f'<div class="img-align-right" style="text-align: right; margin: 1.2rem 0;">{clean_tag}</div>'
+        return tag
+
+    return HTML_IMG_TAG_RE.sub(_repl, html)
+
+
 def enhance_html_components(html: str) -> str:
-    """Thay the checkbox bang SVG, ho tro donut directive, xoa raw print tokens."""
+    """Thay the checkbox bang SVG, ho tro donut directive, xoa raw print tokens, chuan hoa anh."""
     if not html:
         return html
     html = replace_checkboxes_with_svg(html)
+    html = _normalize_html_img_tags(html)
     if "[[donut" in html.lower():
         html = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), html)
     if "donut-chart" in html and "donut-svg-ring" not in html:
@@ -732,6 +754,34 @@ DOCUMENT_BASE_CSS = (
     "  margin-right: 6px;\n"
     "  display: inline-block;\n"
     "  flex-shrink: 0;\n"
+    "}\n"
+    "/* Bo cuc va can le anh Markdown / HTML */\n"
+    ".img-align-center, .markdown-body .img-align-center {\n"
+    "  text-align: center !important;\n"
+    "  margin: 1.2rem 0 !important;\n"
+    "  clear: both !important;\n"
+    "}\n"
+    ".img-align-center img, img.align-center, .markdown-body img.align-center {\n"
+    "  display: inline-block !important;\n"
+    "  margin: 0 auto !important;\n"
+    "}\n"
+    ".img-align-left, .markdown-body .img-align-left {\n"
+    "  text-align: left !important;\n"
+    "  margin: 1.2rem 0 !important;\n"
+    "}\n"
+    ".img-align-left img, img.align-left, .markdown-body img.align-left {\n"
+    "  display: inline-block !important;\n"
+    "}\n"
+    ".img-align-right, .markdown-body .img-align-right {\n"
+    "  text-align: right !important;\n"
+    "  margin: 1.2rem 0 !important;\n"
+    "}\n"
+    ".img-align-right img, img.align-right, .markdown-body img.align-right {\n"
+    "  display: inline-block !important;\n"
+    "}\n"
+    ".markdown-body img {\n"
+    "  max-width: 100%;\n"
+    "  box-sizing: border-box;\n"
     "}\n"
     "/* Phan cap tieu de H1, H2, H3, H4 chuan dep, dong nhat Markdown va HTML */\n"
     ".markdown-body h1, .markdown-body .report h1 {\n"
@@ -1162,9 +1212,28 @@ def build_pdf_page_rule(
         "}\n"
     )
 
-    # Auto-detect cover page: neu co .cover-page trong HTML thi inject zero-margin cho trang dau
+    # Đảm bảo khi in PDF, html, body và markdown-body luôn trong suốt để background của @page hiển thị toàn diện
+    print_transparent_rule = (
+        "\n"
+        "@media print {\n"
+        "  html, body, .markdown-body, .report {\n"
+        "    background: transparent !important;\n"
+        "    background-color: transparent !important;\n"
+        "  }\n"
+        "}\n"
+    )
+
+    # Auto-detect cover page: neu co .cover-page hoac comment COVER PAGE hoac class .cover trong HTML
     cover_rule = ""
-    if html_body and re.search(r'class=["\'][^"\']*\bcover-page\b', html_body, re.IGNORECASE):
+    is_cover_detected = bool(
+        html_body
+        and (
+            re.search(r'class=["\'][^"\']*\b(?:cover-page|cover)\b', html_body, re.IGNORECASE)
+            or re.search(r'<!--\s*={3,}\s*COVER PAGE\s*={3,}', html_body, re.IGNORECASE)
+        )
+    )
+
+    if is_cover_detected:
         cover_rule = (
             "\n"
             "/* Cover page: full-bleed, no margin, no page number */\n"
@@ -1197,9 +1266,9 @@ def build_pdf_page_rule(
 
     if all_directives:
         custom_page_css = generate_page_css(all_directives)
-        return base_rule + cover_rule + custom_page_css
+        return base_rule + print_transparent_rule + cover_rule + custom_page_css
 
-    return base_rule + cover_rule
+    return base_rule + print_transparent_rule + cover_rule
 
 
 PDF_PAGE_RULE = build_pdf_page_rule("")

@@ -82,7 +82,7 @@ mime = QMimeData()
 mime.setImageData(qimg)
 editor.insertFromMimeData(mime)
 text = editor.getText()
-assert "media/img_" in text
+assert "img_" in text, f"Expected img_ in text, got: {text}"
 print("Paste QImage OK! Result text:", text)
 
 print("--- Test 6: Paste Image File URLs ---")
@@ -95,13 +95,31 @@ mime2 = QMimeData()
 mime2.setUrls([QUrl.fromLocalFile(str(MEDIA_DIR / name1))])
 editor.insertFromMimeData(mime2)
 text2 = editor.getText()
-assert f"media/{name1}" in text2
+assert name1 in text2, f"Expected {name1} in text2, got: {text2}"
 print("Paste File URLs OK! Result text:", text2)
 
-print("--- Test 7: HTML Base64 Embedding ---")
-html_input = f'<p>Note</p><img alt="pic" src="media/{qname}">'
+print("--- Test 7: HTML Base64 Embedding (Root filename & media/ prefix) ---")
+html_input = f'<p>Note</p><img alt="pic" src="media/{qname}"><img alt="pic2" src="{name1}">'
 html_embedded = embed_images_as_base64(html_input)
-assert "data:image/png;base64," in html_embedded, f"Got: {html_embedded}"
+assert html_embedded.count("data:image/png;base64,") == 2, f"Expected 2 embedded images, got: {html_embedded}"
 print("HTML Base64 Embedding OK!")
+
+print("--- Test 8: Markdown Image Dimensions and Align Formatting ---")
+from media import process_markdown_images
+md_test = f"![signature]({qname}){{width=100px align=center}}"
+processed_md = process_markdown_images(md_test)
+assert '<div class="img-align-center"' in processed_md, f"Expected center div, got: {processed_md}"
+assert 'width: 100px' in processed_md, f"Expected width: 100px, got: {processed_md}"
+assert f'src="{qname}"' in processed_md, f"Expected src {qname}, got: {processed_md}"
+
+md_obsidian = f"![signature|150|center]({qname})"
+processed_obsidian = process_markdown_images(md_obsidian)
+assert '<div class="img-align-center"' in processed_obsidian
+assert 'width: 150px' in processed_obsidian
+
+md_suffix = f"![pic]({name1} =200x100)"
+processed_suffix = process_markdown_images(md_suffix)
+assert 'width: 200px' in processed_suffix and 'height: 100px' in processed_suffix
+print("Markdown Image Dimensions & Align OK!")
 
 print("--- ALL TESTS PASSED! ---")
