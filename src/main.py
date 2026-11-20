@@ -51,50 +51,51 @@ from theme import ThemeManager
 
 APP_STYLE = """
 QMainWindow, QDialog, QMessageBox { background: #f6f8fa; }
-QWidget { color: #1f2328; font-size: 14px; }
+QWidget { color: #1f2328; font-size: 13px; }
 QMenuBar { background: #ffffff; border-bottom: 1px solid #d8dee4; }
-QMenuBar::item { padding: 6px 10px; background: transparent; border-radius: 2px; }
+QMenuBar::item { padding: 6px 10px; background: transparent; border-radius: 4px; }
 QMenuBar::item:selected { background: #eef1f4; }
-QMenu { background: #ffffff; border: 1px solid #d1d9e0; border-radius: 2px; padding: 4px; color: #1f2328; }
-QMenu::item { padding: 6px 20px; border-radius: 2px; color: #1f2328; }
-QMenu::item:selected { color: #1f2328; background: #eef1f4; }
+QMenu { background: #ffffff; border: 1px solid #d1d9e0; border-radius: 6px; padding: 4px; color: #1f2328; }
+QMenu::item { padding: 6px 24px 6px 12px; border-radius: 4px; color: #1f2328; }
+QMenu::item:selected { color: #1f2328; background: #f0f3f6; }
 QMenu::item:disabled { color: #8b949e; }
-QMenu::separator { height: 1px; background: #d8dee4; margin: 4px 8px; }
-QToolBar { background: #f6f8fa; border: none; border-bottom: 1px solid #d8dee4; spacing: 4px; padding: 4px 6px; }
-QToolButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; color: #1f2328; }
-QToolButton:hover { background: #eef1f4; }
-QToolButton:pressed { background: #d8dee4; }
-QToolButton:checked { background: #ddf4ff; border-color: #54aeff; color: #0969da; }
-QLineEdit { padding: 6px 8px; border: 1px solid #d1d9e0; border-radius: 2px; background: #ffffff; color: #1f2328; }
+QMenu::separator { height: 1px; background: #e1e4e8; margin: 4px 8px; }
+QToolBar { background: #ffffff; border: none; border-bottom: 1px solid #d8dee4; spacing: 2px; padding: 3px 6px; }
+QToolBar::separator { width: 1px; background: #d8dee4; margin: 4px 5px; }
+QToolButton { padding: 4px 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #24292f; font-size: 13px; font-weight: 500; }
+QToolButton:hover { background: #f0f3f6; border: 1px solid #d0d7de; }
+QToolButton:pressed { background: #e1e4e8; }
+QToolButton:checked { background: #ddf4ff; border: 1px solid #54aeff; color: #0969da; }
+QLineEdit { padding: 5px 8px; border: 1px solid #d1d9e0; border-radius: 4px; background: #ffffff; color: #1f2328; }
 QLineEdit:focus { border-color: #0969da; }
-QPlainTextEdit { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; padding: 6px; color: #1f2328; selection-background-color: #add6ff; }
-QComboBox { padding: 5px 8px; border: 1px solid #d1d9e0; border-radius: 2px; background: #ffffff; color: #1f2328; }
+QPlainTextEdit { background: #ffffff; border: 1px solid #d8dee4; border-radius: 4px; padding: 6px; color: #1f2328; selection-background-color: #add6ff; }
+QComboBox { padding: 4px 8px; border: 1px solid #d1d9e0; border-radius: 4px; background: #ffffff; color: #1f2328; }
 QComboBox:hover { background: #f6f8fa; }
 QComboBox::drop-down { border: none; width: 24px; }
 QComboBox QAbstractItemView { background: #ffffff; color: #1f2328; border: 1px solid #d1d9e0; selection-background-color: #ddf4ff; selection-color: #1f2328; outline: 0; }
-QListWidget { background: #ffffff; border: 1px solid #d8dee4; border-radius: 2px; outline: 0; color: #1f2328; }
-QListWidget::item { border-radius: 2px; color: #1f2328; }
+QListWidget { background: #ffffff; border: 1px solid #d8dee4; border-radius: 4px; outline: 0; color: #1f2328; }
+QListWidget::item { border-radius: 4px; color: #1f2328; }
 QListWidget::item:selected { background: #ddf4ff; color: #1f2328; }
 QListWidget::item:hover { background: #f6f8fa; color: #1f2328; }
 QListWidget::item:selected:hover { background: #ddf4ff; color: #1f2328; }
-QPushButton { padding: 5px 10px; border: 1px solid #d1d9e0; border-radius: 2px; background: transparent; color: #1f2328; }
-QPushButton:hover { background: #eef1f4; }
-QPushButton:pressed { background: #d8dee4; }
+QPushButton { padding: 4px 10px; border: 1px solid #d0d7de; border-radius: 4px; background: #f6f8fa; color: #24292f; font-size: 13px; font-weight: 500; }
+QPushButton:hover { background: #f3f4f6; border-color: #8c959f; }
+QPushButton:pressed { background: #e1e4e8; }
 QStatusBar { background: #ffffff; border-top: 1px solid #d8dee4; color: #59636e; }
 QStatusBar::item { border: none; }
 QSplitter::handle { background: #d8dee4; }
 QCheckBox { spacing: 6px; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 0; }
-QScrollBar::handle:vertical { background: #d1d9e0; border-radius: 2px; min-height: 24px; }
+QScrollBar::handle:vertical { background: #d1d9e0; border-radius: 4px; min-height: 24px; }
 QScrollBar::handle:vertical:hover { background: #8b949e; }
 QScrollBar:horizontal { background: transparent; height: 10px; margin: 0; }
-QScrollBar::handle:horizontal { background: #d1d9e0; border-radius: 2px; min-width: 24px; }
+QScrollBar::handle:horizontal { background: #d1d9e0; border-radius: 4px; min-width: 24px; }
 QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
 QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
 QLabel#noteTitleBar { font-size: 15px; font-weight: 600; padding: 2px 6px; }
-QLineEdit#noteTitleEdit { font-size: 15px; font-weight: 600; padding: 2px 6px; border: 1px solid #0969da; border-radius: 2px; }
-QToolButton#pencilButton { border: none; background: transparent; padding: 2px 6px; font-size: 16px; color: #59636e; }
-QToolButton#pencilButton:hover { color: #0969da; background: #eef1f4; border-radius: 2px; }
+QLineEdit#noteTitleEdit { font-size: 15px; font-weight: 600; padding: 2px 6px; border: 1px solid #0969da; border-radius: 4px; }
+QToolButton#pencilButton { border: 1px solid transparent; background: transparent; padding: 2px 4px; border-radius: 4px; color: #59636e; }
+QToolButton#pencilButton:hover { color: #0969da; background: #f0f3f6; border-color: #d0d7de; }
 QToolButton#pencilButton:disabled { color: #d1d9e0; }
 QLabel#sidebarHeader { font-weight: 600; color: #59636e; padding-top: 6px; }
 QLabel#noteTitle { font-weight: 600; color: #1f2328; }
@@ -251,6 +252,7 @@ class MainWindow(QMainWindow):
         self.act_new.setIconVisibleInMenu(True)
 
         self.act_import = act("Import Note...", self)
+        self.act_import.setIconText("Import")
         self.act_import.setShortcut(QKeySequence("Ctrl+O"))
         self.act_import.setIcon(get_icon("file_import"))
         self.act_import.setIconVisibleInMenu(True)
@@ -298,17 +300,20 @@ class MainWindow(QMainWindow):
         self.act_replace.setIconVisibleInMenu(True)
 
         self.act_insert_image = act("Insert Image...", self)
+        self.act_insert_image.setIconText("Image")
         self.act_insert_image.setShortcut(QKeySequence("Ctrl+Shift+I"))
         self.act_insert_image.setIcon(get_icon("media_image"))
         self.act_insert_image.setIconVisibleInMenu(True)
         self.act_insert_image.setEnabled(False)
 
         self.act_open_media = act("Media Folder", self)
+        self.act_open_media.setIconText("Media")
         self.act_open_media.setShortcut(QKeySequence("Ctrl+Shift+M"))
         self.act_open_media.setIcon(get_icon("media_folder"))
         self.act_open_media.setIconVisibleInMenu(True)
 
         self.act_sync = act("Sync Scroll", self)
+        self.act_sync.setIconText("Sync")
         self.act_sync.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.act_sync.setCheckable(True)
         self.act_sync.setChecked(self.sync_controller.isEnabled())
@@ -316,6 +321,7 @@ class MainWindow(QMainWindow):
         self.act_sync.setIconVisibleInMenu(True)
 
         self.act_settings = act("Appearance...", self)
+        self.act_settings.setIconText("Theme")
         self.act_settings.setIcon(get_icon("settings_theme"))
         self.act_settings.setIconVisibleInMenu(True)
 
@@ -384,13 +390,13 @@ class MainWindow(QMainWindow):
         self.tag_menu = QMenu(self)
         self.tag_button.setMenu(self.tag_menu)
 
-        self.btn_insert_image = QPushButton("+ Image", self)
+        self.btn_insert_image = QPushButton("Image", self)
         self.btn_insert_image.setIcon(get_icon("media_image"))
         self.btn_insert_image.setToolTip("Insert image at cursor (Ctrl+Shift+I)")
         self.btn_insert_image.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_insert_image.setEnabled(False)
 
-        self.btn_open_media = QPushButton("Media Folder", self)
+        self.btn_open_media = QPushButton("Media", self)
         self.btn_open_media.setIcon(get_icon("media_folder"))
         self.btn_open_media.setToolTip("Open shared media folder in File Explorer (Ctrl+Shift+M)")
         self.btn_open_media.setCursor(Qt.CursorShape.PointingHandCursor)
