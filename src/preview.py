@@ -232,7 +232,7 @@ def _build_toc(
     label: str | TocConfig = "Table of Contents",
     align: str = "left",
     no_bullet: bool = False,
-    title_color: str = "#0969da",
+    title_color: str = "#1f2328",
     item_color: str = "",
     depth_colors: dict[int, str] | None = None,
     max_depth: int = 6,
@@ -257,11 +257,11 @@ def _build_toc(
     if label:
         align_class = "toc-title toc-align-%s" % (align or "left")
         title_style = (
-            f' style="color: {escape(title_color)} !important; font-weight: 800 !important;"'
+            f' style="color: {escape(title_color)} !important; font-weight: 900 !important; font-size: 1.35rem !important; letter-spacing: -0.01em;"'
             if title_color
-            else ' style="font-weight: 800 !important;"'
+            else ' style="font-weight: 900 !important; font-size: 1.35rem !important; letter-spacing: -0.01em;"'
         )
-        out.append('<div class="%s"%s><strong>%s</strong></div>' % (align_class, title_style, escape(label)))
+        out.append('<div class="%s"%s><strong style="color: inherit !important; font-weight: 900 !important;">%s</strong></div>' % (align_class, title_style, escape(label)))
     out.append("<ul>")
     stack = [filtered_items[0][0]]
     has_open_li = False
@@ -344,7 +344,7 @@ def _parse_toc_directive(raw: str) -> TocConfig:
 
     # 2. Trich xuat cac cap thuoc tinh key-value
     depth_colors: dict[int, str] = {}
-    title_color = "#0969da"  # Mac dinh tieu de in dam mau xanh chuan
+    title_color = "#1f2328"  # Mac dinh tieu de in dam mau den chuan
     item_color = ""
     max_depth = 6
 
@@ -361,9 +361,9 @@ def _parse_toc_directive(raw: str) -> TocConfig:
 
         if k in ("title", "label") and label == "Table of Contents":
             label = v
-        elif k in ("title-color", "title_color", "titlecolor"):
+        elif k in ("title-color", "title_color", "titlecolor", "tc", "color"):
             title_color = v
-        elif k in ("color", "item-color", "item_color"):
+        elif k in ("item-color", "item_color", "items-color", "list-color"):
             item_color = v
         elif k in ("max-depth", "maxdepth", "depth"):
             try:

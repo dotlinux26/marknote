@@ -189,22 +189,24 @@ class TestMarkdownRenderer(unittest.TestCase):
         self.assertIn('class="toc-item toc-depth-1"><a href="#2-technical-findings">2. Technical Findings</a>', html)
 
     def test_render_toc_colors_and_customization(self):
-        # 1. Default title is bold blue (#0969da) and items have no forced inline color (default black)
+        # 1. Default title is bold black (#1f2328) with font-weight 900
         md_default = "[[TOC]]\n\n# Chapter 1\n## Section 1.1\n"
         html_default = self.renderer.render(md_default)
-        self.assertIn('style="color: #0969da !important; font-weight: 800 !important;"', html_default)
+        self.assertIn('color: #1f2328 !important; font-weight: 900 !important;', html_default)
         self.assertIn('<a href="#chapter-1">Chapter 1</a>', html_default)
         self.assertIn('<a href="#section-11">Section 1.1</a>', html_default)
 
         # 2. Custom title color
         md_custom_title = '[[TOC title-color="#0284c7"]]\n\n# Chapter 1\n'
         html_custom_title = self.renderer.render(md_custom_title)
-        self.assertIn('style="color: #0284c7 !important; font-weight: 800 !important;"', html_custom_title)
+        self.assertIn('color: #0284c7 !important; font-weight: 900 !important;', html_custom_title)
 
         # 3. Custom level colors (e.g. c1=black, c2=blue)
         md_level_colors = '[[TOC="MỤC LỤC" title-color="#1e40af" c1="#000000" c2="#0969da"]]\n\n# Chapter 1\n## Section 1.1\n### Sub 1.1.1\n'
+        html_level = self.renderer.render(md_level_colors)
+        self.assertIn('color: #1e40af !important; font-weight: 900 !important;', html_level)
         html_level_colors = self.renderer.render(md_level_colors)
-        self.assertIn('style="color: #1e40af !important; font-weight: 800 !important;"', html_level_colors)
+        self.assertIn('color: #1e40af !important; font-weight: 900 !important;', html_level_colors)
         self.assertIn('<li class="toc-item toc-depth-1"><a href="#chapter-1" style="color: #000000 !important;">Chapter 1</a>', html_level_colors)
         self.assertIn('<li class="toc-item toc-depth-2"><a href="#section-11" style="color: #0969da !important;">Section 1.1</a>', html_level_colors)
         # c3 not defined, so it has no inline style and falls back to theme black

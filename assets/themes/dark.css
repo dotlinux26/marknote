@@ -340,8 +340,8 @@ body {
 /* --- 12. Anh --- */
 .markdown-body img {
   max-width: 100%;
-  box-sizing: content-box;
-  background-color: var(--canvas);
+  box-sizing: border-box;
+  background-color: transparent;
 }
 
 /* --- 13. Footnote GFM --- */
