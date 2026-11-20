@@ -1162,6 +1162,32 @@ def build_pdf_page_rule(
         "}\n"
     )
 
+    # Auto-detect cover page: neu co .cover-page trong HTML thi inject zero-margin cho trang dau
+    cover_rule = ""
+    if html_body and re.search(r'class=["\'][^"\']*\bcover-page\b', html_body, re.IGNORECASE):
+        cover_rule = (
+            "\n"
+            "/* Cover page: full-bleed, no margin, no page number */\n"
+            "@page :first {\n"
+            "  margin: 0 !important;\n"
+            "  @bottom-center { content: none !important; }\n"
+            "  @bottom-left   { content: none !important; }\n"
+            "  @bottom-right  { content: none !important; }\n"
+            "  @top-center    { content: none !important; }\n"
+            "  @top-left      { content: none !important; }\n"
+            "  @top-right     { content: none !important; }\n"
+            "}\n"
+            ".cover-page {\n"
+            "  width: 210mm;\n"
+            "  min-height: 297mm;\n"
+            "  margin: 0 !important;\n"
+            "  padding: 0 !important;\n"
+            "  box-sizing: border-box !important;\n"
+            "  page-break-after: always !important;\n"
+            "  break-after: page !important;\n"
+            "}\n"
+        )
+
     if directives is not None:
         all_directives = list(directives)
     elif html_body:
@@ -1171,9 +1197,9 @@ def build_pdf_page_rule(
 
     if all_directives:
         custom_page_css = generate_page_css(all_directives)
-        return base_rule + custom_page_css
+        return base_rule + cover_rule + custom_page_css
 
-    return base_rule
+    return base_rule + cover_rule
 
 
 PDF_PAGE_RULE = build_pdf_page_rule("")
