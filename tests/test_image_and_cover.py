@@ -61,6 +61,16 @@ class TestImageAndCoverEnhancements(unittest.TestCase):
         self.assertIn('class="img-align-center"', enhanced)
         self.assertIn('src="media/logo.png"', enhanced)
 
+    def test_ol_start_counter_reset_injection(self):
+        raw = '<ol start="2"><li>Step two</li></ol>'
+        enhanced = enhance_html_components(raw)
+        self.assertIn('counter-reset: list-item 1;', enhanced)
+
+        raw_multi = '<ol start="5" style="margin: 0;"><li>Step five</li></ol>'
+        enhanced_multi = enhance_html_components(raw_multi)
+        self.assertIn('counter-reset: list-item 4;', enhanced_multi)
+        self.assertIn('margin: 0;', enhanced_multi)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -677,6 +677,35 @@ def generate_page_css(directives: list[PrintDirectiveConfig] | PrintDirectiveCon
 
 
 HTML_IMG_TAG_RE = re.compile(r'<img\b(?P<attrs>[^>]*)>', re.IGNORECASE)
+OL_START_RE = re.compile(r'<ol\b(?P<attrs>[^>]*)>', re.IGNORECASE)
+START_ATTR_RE = re.compile(r'\bstart=["\']?(\d+)["\']?', re.IGNORECASE)
+STYLE_ATTR_RE = re.compile(r'\bstyle=["\'](?P<style>[^"\']*)["\']', re.IGNORECASE)
+
+
+def _normalize_ol_start_attributes(html: str) -> str:
+    """Dam bao thuoc tinh start tren <ol> hoat dong 100% trong WeasyPrint bang cach inject counter-reset."""
+    def _repl(m: re.Match) -> str:
+        attrs = m.group("attrs") or ""
+        sm = START_ATTR_RE.search(attrs)
+        if not sm:
+            return m.group(0)
+        start_val = int(sm.group(1))
+        reset_val = max(0, start_val - 1)
+        counter_style = f"counter-reset: list-item {reset_val};"
+
+        style_m = STYLE_ATTR_RE.search(attrs)
+        if style_m:
+            cur_style = style_m.group("style").strip()
+            if "counter-reset" not in cur_style.lower():
+                sep = " " if cur_style.endswith(";") or not cur_style else "; "
+                new_style = f'{cur_style}{sep}{counter_style}'
+                new_attrs = attrs[:style_m.start()] + f'style="{new_style}"' + attrs[style_m.end():]
+                return f'<ol{new_attrs}>'
+        else:
+            return f'<ol{attrs} style="{counter_style}">'
+        return m.group(0)
+
+    return OL_START_RE.sub(_repl, html)
 
 
 def _normalize_html_img_tags(html: str) -> str:
@@ -701,11 +730,12 @@ def _normalize_html_img_tags(html: str) -> str:
 
 
 def enhance_html_components(html: str) -> str:
-    """Thay the checkbox bang SVG, ho tro donut directive, xoa raw print tokens, chuan hoa anh."""
+    """Thay the checkbox bang SVG, ho tro donut directive, xoa raw print tokens, chuan hoa anh va danh sach."""
     if not html:
         return html
     html = replace_checkboxes_with_svg(html)
     html = _normalize_html_img_tags(html)
+    html = _normalize_ol_start_attributes(html)
     if "[[donut" in html.lower():
         html = DONUT_DIRECTIVE_RE.sub(lambda m: render_donut_widget(m.group("body")), html)
     if "donut-chart" in html and "donut-svg-ring" not in html:
